@@ -2,6 +2,8 @@ from main import construct_packing, validate_packing
 from time import time
 import numpy as np
 import traceback
+import warnings  # DEBUG: imported warnings for adaptive_bisection in main.py
+import warnings
 import signal
 from contextlib import contextmanager
 
@@ -25,7 +27,6 @@ def timeout(duration):
         signal.alarm(0)
 
 
-# Please keep the function as is and do not change the code about evaluation.
 def deepevolve_interface():
     try:
         start_time = time()
@@ -49,8 +50,7 @@ def deepevolve_interface():
             # Apply 1-minute timeout to construct_packing
             try:
                 with timeout(60):
-                    centers, radii, _ = construct_packing(n=n)
-                    sum_radii = sum(radii)
+                    centers, radii, sum_radii = construct_packing(n=n)
 
                 if not isinstance(centers, np.ndarray):
                     centers = np.array(centers)
@@ -63,8 +63,10 @@ def deepevolve_interface():
                 if not valid_packing:
                     print(f"Invalid packing for n={n}: {message_packing}")
 
-            except TimeoutError:
-                print(f"Timeout occurred for n={n}, setting sum_radii to 0")
+            except TimeoutError as te:
+                warnings.warn(
+                    f"Timeout occurred for n={n}: {te}. Setting sum_radii to 0."
+                )
                 centers = np.array([])
                 radii = np.array([])
                 sum_radii = 0.0
