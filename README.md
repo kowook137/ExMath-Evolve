@@ -207,11 +207,10 @@ DeepEvolve builds on several open-source projects, and we appreciate their contr
 ## Citations
 
 ```
-@software{deepevolve,
-  title = {DeepEvolve: Discovering New Scientific Algorithms with Deep Research and AlphaEvolve},
-  author = {Gang Liu},
-  year = {2025},
-  publisher = {GitHub},
-  url = {https://github.com/liugangcode/deepevolve}
+@article{liu2025scientific,
+  title={Scientific Algorithm Discovery by Augmenting AlphaEvolve with Deep Research},
+  author={Liu, Gang and Zhu, Yihan and Chen, Jie and Jiang, Meng},
+  journal={arXiv preprint arXiv:2510.06056},
+  year={2025}
 }
 ```
