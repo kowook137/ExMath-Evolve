@@ -1,0 +1,32 @@
+{
+  "description": "Generate composite number theory and algebra problems that require multiple theorems in sequence. Each problem should include a final numeric or symbolic answer together with a full proof sketch.",
+  "motivation": "Standard textbook problems are often memorised by LLMs. By blending techniques across subfields and inserting constraints that forbid shortcuts, we can surface genuinely novel challenges.",
+  "implementation_notes": "1) Select a pair of compatible theorems (e.g., Chinese Remainder Theorem and lifting-the-exponent) from a curated library. 2) Sample integer parameters that avoid trivial residues. 3) Produce a proof-structured solution that justifies every inference. 4) Run SymPy to validate substitutions and detect counterexamples.",
+  "pseudocode": "def draft_problem():\n    topic = sample_topic()\n    theorems = select_theorems(topic)\n    statement = assemble_statement(theorems)\n    solution = derive_solution(statement, theorems)\n    return statement, solution\n\nproblem, solution = draft_problem()\nverification = run_sympy_checks(problem, solution)\nif verification.is_valid:\n    score = evaluate_with_llm(problem, solution)\n",
+  "originality": {
+    "score": 7,
+    "positive": "Cross-theorem composition yields a large design space that is difficult to memorise.",
+    "negative": "Relies on existing theorem libraries; true novelty depends on parameter sampling."
+  },
+  "future_potential": {
+    "score": 9,
+    "positive": "Could power large-scale datasets of resistant math questions for LLM alignment and benchmarking.",
+    "negative": "LLM solvers will improve rapidly, so continual adaptation is necessary."
+  },
+  "code_difficulty": {
+    "score": 6,
+    "positive": "SymPy and existing theorem metadata ease implementation.",
+    "negative": "Edge-case handling for symbolic validation and prompt engineering is intricate."
+  },
+  "target_difficulty": "graduate",
+  "required_theorems": [
+    "Chinese Remainder Theorem",
+    "Lifting The Exponent Lemma",
+    "Pigeonhole Principle"
+  ],
+  "pitfalls": [
+    "Allowing the solver to guess modulo patterns without justification",
+    "Choosing parameters that collapse to a single congruence",
+    "Providing solutions without explicit verification steps"
+  ]
+}

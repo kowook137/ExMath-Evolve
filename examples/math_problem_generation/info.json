@@ -1,0 +1,13 @@
+{
+  "problem": {
+    "name": "math_problem_generation",
+    "description": "Generate novel mathematics problems paired with verified solutions that remain difficult for large language models. Each iteration should produce a problem specification, synthesize a fully-written question and solution, verify correctness symbolically or numerically, and run an automated LLM solver to estimate difficulty. Problems that pass verification yet defeat the evaluator model should be archived.",
+    "metric": "combined_score",
+    "interface": "deepevolve_interface.py"
+  },
+  "initial_idea": {
+    "title": "Automated creation of LLM-resistant math problems",
+    "content": "Start from curated graduate-level topics (algebra, number theory, combinatorics) and assemble new problems by combining known theorems with uncommon twists. After drafting a problem and solution, run SymPy-based validation to ensure the answer satisfies all constraints. Finally, query a baseline LLM with a strict prompt; if it fails or produces a low-quality explanation, mark the problem as sufficiently difficult.",
+    "supplement": "https://arxiv.org/abs/2402.04616"
+  }
+}

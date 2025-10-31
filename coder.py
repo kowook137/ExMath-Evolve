@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from typing import List, Optional
+
 from rich.console import Console
 
 from agents import Agent, Runner
@@ -10,127 +12,88 @@ from black import format_str, Mode
 
 from database import Program
 from utils.code import apply_diff, parse_evolve_blocks
-from utils.datatypes import IdeaData, reasoning_models
+from utils.datatypes import (
+    IdeaData,
+    ProblemPair,
+    ProblemSpec,
+    PlanningOutput,
+    ReportData,
+    FeedbackBundle,
+    reasoning_models,
+)
 from utils.format import format_metrics_safe
 
 logger = logging.getLogger(__name__)
 
 console = Console()
 
-CODER_INSTRUCTIONS = """You are a researcher with strong software engineering skills, improving algorithmic code through iterative, performance-driven modifications in multiple rounds.
+CODER_INSTRUCTIONS = """You are the developer responsible for verifying that a generated math problem and its solution are internally consistent.
 
-Your task:
-You will receive a research question, a proposed idea, and an existing implementation with performance metrics. Your goal is to analyze the current code and apply precise changes that enhance the specified metrics, based on the research idea and prior feedback.
+Inputs you receive:
+- Problem statement, solution draft, problem specification, prior evaluation feedback
 
-You MUST use the exact SEARCH/REPLACE diff format. Do NOT use Git diff format. Do NOT use line prefixes like `+`, `-`, or `@@`.
-Use this structure exactly:
-```
-<<<<<<< SEARCH
-# Original code (must match exactly)
-=======
-### >>> DEEPEVOLVE-BLOCK-START: <research idea>
-# New code here
-### <<< DEEPEVOLVE-BLOCK-END
->>>>>>> REPLACE
-```
-Example 1 for the code modification outside of `DEEPEVOLVE` blocks:
-```
-<<<<<<< SEARCH
-def f():
-    for i in range(m):
-        for j in range(p):
-            for k in range(n):
-                C[i, j] += A[i, k] * B[k, j]
-=======
-def f():
-    # DEEPEVOLVE-BLOCK-START: Reordered loops for better cache performance
-    for i in range(m):
-        for k in range(n):
-            for j in range(p):
-                C[i, j] += A[i, k] * B[k, j]
-    ### <<< DEEPEVOLVE-BLOCK-END
->>>>>>> REPLACE
-```
+Your job is to act as a mathematical reviewer:
+- Read the problem and the proposed solution carefully.
+- Decide whether the solution is mathematically correct.
+- Identify any gaps, incorrect steps, missing conditions, or ambiguous wording.
+- Propose concrete fixes if problems are found (e.g., adjust statement, strengthen conditions, repair proof).
 
-Example 2 for the code modification inside of `DEEPEVOLVE` blocks:
+Guidelines:
+1. Think step-by-step. Explicitly verify each critical step of the solution.
+2. Check consistency between the statement, constraints, and derived answer.
+3. Watch for hidden assumptions, degenerate cases, or parameter choices that break the proof.
+4. If the solution is correct, confirm why it works and note any minor clarifications.
+5. If the solution is incorrect or incomplete, describe the first concrete issue and how to fix it.
+6. Output your result in the JSON format shown below. Do NOT return SEARCH/REPLACE diffs.
+
+Desired output (exactly):
 ```
-<<<<<<< SEARCH
-### >>> DEEPEVOLVE-BLOCK-START: <research idea>
-# Code to be modified
-### <<< DEEPEVOLVE-BLOCK-END
-=======
-### >>> DEEPEVOLVE-BLOCK-START: <update idea>
-# New code here
-### <<< DEEPEVOLVE-BLOCK-END
->>>>>>> REPLACE
+VALIDATION_REPORT:
+{
+  "is_valid": <true|false>,
+  "confidence": <float between 0 and 1>,
+  "summary": "<one sentence verdict>",
+  "issues": [
+    "<first concrete issue or 'none'>",
+    ...
+  ],
+  "suggestions": [
+    "<actionable fix or 'none'>",
+    ...
+  ],
+  "reasoning": "<multi-paragraph explanation of your analysis>"
+}
 ```
 
-Task Guidelines:
-1. Think before coding, understand the research idea and current performance bottlenecks.
-2. Propose specific, actionable changes that are aligned with the target metrics.
-3. You may suggest multiple improvements beyond the research idea based on your understanding of optimization and machine learning.
-4. When you are updating the code, please check the following:
-    - When a NEW parameter or behavior is added, verify it is invoked in all call sites or in the overall workflow.
-    - If a NEW parameter has a default value of None, confirm that passing a non-None value triggers the intended code path.
-    - Walk through or simulate function calls to confirm that each new branch or change will be executed. Avoid unreachable modifications.
-
-Code Format Guidelines:
-1. All `SEARCH` blocks must match the original code exactly.
-2. When you need to modify code that is not already inside a `DEEPEVOLVE` block, wrap your changes with `### >>> DEEPEVOLVE-BLOCK-START: <research idea>` and `### <<< DEEPEVOLVE-BLOCK-END` markers.
-3. If you are updating code that is already marked by a `DEEPEVOLVE` block, edit only the lines within that block and adjust the existing modification comment to reflect your new change.
-4. Do NOT nest one `DEEPEVOLVE` block inside another. Each region you modify should have exactly one pair of start/end markers.
-    i.e., AVOID doing the following:
-    ```
-    ### >>> DEEPEVOLVE-BLOCK-START: first modification
-    # First code to be modified
-    ### >>> DEEPEVOLVE-BLOCK-START: second modification ! It is not allowed to nest one DEEPEVOLVE block inside another.
-    # Second code to be modified
-    ### <<< DEEPEVOLVE-BLOCK-END
-    ### <<< DEEPEVOLVE-BLOCK-END
-    ```
-    instead, DO the following:
-    ```
-    ### >>> DEEPEVOLVE-BLOCK-START: first modification, second modification
-    # code that has been modified twice
-    ### <<< DEEPEVOLVE-BLOCK-END
-    ```
-
-5. Limit your changes to what is strictly necessary. Do not rewrite the entire file.
-6. Ensure that all modified code remains correct and consistent, including any function signatures, parameter lists, and calls.
-7. Preserve the original code's indentation and formatting. Place the lines of `### >>> DEEPEVOLVE-BLOCK-START: <research idea>` and `### <<< DEEPEVOLVE-BLOCK-END` at the same indentation level as the code they annotate.
+Keep fields `issues` and `suggestions` as arrays (may be empty). Use plain JSON (double quotes). Do not include additional commentary outside the JSON block.
 """
 
-DEBUGGER_INSTRUCTIONS = """You are an expert developer and researcher who ensures modified code runs correctly and properly implements research ideas.
-Your task is to analyze code, identify any kind of errors, including syntax errors, runtime errors, or logical issues, and verify functionality.
-Provide detailed diagnostics and specific fixes when problems are found.
-Consider edge cases and ensure the code fully addresses the research requirements.
+DEBUGGER_INSTRUCTIONS = """You are the Evaluation Agent. Your job is to challenge the generated math problem with large language models and feed difficulty feedback back into the system.
 
-You MUST use the exact SEARCH/REPLACE diff format. Do NOT use Git diff format. Do NOT use line prefixes like `+`, `-`, or `@@`.
+Responsibilities:
+- Invoke configured LLM APIs with the provided problem statement (no access to the reference solution).
+- Analyse the model's answer, compare it against the reference solution, and determine whether the model solved the problem.
+- Record quantitative metrics (solve flag, similarity score, rationale quality, token usage) AND a qualitative feedback message that will be sent to the planner.
+- If the model solves the problem easily, suggest concrete strategies to increase difficulty (parameter adjustments, extra constraints, additional proof requirements).
+- If the model fails, summarise where it struggled and confirm the problem is sufficiently challenging.
 
-Use this structure exactly:
+When code modifications are needed (e.g., updating `llm_evaluator.py` prompts or scoring logic), respond with SEARCH/REPLACE diffs using this template:
 ```
 <<<<<<< SEARCH
-# Code with error (must match exactly)
+# Original evaluator code (must match exactly)
 =======
-# DEBUG: <comment>
-# Fixed code here
->>>>>>> REPLACE
-```
-Example 1 for debugging a syntax error:
-```
-<<<<<<< SEARCH
-def compute_mean(values):
-    total = sum(values
-    return total / len(values)
-=======
-def compute_mean(values):
-    # DEBUG: missing parenthesis in function call, fixed by adding parenthesis
-    total = sum(values)
-    return total / len(values)
+### >>> DEEPEVOLVE-BLOCK-START: <evaluation refinement>
+# Improved evaluator code or feedback handling
+### <<< DEEPEVOLVE-BLOCK-END
 >>>>>>> REPLACE
 ```
 
-Use Comments like `# DEBUG: <comment>` to indicate the changes you made when debugging.
+Guidelines:
+1. Never reveal the reference solution to the evaluated model.
+2. Use deterministic settings where possible (temperature, seeds) so results are reproducible.
+3. Aggregate feedback in a structured form the planner can consume (message + actionable suggestions).
+4. Keep API keys and secrets out of code responses.
+5. Only modify files directly related to evaluation (`llm_evaluator.py`, evaluation helpers). Leave unrelated code untouched.
 """
 
 INSPIRATION_TEMPLATE = """### Inspiration {inspiration_number}
@@ -153,21 +116,26 @@ Current idea:
 Evolution history:
 {idea_evolution}
 
-Pseudocode:
-{pseudocode}
+Problem specification (JSON):
+{problem_spec}
 
-Implementation notes:
-{implementation_notes}
+Problem statement:
+{problem_statement}
 
-Current performance:
-{current_performance}
+Solution outline:
+{solution_outline}
+
+Verification notes:
+{verification_notes}
+
+Searcher context:
+{search_context}
+
+Evaluator feedback:
+{evaluator_feedback}
 
 Task:
-Improve and debug the code based on the context above using your expertise in optimization and machine learning.
-
-Code (multiple files separated by `# === filename.py ===`):
-```{language}
-{current_program}
+Act as a mathematician. Determine whether the solution is fully correct for the given problem. If it fails, explain the first concrete mistake and how to fix it. Output ONLY the JSON schema described in your instructions (prefixed by `VALIDATION_REPORT:`). Do not propose code edits.
 """
 
 REFLECTION_CONTENT = """
@@ -194,33 +162,33 @@ REFLECTION_CONTENT = """
 
 
 DEBUGGER_TEMPLATE = """
-Resolve the following error in a multi-file Python codebase.
+Resolve the following issue in the evaluation pipeline.
 
 An error occurred during execution:
 ```
 {error_message}
 ```
 
-Below is the code that caused the error:
+Below is the code that triggered the issue:
 ```{language}
 {modified_code}
-````
-
-The modification was made to implement the idea:
-```json
-{idea}
 ```
+
+Context for this iteration:
+- Problem specification: {problem_spec}
+- Problem statement: {problem_statement}
+- Reference solution (for verification only): {solution_outline}
+- Evaluator feedback so far: {evaluator_feedback}
+- Research idea JSON: {idea}
 
 Your responsibilities:
 
-- Identify and fix the cause of the error in the modified code.
-- Ensure that all involved files and components integrate correctly and run without errors.
-- Ensure the code modification do not break the research idea.
-- Ensure the new code within the `DEEPEVOLVE` block is reachable in the workflow. New code should be executed as new idea but not suppressed by error handling or cheated by None values.
-- If necessary, update function inputs or implementations to ensure consistency.
-- If the code depends on a library that is not available, use the standard library instead.
-
-Please analyze the error and return the corrected code using `diff` format.
+- Diagnose and fix faults in the evaluator or verification workflow.
+- Keep the reference solution hidden from the LLM evaluation step (the code may inspect it but never send it to the solver).
+- Ensure the pipeline records solve status, similarity scores, rationale quality, and token counts.
+- Provide structured feedback (message + actionable suggestions) for the planner when the evaluator runs.
+- Maintain deterministic behaviour where possible (temperature/seed control) and meaningful logging.
+- Return patches using the required diff format.
 """
 
 class CoderAgent:
@@ -246,11 +214,97 @@ class CoderAgent:
         self.language = None
         self.trace_id = None
         self.problem_name = 'NA'
+        self.latest_planning: Optional[PlanningOutput] = None
+        self.current_problem_spec: Optional[ProblemSpec] = None
+        self.current_problem_pair: Optional[ProblemPair] = None
+        self.current_feedback: Optional[FeedbackBundle] = None
+        self.verification_notes: str = ""
+        self.search_context: List[str] = []
+        self.validation_report: Optional[dict] = None
 
     def update_topic(self, query: str, problem_name: str, problem_description: str):
         self.query = query
         self.problem_name = problem_name
         self.problem_description = problem_description
+
+    def update_problem_context(
+        self,
+        planning_outputs: Optional[List[PlanningOutput]] = None,
+        report: Optional[ReportData] = None,
+        search_results: Optional[List[str]] = None,
+    ) -> None:
+        if planning_outputs:
+            self.latest_planning = planning_outputs[-1]
+            self.current_problem_spec = self.latest_planning.problem_spec
+        else:
+            self.latest_planning = None
+            self.current_problem_spec = None
+
+        if report:
+            self.current_problem_spec = report.problem_spec or self.current_problem_spec
+            self.current_problem_pair = report.problem_pair
+            self.current_feedback = report.feedback
+            self.verification_notes = report.verification_notes or ""
+        else:
+            self.current_problem_pair = None
+            self.current_feedback = None
+            self.verification_notes = ""
+        self.validation_report = None
+
+        if search_results is not None:
+            self.search_context = search_results
+        else:
+            self.search_context = []
+
+    def _format_problem_spec(self) -> str:
+        if self.current_problem_spec is not None:
+            return self.current_problem_spec.model_dump_json(indent=2, exclude_none=True)
+        return "N/A"
+
+    def _get_problem_statement(self) -> str:
+        if self.current_problem_pair is not None:
+            return self.current_problem_pair.problem_text
+        return "N/A"
+
+    def _get_solution_outline(self) -> str:
+        if self.current_problem_pair is not None:
+            return self.current_problem_pair.solution_text
+        return "N/A"
+
+    def _format_verification_notes(self) -> str:
+        return self.verification_notes or "N/A"
+
+    def _format_search_context(self) -> str:
+        if not self.search_context:
+            return "No recent search results."
+        return "\n---\n".join(self.search_context)
+
+    def _format_feedback(self) -> str:
+        if self.current_feedback is None:
+            return "No evaluator feedback yet."
+        suggestions = "\n".join(f"- {item}" for item in self.current_feedback.suggestions)
+        if suggestions:
+            return f"{self.current_feedback.message}\nSuggestions:\n{suggestions}"
+        return self.current_feedback.message
+
+    def _extract_validation_report(self, text: str) -> Optional[dict]:
+        marker = "VALIDATION_REPORT:"
+        idx = text.find(marker)
+        if idx == -1:
+            return None
+        json_segment = text[idx + len(marker):].strip()
+        if json_segment.startswith("```"):
+            json_segment = json_segment.strip("`").strip()
+        if "}" in json_segment:
+            json_segment = json_segment[: json_segment.rfind("}") + 1]
+        try:
+            import json
+
+            data = json.loads(json_segment)
+            return data
+        except Exception as exc:
+            logger.warning(f"Failed to parse validation report JSON: {exc}")
+            return None
 
     async def debug(
         self, input_code: str, error_message: str,
@@ -267,6 +321,10 @@ class CoderAgent:
                 modified_code=input_code,
                 idea=self.idea.model_dump(),
                 language=self.language,
+                problem_spec=self._format_problem_spec(),
+                problem_statement=self._get_problem_statement(),
+                solution_outline=self._get_solution_outline(),
+                evaluator_feedback=self._format_feedback(),
             )
             result = await Runner.run(self.debugger, debugger_input)
 
@@ -344,12 +402,24 @@ class CoderAgent:
                     )
                     
                 current_performance = format_metrics_safe(program.metrics)
+                problem_spec_json = self._format_problem_spec()
+                problem_statement = self._get_problem_statement()
+                solution_outline = self._get_solution_outline()
+                verification_notes = self._format_verification_notes()
+                search_context = self._format_search_context()
+                evaluator_feedback = self._format_feedback()
                 code_prompt = DIFF_CODE_TEMPLATE.format(
                     query=self.query,
                     problem=self.problem_description,
                     inspirations=inspiration_str,
                     current_idea=new_idea.description,
                     idea_evolution=idea_evolution,
+                    problem_spec=problem_spec_json,
+                    problem_statement=problem_statement,
+                    solution_outline=solution_outline,
+                    verification_notes=verification_notes,
+                    search_context=search_context,
+                    evaluator_feedback=evaluator_feedback,
                     pseudocode=new_idea.pseudocode,
                     implementation_notes=new_idea.implementation_notes,
                     language=self.language,
@@ -370,16 +440,26 @@ class CoderAgent:
 
                 result = await Runner.run(self.developer, input=code_input)
                 last_input_list = result.to_input_list()
-                diff_with_text = result.final_output_as(str)
-                program_code = apply_diff(program_code, diff_with_text)
-                
+                developer_output = result.final_output_as(str)
+
+                validation = self._extract_validation_report(developer_output)
+                if validation is not None:
+                    self.validation_report = validation
+                    all_diff_text.append(developer_output)
+                    all_program_code.append(program_code)
+                    logger.info("Developer supplied validation report. Ending developer loop.")
+                    break
+
+                # Fallback: treat output as diff for compatibility
+                program_code = apply_diff(program_code, developer_output)
+
                 try:
                     program_code = format_str(program_code, mode=Mode())
                 except Exception as e:
                     logger.warning(f"Error when formatting code: {e}")
                     pass
 
-                all_diff_text.append(diff_with_text)
+                all_diff_text.append(developer_output)
                 all_program_code.append(program_code)
 
             logger.info(f"Completed code development with {max_reflection_times} reflection rounds.")

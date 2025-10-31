@@ -1,10 +1,15 @@
+import json
 from pathlib import Path
 import os
 import logging
 import shutil
 
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
+
+from rapidfuzz.distance import Levenshtein
+
+from utils.datatypes import ProblemPair
 
 logger = logging.getLogger(__name__)
 
@@ -233,3 +238,87 @@ def apply_diff(original_code: str, diff_text: str) -> str:
                 break
 
     return "\n".join(result_lines)
+
+
+def normalize_math_text(text: str) -> str:
+    """
+    Normalize mathematical text for robust comparisons.
+
+    Args:
+        text: Raw math text.
+
+    Returns:
+        Normalized string with trimmed whitespace and lowercase letters.
+    """
+    return re.sub(r"\s+", " ", text.strip().lower())
+
+
+def compute_text_similarity(a: str, b: str) -> float:
+    """
+    Compute a similarity score between two strings using normalized Levenshtein distance.
+
+    Args:
+        a: First string.
+        b: Second string.
+
+    Returns:
+        Similarity in [0, 1], where 1 indicates identical text.
+    """
+    if not a or not b:
+        return 0.0
+    return 1.0 - Levenshtein.normalized_distance(a, b)
+
+
+def save_problem_pair(problem: ProblemPair, output_dir: str) -> str:
+    """
+    Persist a ProblemPair to disk as JSON.
+
+    Args:
+        problem: ProblemPair instance to serialize.
+        output_dir: Directory where the JSON file will be written.
+
+    Returns:
+        Path to the saved JSON file.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, f"{problem.id}.json")
+    with open(file_path, "w", encoding="utf-8") as fp:
+        json.dump(problem.model_dump(mode="json"), fp, ensure_ascii=False, indent=2)
+    logger.info(f"Saved problem pair to {file_path}")
+    return file_path
+
+
+def load_problem_pair(file_path: str) -> ProblemPair:
+    """
+    Load a ProblemPair JSON from disk.
+
+    Args:
+        file_path: Path to the JSON file.
+
+    Returns:
+        ProblemPair instance.
+    """
+    with open(file_path, "r", encoding="utf-8") as fp:
+        data = json.load(fp)
+    return ProblemPair(**data)
+
+
+def ensure_problem_id(problem: ProblemPair, prefix: Optional[str] = None) -> ProblemPair:
+    """
+    Ensure that a ProblemPair has a unique identifier.
+
+    Args:
+        problem: ProblemPair potentially lacking an ID.
+        prefix: Optional prefix for the identifier.
+
+    Returns:
+        ProblemPair with ID populated.
+    """
+    if problem.id:
+        return problem
+
+    base = prefix or "problem"
+    from uuid import uuid4
+
+    problem.id = f"{base}_{uuid4().hex[:12]}"
+    return problem

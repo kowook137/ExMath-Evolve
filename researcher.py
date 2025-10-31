@@ -16,6 +16,8 @@ from utils.datatypes import (
     WebSearchPlan,
     WebSearchItem,
     ReflectionPlan,
+    PlanningOutput,
+    ProblemSpec,
     reasoning_models,
 )
 from utils.format import format_metrics_safe
@@ -27,26 +29,45 @@ console = Console()
 INSPIRATION_TEMPLATE = """### Inspiration {inspiration_number}
 - Research Idea : {idea}
 - Performance: {performance}
+- Difficulty feedback: {difficulty_feedback}
 """
 
-PLANNER_INSTRUCTIONS = """You are a professor responsible for planning deep and effective research strategies. 
+PLANNER_INSTRUCTIONS = """You are the lead architect of a math-problem generation pipeline.
 
-You will be provided with the context of:
- - a research problem based on an initial research question
- - a starting research idea, possibly with a history showing how idea evolves through previous attempt
- - inspirations from earlier attempts
+You will receive:
+ - A target topic and history of previous problem-generation attempts
+ - Inspirations from earlier problems (with metrics indicating whether LLMs solved them)
+ - Feedback about which tricks are overused or too easy
 
-Your task is to develop search queries that identify directions for researchers to advance the idea in a transformative way. 
-Rather than combining existing inspirations in small increments, the queries should guide researchers toward substantial evolutions. 
-Because other researchers will rely on this plan, it must emphasize major, novel approaches instead of minor refinements.
+Your job is to design how the next hard problem should be constructed. Decide:
+ - Which mathematical areas, subtopics, or theorems should be fused
+ - Whether to remix existing problems or engineer a new scaffold from scratch
+ - What pitfalls, invariants, or constraints must be embedded so rote templates fail
+ - Any explicit conditions on the final statement or solution (proof style, integer-only, bounds, etc.)
 
-You will also be told whether the research progress is early or mature:
-- If the progress is early, focus on ideas that are feasible and practical, and can grow later and have great future potential.
-- If the progress is mature, focus on bold, high-impact shifts that challenge the current approach.
+Output 5–10 search queries for the Searcher. For each query, add a short note stating:
+ - Which theorem, lemma, or exemplar problem it should retrieve (graduate/advanced undergraduate level)
+ - How the result will validate or stress-test the proposed construction
+ - What parameters or edge cases must be checked before committing to the design
 
-Your plan should follow two steps:
-1. Formulate 5 to 10 precise and diverse search queries. Make sure the queries are diverse—cover different perspectives, challenge untested assumptions, and explore alternative methods. 
-2. For each query, include a short note explaining why you chose it and what you hope it will reveal.
+Return valid JSON with the following structure:
+{
+  "problem_spec": {
+    "topic": "...",
+    "subtopics": [...],
+    "objectives": [...],
+    "difficulty_target": "...",
+    "required_theorems": [...],
+    "pitfalls": [...],
+    "constraints": [...]
+  },
+  "search_plan": {
+    "searches": [
+      {"reason": "...", "query": "..."},
+      ...
+    ]
+  }
+}
 """
 
 REFLECTION_INSTRUCTIONS = """
@@ -60,57 +81,52 @@ You are an expert research assistant. You will receive a research report (in Mar
 """
 
 SEARCH_INSTRUCTIONS = (
-    "You are a research assistant. Given a search term, you search the web for that term and "
-    "produce a concise summary of the results. The summary must be 2-3 paragraphs and less than 300 "
-    "words. Capture the main points. Write succinctly, no need to have complete sentences or good "
-    "grammar. This will be consumed by someone synthesizing a report for a new idea, so its vital you capture the "
-    "essence and ignore any fluff. Do not include any additional commentary other than the summary "
-    "itself."
+    "You are an expert mathematical librarian. Given a search term from the planner, locate graduate- "
+    "or research-level references (textbook chapters, competition archives, arXiv papers) describing "
+    "advanced problems or theorems that match the request. Summarise in 2-3 concise paragraphs (<=300 "
+    "words) the key statements, hypotheses, typical proof strategies, tricky parameter regimes, and known "
+    "variants. Emphasise subtle constraints or edge cases that could be woven into a new problem. "
+    "Avoid narrative fluff—deliver dense, technically precise summaries the writer can rely on."
 )
 
-WRITER_INSTRUCTIONS = """You are a senior researcher responsible for proposing new ideas to address a defined research problem. You will receive:
-- The research problem, including its evaluation metric and available data
-- A starting research idea, possibly with its evolution history
-- Inspirations from earlier attempts
-- A list of related online search results
-- A research progress score (0-100%) indicating how far the idea has advanced
+WRITER_INSTRUCTIONS = """You are the lead author crafting a rigorous mathematics problem and its official solution. You will receive:
+- The planner’s blueprint describing required topics, theorems, and pitfalls
+- Searcher summaries of advanced references and exemplar problems
+- Inspirations from prior iterations plus any feedback about LLM difficulty
 
-Your goal is to identify future research directions that address the target problem, using the starting point, prior attempts, and related works. You should analyze existing methods, identify connections, and propose practical algorithms that can be implemented with the available data.
+Deliver a complete Problem–Solution pair suitable for an LLM-resistance benchmark.
 
-Follow this structure to think and write:
+1. **Frame the objective**
+   - Summarise the targeted theorems, invariants, and constraints that must appear.
+   - Note prohibited shortcuts or degenerate parameter choices the solver must not exploit.
 
-1. **Extract insights**  
-   Identify 3-5 scientific insights from the starting point and 3-5 from related works. For each insight, explain in 2-3 sentences how it relates to the target problem.
+2. **Draft the problem statement**
+   - Use precise mathematical language with explicit assumptions.
+   - Incorporate the mandated twists so the task resists rote template application.
+   - Ensure the question culminates in a verifiable answer (numeric, algebraic, proof statement).
 
-2. **Organize research directions**  
-   Group the insights into 3-5 coherent directions (for example, learning objectives, model classes, or optimization methods).
+3. **Write the solution**
+   - Give a step-by-step derivation referencing the required theorems.
+   - Justify each inference and explain why alternate naive approaches fail.
+   - Present the final answer in canonical form and restate the key conclusion.
 
-3. **Build a structured framework**  
-   Create a conceptual map (such as a taxonomy, grid, or matrix) that unifies existing methods, reveals patterns, and highlights gaps.
+4. **Verification guidance**
+   - Describe how to confirm correctness (symbolic substitution, boundary checks, counterexample search).
+   - Highlight edge cases the automated verifier must test.
 
-4. **Generate and evaluate ideas**  
-   - First, propose 3-10 algorithmic ideas of varying originality and complexity. Each idea should be:
-     - As simple, minimal, and atomic as possible but not trivial  
-     - Include brief pseudocode or logical steps where helpful.  
-     - Include references to the related works.
-   - For each idea, critically assess as a senior researcher with one positive and one negative reason:
-     - Originality (0-10): Is the idea new? Is the idea a novel combination of well-known techniques? Is it clearly different from previous contributions?
-     - Future Potential (0-10): Will others build on these ideas? Does this idea solve a hard problem more effectively than prior work? Does it point to a new research direction?
-     - Code Difficulty (0-10): How complex is the implementation? How much code is required? How much time is required to implement?
-   - Then, select the single best idea from that list for detailed reporting, based on the research progress score:
-     - If progress is relatively early, prioritize feasible, easy-to-implement ideas with long-term promise.
-     - If progress is relatively mature, prioritize seminal ideas with high-impacts for the next-generation research
-     - Otherwise, balance ambition and implementation feasibility
+Keep the exposition concise but rigorous. The downstream developer will convert your description into executable validation code, so favour clear structure and explicit reasoning over prose flourishes.
 
-5. **Write the report in Markdown**  
-   For the selected idea, include:
-   - A synthesis of insights and proposed directions  
-   - The structured framework of existing methods and the new algorithm  
-   - A list of new ideas with their assessment scores
-   - Detailed description of the chosen/best idea, including rationale, pseudocode, and implementation notes
-
-The report must be focused, technically accurate. Being concise with 200-500 words without trivial and redundant information.
-Support all claims with evidence and references, and remain tightly aligned with the target problem.
+Return valid JSON with fields:
+{
+  "markdown_report": "...",
+  "idea": {...},
+  "related_work": [...],
+  "problem_spec": {...},
+  "theorem_refs": [...],
+  "problem_pair": {...},
+  "verification_notes": "...",
+  "feedback": {...}
+}
 """
 
 
@@ -132,6 +148,9 @@ USER_TEMPLATE = """
 
 ## Previous Inspirations
 {inspirations}
+
+## Latest Evaluation Feedback
+{evaluation_feedback}
 """
 
 PAPER_READER_INSTRUCTIONS = """
@@ -167,7 +186,7 @@ class ResearcherAgent:
             name="Planner Agent",
             instructions=PLANNER_INSTRUCTIONS,
             model=planner,
-            output_type=WebSearchPlan,
+            output_type=PlanningOutput,
             model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if planner in reasoning_models else ModelSettings(),
         )
         self.reflection_agent = Agent(
@@ -227,7 +246,7 @@ class ResearcherAgent:
         trace_id: str = None,
         max_reflection_times: int = 1,
         max_generations: int = 10,
-    ) -> tuple[str, list, list, str]:
+    ) -> tuple[list[PlanningOutput], list[list[str]], list[ReportData]]:
         """
         Execute the research process from planning to report generation.
 
@@ -238,7 +257,9 @@ class ResearcherAgent:
             trace_id: Optional trace identifier for logging
 
         Returns:
-            Tuple containing report, related work, new ideas, and structured framework
+            planning_outputs: List of planner blueprints paired with search plans
+            search_results: Lists of summaries retrieved by the searcher for each cycle
+            reports: Writer outputs containing the drafted problem, solution, and metadata
         """
         idea_evolution = program.evolution_history
         evolution_progress = (
@@ -255,13 +276,49 @@ class ResearcherAgent:
         inspiration_str = ""
         for idx in range(len(inspirations)):
             performance_str = format_metrics_safe(inspirations[idx].metrics)
+            metadata = inspirations[idx].metadata or {}
+            diff_meta = metadata.get("evaluation_feedback") or {}
+            difficulty_feedback = diff_meta.get("message") or "N/A"
+            validation_meta = metadata.get("developer_validation") or {}
+            if validation_meta:
+                summary = validation_meta.get("summary")
+                conf = validation_meta.get("confidence")
+                verdict = validation_meta.get("is_valid")
+                validation_line = f"Validation: summary={summary}, verdict={verdict}, confidence={conf}"
+                difficulty_feedback = f"{difficulty_feedback}\n{validation_line}"
             inspiration_str += INSPIRATION_TEMPLATE.format(
                 inspiration_number=idx,
                 idea=inspirations[idx].idea,
                 performance=performance_str,
+                difficulty_feedback=difficulty_feedback,
             )
         if inspiration_str == "":
             inspiration_str = "No prior inspirations."
+
+        evaluation_feedback = "No evaluation feedback recorded."
+        if program.metadata:
+            eval_meta = program.metadata.get("evaluation_feedback")
+            notes = program.metadata.get("verification_notes")
+            dev_validation = program.metadata.get("developer_validation")
+            parts = []
+            if eval_meta:
+                message = eval_meta.get("message")
+                suggestions = eval_meta.get("suggestions")
+                if message:
+                    parts.append(f"- Message: {message}")
+                if suggestions:
+                    parts.append(f"- Suggestions: {suggestions}")
+            if notes:
+                parts.append(f"- Verification notes: {notes}")
+            if dev_validation:
+                verdict = dev_validation.get("summary") or dev_validation.get("is_valid")
+                confidence = dev_validation.get("confidence")
+                parts.append(f"- Developer validation: {verdict} (confidence={confidence})")
+                issues = dev_validation.get("issues") or []
+                if issues:
+                    parts.append(f"- Issues noticed: {issues[:2]}")
+            if parts:
+                evaluation_feedback = "\n".join(parts)
 
         if trace_id is None:
             trace_id = gen_trace_id()
@@ -274,6 +331,7 @@ class ResearcherAgent:
             idea_evolution=idea_evolution,
             evolution_progress=evolution_progress,
             inspirations=inspiration_str,
+            evaluation_feedback=evaluation_feedback,
         )
 
         # console.print("[bold blue]User Input of the Researcher Agent[/bold blue]")
@@ -281,9 +339,10 @@ class ResearcherAgent:
         # console.print()
 
         last_input = None
-        all_search_plans = []
+        all_planning_outputs: list[PlanningOutput] = []
         all_search_results = []
         all_reports = []
+        current_problem_spec: ProblemSpec | None = None
         with trace(
             f"DeepEvolve_{self.problem_name}",
             metadata={"query": self.query},
@@ -294,8 +353,10 @@ class ResearcherAgent:
             for ref_idx in range(max_reflection_times + 1):
 
                 if ref_idx == 0 or last_input is None:
-                    search_plan = await self._plan_searches(user_input)
-                    all_search_plans.append(search_plan)
+                    planning_output = await self._plan_searches(user_input)
+                    all_planning_outputs.append(planning_output)
+                    current_problem_spec = planning_output.problem_spec
+                    search_plan = planning_output.search_plan
                 else:
                     reflection_result = await self._reflection(user_input, last_input)
                     if reflection_result.is_sufficient:
@@ -307,19 +368,22 @@ class ResearcherAgent:
                         search_plan = WebSearchPlan(
                             searches=reflection_result.follow_up_queries
                         )
-                        all_search_plans.append(search_plan)
+                        # 계획 재활용: 기존 problem_spec 유지
 
                 search_results = await self._perform_searches(search_plan)
                 all_search_results.append(search_results)
                 report_result, last_input = await self._write_report(
-                    user_input, search_results, last_input=last_input
+                    user_input,
+                    search_results,
+                    problem_spec=current_problem_spec,
+                    last_input=last_input,
                 )
                 all_reports.append(report_result)
 
         logger.info("Research completed successfully")
-        return all_search_plans, all_search_results, all_reports
+        return all_planning_outputs, all_search_results, all_reports
 
-    async def _plan_searches(self, user_input: str) -> WebSearchPlan:
+    async def _plan_searches(self, user_input: str) -> PlanningOutput:
         logger.info(f"Starting search planning for query: {self.query} ...")
 
         if self.search_time_bias:
@@ -331,10 +395,13 @@ class ResearcherAgent:
             user_input,
         )
 
+        planning_output = result.final_output_as(PlanningOutput)
         logger.info(
-            f"Completed search planning: {len(result.final_output.searches)} searches identified"
+            "Completed search planning: %d searches identified with blueprint %s",
+            len(planning_output.search_plan.searches),
+            planning_output.problem_spec.topic,
         )
-        return result.final_output_as(WebSearchPlan)
+        return planning_output
 
     async def _reflection(self, user_input: str, last_input: list) -> WebSearchPlan:
         new_content = f"""
@@ -394,11 +461,21 @@ class ResearcherAgent:
             return None
 
     async def _write_report(
-        self, user_input: str, search_results: list[str], last_input: list = None
+        self,
+        user_input: str,
+        search_results: list[str],
+        problem_spec: ProblemSpec | None = None,
+        last_input: list = None,
     ) -> ReportData:
         logger.info("Starting report writing ...")
 
         summaries_block = "\n\n---\n\n".join(search_results)
+        spec_json = ""
+        if problem_spec is not None:
+            spec_json = problem_spec.model_dump_json(
+                indent=2,
+                exclude_none=True,
+            )
 
         if last_input is not None:
             new_content = f"""
@@ -407,6 +484,7 @@ class ResearcherAgent:
 
             and more search results on these reflection points:
             {summaries_block}
+            {spec_json if spec_json else ""}
             
             You can revise the current idea, add new ones, or select a different top idea.
             Important: Edit only within the existing report. Keep its full structure and format unchanged.
@@ -415,7 +493,9 @@ class ResearcherAgent:
             """
             user_input = last_input + [{"content": new_content, "role": "user"}]
         else:
-            user_input += f"\n\n ## Search results\n{summaries_block}"
+            if spec_json:
+                user_input += f"\n\n## Planner Blueprint\n{spec_json}"
+            user_input += f"\n\n## Search results\n{summaries_block}"
 
         result = await Runner.run(
             self.writer_agent,

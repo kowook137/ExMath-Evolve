@@ -233,7 +233,7 @@ class DeepEvolve:
 
             # step 2: deep research
             self.console.print(f"[yellow]Step 2: Running deep research...[/yellow]")
-            research_plans, search_results, research_reports = (
+            planning_outputs, search_results, research_reports = (
                 await self.researcher.run(
                     parent,
                     inspirations,
@@ -246,8 +246,8 @@ class DeepEvolve:
             new_idea = research_report.idea
 
             logger.info(f'-------------------------------- Iteration {i+1} Deep Research Outcome All START --------------------------------')            
-            logger.info(f"Research plans ({len(research_plans)} plan(s)):")
-            for idx, plan in enumerate(research_plans):
+            logger.info(f"Research plans ({len(planning_outputs)} plan(s)):")
+            for idx, plan in enumerate(planning_outputs):
                 logger.info(f"  Plan {idx+1}: {plan.model_dump_json(indent=2)}")            
             logger.info(f"Research reports ({len(research_reports)} report(s)):")
             for idx, report in enumerate(research_reports):
@@ -257,6 +257,14 @@ class DeepEvolve:
 
             # step 3: coding
             self.console.print(f"[yellow]Step 3: Running algorithm coding...[/yellow]")
+            try:
+                self.coder.update_problem_context(
+                    planning_outputs=planning_outputs,
+                    report=research_report,
+                    search_results=search_results[-1] if search_results else None,
+                )
+            except Exception as context_error:
+                logger.warning(f"Failed to update coder context: {context_error}")
             all_diff_text, all_program_code = await self.coder.run(
                 new_idea,
                 parent,
@@ -297,12 +305,104 @@ class DeepEvolve:
 
             child_code = all_program_code[-1]
             child_id = str(uuid.uuid4())
-            
-            # step 4: evaluation
-            self.console.print(f"[yellow]Step 4: Running evaluation...[/yellow]")
-            child_metrics, child_code = await self.problem.evaluate(
-                child_code, child_id, is_initial=False
-            )
+            developer_validation = self.coder.validation_report
+            developer_valid = None
+            developer_confidence = None
+            if developer_validation is not None:
+                try:
+                    developer_valid = 1.0 if developer_validation.get("is_valid") else 0.0
+                except Exception:
+                    developer_valid = 0.0
+                try:
+                    developer_confidence = float(developer_validation.get("confidence", 0.0) or 0.0)
+                except Exception:
+                    developer_confidence = None
+
+            should_run_evaluation = True
+            if developer_validation is not None and not developer_validation.get("is_valid"):
+                should_run_evaluation = False
+
+            if should_run_evaluation:
+                # step 4: evaluation
+                self.console.print(f"[yellow]Step 4: Running evaluation...[/yellow]")
+                child_metrics, child_code = await self.problem.evaluate(
+                    child_code, child_id, is_initial=False
+                )
+            else:
+                self.console.print(
+                    f"[yellow]Step 4 skipped: developer marked problem invalid. Using feedback for revision.[/yellow]"
+                )
+                child_metrics = {
+                    "developer_valid": developer_valid if developer_valid is not None else 0.0,
+                    "developer_confidence": developer_confidence or 0.0,
+                    "combined_score": 0.0,
+                    "valid": 0.0,
+                    "evaluation_skipped": 1.0,
+                }
+                if developer_validation:
+                    child_metrics["difficulty_message"] = (
+                        "LLM evaluation skipped because developer found the solution invalid."
+                    )
+                    if developer_validation.get("suggestions"):
+                        child_metrics["difficulty_suggestions"] = "\n".join(
+                            developer_validation.get("suggestions")
+                        )
+                    if developer_validation.get("issues"):
+                        child_metrics["verification_notes"] = "\n".join(
+                            developer_validation.get("issues")
+                        )
+
+            if developer_valid is not None and "developer_valid" not in child_metrics:
+                child_metrics["developer_valid"] = developer_valid
+            if developer_confidence is not None and "developer_confidence" not in child_metrics:
+                child_metrics["developer_confidence"] = developer_confidence
+
+            program_metadata = {
+                "parent_metrics": parent.metrics,
+            }
+            if planning_outputs:
+                try:
+                    program_metadata["problem_spec"] = planning_outputs[-1].problem_spec.model_dump(
+                        mode="json", exclude_none=True
+                    )
+                except Exception as spec_err:
+                    logger.warning(f"Failed to serialize problem spec: {spec_err}")
+            if research_report.problem_pair:
+                try:
+                    program_metadata["problem_pair"] = research_report.problem_pair.model_dump(
+                        mode="json", exclude_none=True
+                    )
+                except Exception as pair_err:
+                    logger.warning(f"Failed to serialize problem pair: {pair_err}")
+            if research_report.theorem_refs:
+                program_metadata["theorem_refs"] = [
+                    ref.model_dump(mode="json", exclude_none=True)
+                    for ref in research_report.theorem_refs
+                ]
+            if research_report.feedback:
+                program_metadata["feedback"] = research_report.feedback.model_dump(
+                    mode="json", exclude_none=True
+                )
+            if developer_validation:
+                try:
+                    program_metadata["developer_validation"] = developer_validation
+                    if "developer_valid" not in child_metrics and developer_valid is not None:
+                        child_metrics["developer_valid"] = developer_valid
+                    if "developer_confidence" not in child_metrics and developer_confidence is not None:
+                        child_metrics["developer_confidence"] = developer_confidence
+                    suggestions = developer_validation.get("suggestions") or []
+                    if suggestions:
+                        program_metadata["developer_suggestions"] = suggestions
+                except Exception as validation_err:
+                    logger.warning(f"Failed to attach developer validation report: {validation_err}")
+
+            if "difficulty_message" in child_metrics or "difficulty_suggestions" in child_metrics:
+                program_metadata["evaluation_feedback"] = {
+                    "message": child_metrics.get("difficulty_message"),
+                    "suggestions": child_metrics.get("difficulty_suggestions"),
+                }
+            if "verification_notes" in child_metrics:
+                program_metadata["verification_notes"] = child_metrics.get("verification_notes")
 
             child_program = Program(
                 id=child_id,
@@ -314,10 +414,10 @@ class DeepEvolve:
                 iteration_found=i + 1,
                 evolution_history=parent.evolution_history + [new_idea],
                 report=research_report.markdown_report,
-                metadata={
-                    "parent_metrics": parent.metrics,
-                },
+                metadata=program_metadata,
             )
+
+            self.coder.validation_report = None
 
             # Add to database
             self.console.print(f"[yellow]After evaluation, updating database...[/yellow]")
