@@ -43,6 +43,12 @@ class DeepEvolve:
         self._setup_logging()
         self.console = Console()
 
+        # Ensure generator can find latest research artefacts during temp-dir evaluation
+        try:
+            os.environ["DEEPEVOLVE_RESEARCH_DIR"] = os.path.join(self.workspace, "research")
+        except Exception:
+            pass
+
         if os.path.exists(os.path.join(self.workspace, "info.json")):
             with open(os.path.join(self.workspace, "info.json"), "r", encoding="utf-8") as f:
                 info = json.load(f)
@@ -254,6 +260,29 @@ class DeepEvolve:
                 logger.info(f"  Report {idx+1}: {report.markdown_report}")
             logger.info(f'-------------------------------- Iteration {i+1} Deep Research Outcome All END --------------------------------')
             logger.info(f"The new idea in iteration {i+1}:\n{new_idea.model_dump_json(indent=2)}")
+
+            # Persist latest research artefacts for generator to consume
+            try:
+                research_dir = os.path.join(self.workspace, "research")
+                os.makedirs(research_dir, exist_ok=True)
+                # Save latest report
+                with open(os.path.join(research_dir, "latest_report.json"), "w", encoding="utf-8") as f:
+                    json.dump(research_report.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                # Save latest problem spec (if any)
+                if research_report.problem_spec is not None:
+                    with open(os.path.join(research_dir, "latest_spec.json"), "w", encoding="utf-8") as f:
+                        json.dump(research_report.problem_spec.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                # Save latest problem pair (if any)
+                if research_report.problem_pair is not None:
+                    with open(os.path.join(research_dir, "latest_problem.json"), "w", encoding="utf-8") as f:
+                        json.dump(research_report.problem_pair.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                # Save theorem references (if any)
+                if research_report.theorem_refs:
+                    with open(os.path.join(research_dir, "latest_theorems.json"), "w", encoding="utf-8") as f:
+                        json.dump([t.model_dump(mode="json", exclude_none=True) for t in research_report.theorem_refs], f, ensure_ascii=False, indent=2)
+                logger.info("Persisted latest research artefacts to workspace/research for generator consumption")
+            except Exception as persist_err:
+                logger.warning(f"Failed to persist latest research artefacts: {persist_err}")
 
             # step 3: coding
             self.console.print(f"[yellow]Step 3: Running algorithm coding...[/yellow]")

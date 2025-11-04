@@ -1,0 +1,86 @@
+{
+  "id": "CRT-Irred-Rootless-35",
+  "problem_text": "Let N = 35 = 5 × 7. Let f(x) = x^4 + 2 ∈ ℤ[x]. Define S as the set of all integers a modulo 35 such that:\n(i) f(a) ≡ 0 mod 35;\n(ii) f(x) is irreducible modulo both 5 and 7;\n(iii) a is a unit modulo 35 (i.e., gcd(a,35) = 1).\nHow many elements are in S? Compute |S| explicitly.\n- (Note: Problem format and constraints are chosen to prevent shortcut learning, support dynamic/instance-based generation, and require explicit modular and irreducibility reasoning. Recommended pipeline: check for dataset overlap, randomize test instances, and use symbolic verification.)",
+  "solution_text": "By the Chinese Remainder Theorem (CRT), a solution a mod 35 to f(a) ≡ 0 mod 35 requires f(a) ≡ 0 mod 5 and f(a) ≡ 0 mod 7. For f(x) = x^4+2:\n- Over F_5, f(x) = x^4+2. The fourth powers in F_5 are always 1, so x^4+2 ≠ 0 for any x mod 5.\n- Similarly, in F_7, f(x) is irreducible: for all x mod 7, x^4+2 ≠ 0. Thus f(x) has no modular root modulo either prime.\nConsequently, f(a) ≡ 0 mod 35 has no solution among all a (including the units modulo 35). All constraints are checked explicitly by enumerating residues, verifying rootlessness, and confirming CRT implications. For dynamic verification or adversarial evaluation, this process can be repeated with randomized N and f(x) for each new problem instance.\n\nFinal answer: |S| = 0.",
+  "tags": [
+    "CRT",
+    "irreducibility",
+    "units_mod_n",
+    "composite_modulus",
+    "finite_fields",
+    "adversarial_design",
+    "dynamic-benchmarking",
+    "overlap-check"
+  ],
+  "prerequisites": [
+    "Finite field arithmetic",
+    "Polynomial irreducibility",
+    "CRT",
+    "Basic group structure"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem",
+      "statement": "If n = p*q with (p,q)=1, then the system x ≡ a mod p, x ≡ b mod q has a unique solution mod n for any integers a,b.",
+      "source": "Any basic algebra or number theory text.",
+      "notes": "Used to link solutions mod p and q to solutions mod n."
+    },
+    {
+      "name": "Gauss's lemma for irreducible polynomials",
+      "statement": "A primitive polynomial over Z is irreducible in Q[x] iff it is irreducible in Z[x]. Over F_p, a polynomial with no roots (and not factorable) is irreducible.",
+      "source": "Standard algebra texts; see Wikipedia.",
+      "notes": "Allows checking irreducibility by looking for roots and factor structure."
+    },
+    {
+      "name": "No root implies no solution for polynomial congruence",
+      "statement": "If f(x) is irreducible over F_p, it cannot have a root mod p.",
+      "source": "Intro to Modern Algebra.",
+      "notes": "Used for stepwise exclusion in CRT solution counting."
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 9,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.80s, total tokens 1358.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.80s, total tokens 1358.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 25.59939002408646,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 15.38596383202821,
+        "status": "ok",
+        "tokens_used": 679,
+        "score": 0.22829861111111116,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.212698488961905,
+        "status": "ok",
+        "tokens_used": 679,
+        "score": 0.22801024765157984,
+        "solved": false
+      }
+    ]
+  }
+}

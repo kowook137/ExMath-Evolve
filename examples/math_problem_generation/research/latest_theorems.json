@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Chinese Remainder Theorem",
+    "statement": "Let n1,...,nk be pairwise coprime integers. Then the system x ≡ ai (mod ni) has a unique solution mod N = n1...nk.",
+    "source": "Standard algebra/number theory texts",
+    "notes": "Supports explicit instance generator code for CRT solution steps and feasibility verification."
+  },
+  {
+    "name": "Structure theorem for multiplicative groups mod p^k",
+    "statement": "For odd prime p and k ≥ 1, the group (Z/p^k Z)^× is cyclic of order φ(p^k) = p^k - p^{k-1}.",
+    "source": "Standard number theory texts",
+    "notes": "Instance feasibility pre-filtering script uses group structure to confirm all element orders required in each problem instance truly exist."
+  },
+  {
+    "name": "Minimal polynomial for a + sqrt(q)",
+    "statement": "Let a ∈ Z, q > 0 not a perfect square. Then the minimal polynomial of a + sqrt(q) over Q is x^2 - 2a x + (a^2 - q).",
+    "source": "Any algebra textbook (field extensions)"
+  },
+  {
+    "name": "Irreducibility via discriminant (and algorithm for higher degree)",
+    "statement": "Quadratic x^2 + bx + c ∈ Z[x] is irreducible over Q iff discriminant D = b^2 - 4c is not a perfect square. For higher degree or factorization questions, use Berlekamp–Zassenhaus, Newton polygon, or computational algebra, all scriptable and code-supported.",
+    "source": "Standard algebra texts; CAS documentation; Berlekamp’s original paper",
+    "notes": "Pipeline provides hooks for invoking required algorithm per SMART/MCP-Bench scoring and verification."
+  }
+]

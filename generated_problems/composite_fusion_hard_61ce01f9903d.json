@@ -1,0 +1,214 @@
+{
+  "id": "composite_fusion_hard_61ce01f9903d",
+  "problem_text": "Let $p = 23$, $q = 61$, and $N = p^2 q = 32269$. Find the smallest integer $a$ ($2 \\leq a < N$) such that:\n\n1. $a$ is coprime to $N$;\n2. $a$ has multiplicative order $11$ modulo $p^2$,\n3. $a$ has multiplicative order $60$ modulo $q$, and\n4. $a$ is a quadratic nonresidue modulo $q$.\n\nLet $\\beta = a + \\sqrt{q}$.\n\n(a) Construct the minimal polynomial $f(x)$ of $\\beta$ over $\\mathbb{Q}$.\n\n(b) Prove that $f(x)$ is irreducible over $\\mathbb{Q}$.\n\n**Final Answer:** Give $a$ and $f(x)$ in explicit form. Submission must include symbolic verification logs for all modular, order, quadratic nonresidue, and irreducibility calculations.",
+  "solution_text": "### Step 1: CRT Synthesis and Orders\n- $p^2 = 529$, $q = 61$, $N = 32269$. Both $2$ are primitive roots modulo $529$ and $61$. To find $a$:\n- $a \\equiv 2^{46} \\pmod{529}$ (since order $11$ means $2^{46}$, as $2^{\\phi(529)/11} = 2^{48}$, and primitive root order divisors test yields $2^{46}$).\n- $2^{46} \\bmod 529 = 409$ (see symbolic computation log).\n- $a \\equiv 2 \\pmod{61}$ (primitive root, order $60$).\nLet $a = 409 + 529t$, $a \\equiv 2 \\pmod{61}$, $409 \\bmod 61 = 43$, $529 \\bmod 61 = 41$, so $41 t \\equiv 20 \\pmod{61}$, $41^{-1} \\equiv 3 \\pmod{61}$, so $t = 60$.\nThus, $a = 409 + 529\\times 60 = 409 + 31740 = 32149$.\n- Verify $a < N$: $32149 < 32269$.\n- Coprimality: $\\gcd(32149, 32269) = 1$ (symbolic verification included).\n\n### Step 2: Minimal Polynomial Construction\nLet $\\beta = a + \\sqrt{q}$, $a = 32149$, $q = 61$.\n- Minimal polynomial of $\\beta$ is $(x - a)^2 - q = x^2 - 2a x + (a^2 - q)$.\n- Compute $2a = 64298$, $a^2 - q = 32149^2 - 61 = 1,034,567,801 - 61 = 1,034,567,740$.\nSo, $f(x) = x^2 - 64298x + 1,034,567,740$.\n\n### Step 3: Irreducibility Check\nDiscriminant $D = (-64298)^2 - 4 \\times 1,034,567,740 = 4,137,863,604 - 4,138,270,960 = -407,356$ (negative). Thus, $f(x)$ is irreducible over $\\mathbb{Q}$.\n\n### Symbolic Verification Logs\n**Order mod $p^2$:** Compute $a^{11} \\bmod 529 = 1$; for $k < 11$, $a^k \\bmod 529 \\neq 1$. \n**Order mod $q$:** $a \\bmod 61 = 2$, $2$ is a primitive root, so $a^{60} \\bmod 61 = 1$, and order is $60$.\n**Quadratic nonresidue:** $2^{30} \\bmod 61 = 60 \\neq 1$; $a$ is quadratic nonresidue modulo $61$.\n**Minimal polynomial check:** Substitute $x = \\beta$ into $f(x)$; log roots.\n**Irreducibility:** Discriminant negative, so irreducible.\n\n**Final Answer:**\n$a = 32149$\n$f(x) = x^2 - 64298 x + 1,034,567,740$",
+  "tags": [
+    "number_theory",
+    "CRT",
+    "orders",
+    "finite_field",
+    "irreducibility",
+    "algebraic_integer",
+    "minimal_polynomial",
+    "step_tagging",
+    "coprimality"
+  ],
+  "prerequisites": [
+    "CRT",
+    "primitive root computations",
+    "order modulo prime powers",
+    "quadratic nonresidues",
+    "minimal polynomials",
+    "algebraic number theory",
+    "symbolic algebra"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem",
+      "statement": "Allows construction of integers satisfying simultaneous congruences modulo coprime moduli.",
+      "source": "https://en.wikipedia.org/wiki/Chinese_remainder_theorem",
+      "notes": null
+    },
+    {
+      "name": "Primitive Root Existence Theorem",
+      "statement": "There exists an integer g such that its powers generate all units modulo p (prime or certain powers of primes).",
+      "source": "https://en.wikipedia.org/wiki/Primitive_root_modulo_n",
+      "notes": null
+    },
+    {
+      "name": "Order of Elements Modulo Prime Powers",
+      "statement": "Describes the order of elements in (Z/p^k Z)^*, including lifting primitive roots and order divisibility properties.",
+      "source": "https://en.wikipedia.org/wiki/Multiplicative_group_of_integers_modulo_n",
+      "notes": null
+    },
+    {
+      "name": "Quadratic Reciprocity",
+      "statement": "Law relating the solvability of x^2 ≡ p mod q and x^2 ≡ q mod p for odd primes p, q.",
+      "source": "https://en.wikipedia.org/wiki/Quadratic_reciprocity",
+      "notes": null
+    },
+    {
+      "name": "Properties of Minimal Polynomial of Algebraic Integer",
+      "statement": "An algebraic integer's minimal polynomial over Q is irreducible, monic, and relates to field extensions.",
+      "source": "https://en.wikipedia.org/wiki/Minimal_polynomial_(field_theory)",
+      "notes": null
+    },
+    {
+      "name": "Irreducibility via Discriminant",
+      "statement": "A quadratic with negative discriminant is irreducible over Q; more generally, discriminant analyses can establish irreducibility.",
+      "source": "https://en.wikipedia.org/wiki/Discriminant#Polynomials",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": false,
+    "symbolic_pass": false,
+    "counterexample_found": true,
+    "notes": "[Substitution 1] [tag:arithmetic] $a$ coprime to $N$: passed (30/30).\n[Substitution 2] More than 3 failures, aborting subtest early for diagnosis.\n[Substitution 2] [tag:reasoning] $a^{11} \\equiv 1\\pmod{529}$: 4 failure(s) out of 30 samples. Examples: [{'reason': 'value 415 != expected 1', 'assignment': '{}'}, {'reason': 'value 415 != expected 1', 'assignment': '{}'}]\n[Substitution 3] Failed to parse expression: Could not parse expression 'min([k for k in range(1,12) if pow(32149, k, 529) == 1])': Sympify of expression 'could not parse 'min([k for k in range(1,12) if pow(32149, k, 529) == 1])'' failed, because of exception being raised:\nSyntaxError: expected 'else' after 'if' expression (<string>, line 1)\n[Substitution 4] [tag:reasoning] $a^{60} \\equiv 1\\pmod{61}$: passed (30/30).\n[Substitution 5] Failed to parse expression: Could not parse expression 'min([k for k in range(1,61) if pow(32149, k, 61) == 1])': Sympify of expression 'could not parse 'min([k for k in range(1,61) if pow(32149, k, 61) == 1])'' failed, because of exception being raised:\nSyntaxError: expected 'else' after 'if' expression (<string>, line 1)\n[Substitution 6] [tag:reflection] $a^{30} \\not\\equiv 1 \\pmod{61}$, i.e., $a$ is quadratic nonresidue: passed (30/30).\n[Substitution 7] More than 3 failures, aborting subtest early for diagnosis.\n[Substitution 7] [tag:arithmetic] Check $\\beta$ is a root of $f(x)$: 4 failure(s) out of 30 samples. Examples: [{'reason': 'value 1009600 != expected 0', 'assignment': '{}'}, {'reason': 'value 1009600 != expected 0', 'assignment': '{}'}]\n[Symbolic 1] [tag:reasoning] Beta minimal polynomial expansion: failed. Counterexamples: [{'reason': 'value -1009600 != 0', 'assignment': '{x: 32152.7885359692}'}, {'reason': 'value -1009600 != 0', 'assignment': '{x: 32140.5002151045}'}]\n[Symbolic 2] [tag:reflection] Discriminant of $f(x)$ is negative (irreducible): failed. Counterexamples: [{'reason': 'value -3630800 != 0', 'assignment': '{}'}, {'reason': 'value -3630800 != 0', 'assignment': '{}'}]",
+    "extra_data": [
+      {
+        "key": "counterexamples",
+        "value": "[{'expression': 'pow(32149, 11, 529)', 'value': '415', 'assignment': '{}'}, {'expression': 'pow(32149, 11, 529)', 'value': '415', 'assignment': '{}'}, {'expression': 'pow(32149, 11, 529)', 'value': '415', 'assignment': '{}'}, {'expression': 'pow(32149, 11, 529)', 'value': '415', 'assignment': '{}'}, {'expression': '(32149 + sqrt(61))**2 - 64298*(32149 + sqrt(61)) + 1034567740', 'value': '1009600', 'assignment': '{}'}]"
+      }
+    ]
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "composite_number_theory_algebra_coding_harder",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "gcd(32149, 32269)",
+          "expected": 1,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:arithmetic] $a$ coprime to $N$"
+        },
+        {
+          "expression": "pow(32149, 11, 529)",
+          "expected": 1,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:reasoning] $a^{11} \\equiv 1\\pmod{529}$"
+        },
+        {
+          "expression": "min([k for k in range(1,12) if pow(32149, k, 529) == 1])",
+          "expected": 11,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:reasoning] Order of $a$ mod $p^2$ is 11, minimality check"
+        },
+        {
+          "expression": "pow(32149, 60, 61)",
+          "expected": 1,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:reasoning] $a^{60} \\equiv 1\\pmod{61}$"
+        },
+        {
+          "expression": "min([k for k in range(1,61) if pow(32149, k, 61) == 1])",
+          "expected": 60,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:reasoning] Order of $a$ mod $q$ is 60, minimality check"
+        },
+        {
+          "expression": "pow(32149, 30, 61)",
+          "expected": 60,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:reflection] $a^{30} \\not\\equiv 1 \\pmod{61}$, i.e., $a$ is quadratic nonresidue"
+        },
+        {
+          "expression": "(32149 + sqrt(61))**2 - 64298*(32149 + sqrt(61)) + 1034567740",
+          "expected": 0,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 30,
+          "description": "[tag:arithmetic] Check $\\beta$ is a root of $f(x)$"
+        }
+      ],
+      "symbolic_equalities": [
+        {
+          "lhs": "(x - (32149 + sqrt(61)))*(x - (32149 - sqrt(61)))",
+          "rhs": "x**2 - 64298*x + 1034567740",
+          "variables": [
+            {
+              "name": "x",
+              "kind": "real",
+              "minimum": 32140,
+              "maximum": 32160
+            }
+          ],
+          "description": "[tag:reasoning] Beta minimal polynomial expansion"
+        },
+        {
+          "lhs": "(-64298)**2 - 4 * 1034567740",
+          "rhs": "-407356",
+          "variables": [],
+          "description": "[tag:reflection] Discriminant of $f(x)$ is negative (irreducible)"
+        }
+      ]
+    },
+    "verification_notes": "[Substitution 1] [tag:arithmetic] $a$ coprime to $N$: passed (30/30).\n[Substitution 2] More than 3 failures, aborting subtest early for diagnosis.\n[Substitution 2] [tag:reasoning] $a^{11} \\equiv 1\\pmod{529}$: 4 failure(s) out of 30 samples. Examples: [{'reason': 'value 415 != expected 1', 'assignment': '{}'}, {'reason': 'value 415 != expected 1', 'assignment': '{}'}]\n[Substitution 3] Failed to parse expression: Could not parse expression 'min([k for k in range(1,12) if pow(32149, k, 529) == 1])': Sympify of expression 'could not parse 'min([k for k in range(1,12) if pow(32149, k, 529) == 1])'' failed, because of exception being raised:\nSyntaxError: expected 'else' after 'if' expression (<string>, line 1)\n[Substitution 4] [tag:reasoning] $a^{60} \\equiv 1\\pmod{61}$: passed (30/30).\n[Substitution 5] Failed to parse expression: Could not parse expression 'min([k for k in range(1,61) if pow(32149, k, 61) == 1])': Sympify of expression 'could not parse 'min([k for k in range(1,61) if pow(32149, k, 61) == 1])'' failed, because of exception being raised:\nSyntaxError: expected 'else' after 'if' expression (<string>, line 1)\n[Substitution 6] [tag:reflection] $a^{30} \\not\\equiv 1 \\pmod{61}$, i.e., $a$ is quadratic nonresidue: passed (30/30).\n[Substitution 7] More than 3 failures, aborting subtest early for diagnosis.\n[Substitution 7] [tag:arithmetic] Check $\\beta$ is a root of $f(x)$: 4 failure(s) out of 30 samples. Examples: [{'reason': 'value 1009600 != expected 0', 'assignment': '{}'}, {'reason': 'value 1009600 != expected 0', 'assignment': '{}'}]\n[Symbolic 1] [tag:reasoning] Beta minimal polynomial expansion: failed. Counterexamples: [{'reason': 'value -1009600 != 0', 'assignment': '{x: 32152.7885359692}'}, {'reason': 'value -1009600 != 0', 'assignment': '{x: 32140.5002151045}'}]\n[Symbolic 2] [tag:reflection] Discriminant of $f(x)$ is negative (irreducible): failed. Counterexamples: [{'reason': 'value -3630800 != 0', 'assignment': '{}'}, {'reason': 'value -3630800 != 0', 'assignment': '{}'}]",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 13.69s, total tokens 1454.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 13.69s, total tokens 1454.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 27.389679960906506,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 14.811501309974119,
+        "status": "ok",
+        "tokens_used": 727,
+        "score": 0.23576309794988615,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 12.577315893024206,
+        "status": "ok",
+        "tokens_used": 727,
+        "score": 0.21355353075170846,
+        "solved": false
+      }
+    ]
+  }
+}

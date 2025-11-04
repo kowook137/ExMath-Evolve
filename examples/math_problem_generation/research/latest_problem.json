@@ -1,0 +1,47 @@
+{
+  "id": "CRT-Orders-MinPoly-2299",
+  "problem_text": "Let p=11 and q=19. Let N=121*19=2299.\\n\\n(a) Find an integer a in [2, N-1] coprime to N such that\\n   (i) the order of a modulo 121 is exactly 10,\\n   (ii) the order of a modulo 19 is exactly 9.\\nWrite the minimal value of a ≥ 2 with these properties.\\n\\n(b) Set α = a + sqrt{19}. Let f(x) be the minimal polynomial of α over Q. Write f(x) in Z[x] in standard monic form.\\n\\n(c) Justify that f(x) is irreducible over Q. Specify the algorithm or test used.\\n\\n**Bonus:** What is the order of a modulo N?\\n\\nTags: Arithmetic, Reasoning, Reflection, CRT, order-mod-pk, minimal-polynomial, irreducibility, agent-benchmarking",
+  "solution_text": "**(a)** Let a ≡ 23 (mod 121), a ≡ 9 (mod 19); 121 and 19 are coprime, so by CRT:\\na = 23 + 121t ≡ 9 mod 19 ⇒ 121t ≡ (9-23) ≡ 5 mod 19 (since -14 ≡ 5 mod 19)\\n121 ≡ 7 mod 19, so 7t ≡ 5 mod 19 ⇒ t ≡ 5*11 ≡ 55 ≡ 17 mod 19.\\nThus t=17, so a = 23 + 121*17 = 23 + 2057 = 2080.\\nCheck gcd(2080,2299)=1, and that orders are minimal (can be implemented in code/CAS and logged for feedback-driven template refinement).\\n\\n**(b)** f(x) = x^2 - 2a x + (a^2 - 19) = x^2 - 4160 x + (2080^2 - 19) = x^2 - 4160x + 4326381.\\n\\n**(c)** Discriminant is (−4160)^2 − 4⋅4326381 = 17305600 − 17305524 = 76. Since 76 is not a perfect square, f(x) is irreducible over Q by the quadratic discriminant criterion. Higher degree: use Berlekamp–Zassenhaus, Newton polygon, or appropriate CAS code; log all steps and failures.\\n\\n**Bonus:** The order of a modulo N is lcm(10,9) = 90.\\n\\nTags: CRT, order-mod-pk, minimal-polynomial, irreducibility, algebraic-integer, agent-scoring, solution-tree",
+  "tags": [
+    "CRT",
+    "order-mod-pk",
+    "minimal-polynomial",
+    "irreducibility",
+    "algebraic-integer",
+    "agent-benchmarking",
+    "solution-tree"
+  ],
+  "prerequisites": [
+    "Group theory (cyclic group structure, order characterization, CRT glueing)",
+    "Parameter feasibility screening (CAS or custom code)",
+    "Minimal polynomial construction (field extensions)",
+    "Irreducibility tests (discriminant, Berlekamp–Zassenhaus, reduction algorithms)",
+    "Agent/solution-tree scoring frameworks (SMART, MCP-Bench, CheckEval tagging)"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem",
+      "statement": "Let n1,...,nk be pairwise coprime integers. Then the system x ≡ ai (mod ni) has a unique solution mod N = n1...nk.",
+      "source": "Standard algebra/number theory texts",
+      "notes": "Supports explicit instance generator code for CRT solution steps and feasibility verification."
+    },
+    {
+      "name": "Structure theorem for multiplicative groups mod p^k",
+      "statement": "For odd prime p and k ≥ 1, the group (Z/p^k Z)^× is cyclic of order φ(p^k) = p^k - p^{k-1}.",
+      "source": "Standard number theory texts",
+      "notes": "Instance feasibility pre-filtering script uses group structure to confirm all element orders required in each problem instance truly exist."
+    },
+    {
+      "name": "Minimal polynomial for a + sqrt(q)",
+      "statement": "Let a ∈ Z, q > 0 not a perfect square. Then the minimal polynomial of a + sqrt(q) over Q is x^2 - 2a x + (a^2 - q).",
+      "source": "Any algebra textbook (field extensions)"
+    },
+    {
+      "name": "Irreducibility via discriminant (and algorithm for higher degree)",
+      "statement": "Quadratic x^2 + bx + c ∈ Z[x] is irreducible over Q iff discriminant D = b^2 - 4c is not a perfect square. For higher degree or factorization questions, use Berlekamp–Zassenhaus, Newton polygon, or computational algebra, all scriptable and code-supported.",
+      "source": "Standard algebra texts; CAS documentation; Berlekamp’s original paper",
+      "notes": "Pipeline provides hooks for invoking required algorithm per SMART/MCP-Bench scoring and verification."
+    }
+  ],
+  "difficulty_estimate_author": 8
+}

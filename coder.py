@@ -11,7 +11,7 @@ from agents.model_settings import ModelSettings
 from black import format_str, Mode
 
 from database import Program
-from utils.code import apply_diff, parse_evolve_blocks
+from utils.code import apply_diff, parse_evolve_blocks, extract_diffs
 from utils.datatypes import (
     IdeaData,
     ProblemPair,
@@ -27,45 +27,33 @@ logger = logging.getLogger(__name__)
 
 console = Console()
 
-CODER_INSTRUCTIONS = """You are the developer responsible for verifying that a generated math problem and its solution are internally consistent.
+CODER_INSTRUCTIONS = """You are the code evolution developer. Your job is to IMPLEMENT the latest research idea into the codebase so that each iteration produces harder, properly verified problems.
 
 Inputs you receive:
-- Problem statement, solution draft, problem specification, prior evaluation feedback
+- Problem statement and solution draft (if provided), problem specification, inspirations and prior evaluation feedback, and the full concatenated code.
 
-Your job is to act as a mathematical reviewer:
-- Read the problem and the proposed solution carefully.
-- Decide whether the solution is mathematically correct.
-- Identify any gaps, incorrect steps, missing conditions, or ambiguous wording.
-- Propose concrete fixes if problems are found (e.g., adjust statement, strengthen conditions, repair proof).
+Your responsibilities:
+1) Translate the research idea/specification into concrete code changes that affect generation and/or verification (e.g., `examples/math_problem_generation/initial_code/generator.py`, `verification.py`, `deepevolve_interface.py`, or evaluation prompts in `llm_evaluator.py`).
+2) Ensure changes INCREASE difficulty over the previous iteration (e.g., stricter constraints, multi-part proofs, parameter ranges that avoid trivialities, cross-topic fusion) while maintaining a precise final answer and deterministic verification.
+3) Keep the evaluation interface intact: do not rename `deepevolve_interface()` or remove metrics.
+4) Prefer minimal, surgical edits that directly implement the idea. Avoid placeholder content.
 
-Guidelines:
-1. Think step-by-step. Explicitly verify each critical step of the solution.
-2. Check consistency between the statement, constraints, and derived answer.
-3. Watch for hidden assumptions, degenerate cases, or parameter choices that break the proof.
-4. If the solution is correct, confirm why it works and note any minor clarifications.
-5. If the solution is incorrect or incomplete, describe the first concrete issue and how to fix it.
-6. Output your result in the JSON format shown below. Do NOT return SEARCH/REPLACE diffs.
-
-Desired output (exactly):
+Output policy (MANDATORY):
+- Return one or more SEARCH/REPLACE diff blocks to patch the provided concatenated code. Use exactly this format:
 ```
-VALIDATION_REPORT:
-{
-  "is_valid": <true|false>,
-  "confidence": <float between 0 and 1>,
-  "summary": "<one sentence verdict>",
-  "issues": [
-    "<first concrete issue or 'none'>",
-    ...
-  ],
-  "suggestions": [
-    "<actionable fix or 'none'>",
-    ...
-  ],
-  "reasoning": "<multi-paragraph explanation of your analysis>"
-}
+<<<<<<< SEARCH
+<original code snippet to match>
+=======
+### >>> DEEPEVOLVE-BLOCK-START: <short title>
+<updated code>
+### <<< DEEPEVOLVE-BLOCK-END
+>>>>>>> REPLACE
 ```
+- Include at least ONE diff that changes generation/verification so the next evaluation reflects higher difficulty. If you need to add small helper functions, patch the appropriate file with a focused replacement.
 
-Keep fields `issues` and `suggestions` as arrays (may be empty). Use plain JSON (double quotes). Do not include additional commentary outside the JSON block.
+Notes:
+- If you think the solution draft has issues, briefly describe them, then STILL provide diffs that implement your fixes.
+- Do NOT output standalone JSON validations as your final answer; your output must be diffs.
 """
 
 DEBUGGER_INSTRUCTIONS = """You are the Evaluation Agent. Your job is to challenge the generated math problem with large language models and feed difficulty feedback back into the system.
@@ -135,7 +123,23 @@ Evaluator feedback:
 {evaluator_feedback}
 
 Task:
-Act as a mathematician. Determine whether the solution is fully correct for the given problem. If it fails, explain the first concrete mistake and how to fix it. Output ONLY the JSON schema described in your instructions (prefixed by `VALIDATION_REPORT:`). Do not propose code edits.
+Act as the code evolution developer. Provide SEARCH/REPLACE diffs that update the code to implement the current idea, making the generated problems harder while remaining verifiable and with precise final answers. Target files likely to change:
+- examples/math_problem_generation/initial_code/generator.py (synthesize harder multi-step problems, fuse topics, widen parameter ranges avoiding trivialities; update ProblemMetadata/VerificationTasks accordingly)
+- examples/math_problem_generation/initial_code/verification.py (add stronger symbolic/substitution checks; edge cases)
+- examples/math_problem_generation/initial_code/llm_evaluator.py (if needed, adjust prompts/settings but keep API calls safe)
+- examples/math_problem_generation/initial_code/deepevolve_interface.py (keep interface; may adjust output directory via env var)
+
+Constraints:
+- Keep `deepevolve_interface()` signature and metrics.
+- Ensure deterministic checks and bounded runtime.
+- Return ONLY the required diff blocks—no extra commentary.
+
+Current program (concatenated; use EXACT substrings for SEARCH blocks):
+```{language}
+{current_program}
+```
+
+Reminder: In each diff, the SEARCH section must match a contiguous region in the current program EXACTLY (including whitespace and indentation). Do not wrap the diff itself in backticks; output only raw diff blocks.
 """
 
 REFLECTION_CONTENT = """
@@ -444,14 +448,52 @@ class CoderAgent:
 
                 validation = self._extract_validation_report(developer_output)
                 if validation is not None:
+                    # Record validation, then request concrete diffs in the next round
                     self.validation_report = validation
-                    all_diff_text.append(developer_output)
-                    all_program_code.append(program_code)
-                    logger.info("Developer supplied validation report. Ending developer loop.")
-                    break
+                    logger.info("Developer supplied validation report. Requesting concrete diffs next.")
+                    # Augment prompt for next iteration
+                    last_input_list.append({
+                        "role": "user",
+                        "content": (
+                            "Based on your VALIDATION_REPORT above, now return SEARCH/REPLACE diffs that IMPLEMENT your fixes. "
+                            "Include at least one diff touching generator/verification to increase difficulty while keeping verification deterministic."
+                        ),
+                    })
+                    continue
 
-                # Fallback: treat output as diff for compatibility
-                program_code = apply_diff(program_code, developer_output)
+                diff_blocks = extract_diffs(developer_output)
+                if not diff_blocks:
+                    logger.warning(
+                        "Developer output lacked valid SEARCH/REPLACE diff blocks. Requesting correction."
+                    )
+                    last_input_list.append(
+                        {
+                            "role": "user",
+                            "content": (
+                                "Your previous response did not include a valid SEARCH/REPLACE diff. "
+                                "Please respond with one or more diff blocks using the exact format with '<<<<<<< SEARCH', '=======', '>>>>>>> REPLACE', and copy the current code verbatim into the SEARCH section."
+                            ),
+                        }
+                    )
+                    continue
+
+                prev_program_code = program_code
+                program_code_candidate = apply_diff(prev_program_code, developer_output)
+                if program_code_candidate == prev_program_code:
+                    logger.warning(
+                        "Developer diff did not apply due to search mismatch or conflict markers. Requesting correction."
+                    )
+                    last_input_list.append(
+                        {
+                            "role": "user",
+                            "content": (
+                                "The diff you provided could not be applied to the current code. "
+                                "Ensure the SEARCH block exactly matches the existing code and update only the necessary lines in the REPLACE block."
+                            ),
+                        }
+                    )
+                    continue
+                program_code = program_code_candidate
 
                 try:
                     program_code = format_str(program_code, mode=Mode())

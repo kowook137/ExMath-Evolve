@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, Callable, Optional, Tuple
 
@@ -66,6 +67,8 @@ class LLMEvaluator:
         best_score = 0.0
         best_response = ""
         tokens_used_total: Optional[int] = 0
+        attempt_logs: list[dict] = []
+        global_start = time.perf_counter()
 
         if self._client is None:
             attempts = 0
@@ -86,22 +89,49 @@ class LLMEvaluator:
 
         for attempt in range(1, self.max_attempts + 1):
             attempts = attempt
+            attempt_entry: dict[str, Any] = {"attempt": attempt}
+            attempt_start = time.perf_counter()
             response = self._invoke_model(problem.problem_text)
+            attempt_elapsed = time.perf_counter() - attempt_start
+            attempt_entry["elapsed_seconds"] = attempt_elapsed
 
             if response is None:
                 logger.warning("LLM call failed on attempt %d.", attempt)
+                attempt_entry["status"] = "error"
+                attempt_entry["error"] = "invocation_failed"
+                attempt_logs.append(attempt_entry)
                 continue
 
             best_response = response.text
-            tokens_used_total = (tokens_used_total or 0) + (response.total_tokens or 0)
+            tokens_this_attempt = response.total_tokens or 0
+            tokens_used_total = (tokens_used_total or 0) + tokens_this_attempt
             score = self._score_response(response.text, reference_norm)
             best_score = max(best_score, score)
+
+            attempt_entry.update(
+                {
+                    "status": "ok",
+                    "tokens_used": tokens_this_attempt,
+                    "score": score,
+                    "solved": score >= self.solve_threshold,
+                }
+            )
+            attempt_logs.append(attempt_entry)
 
             if score >= self.solve_threshold:
                 break
 
         llm_solved = best_score >= self.solve_threshold
-        feedback = self._build_feedback(problem, best_score, llm_solved, best_response)
+        total_elapsed = time.perf_counter() - global_start
+        feedback = self._build_feedback(
+            problem,
+            best_score,
+            llm_solved,
+            best_response,
+            attempt_logs,
+            tokens_used_total or 0,
+            total_elapsed,
+        )
 
         record = EvalRecord(
             llm_model=self.model if self._client else "offline",
@@ -112,6 +142,8 @@ class LLMEvaluator:
             rationale_quality=None,
             tokens_used=tokens_used_total,
             attempts=attempts,
+            elapsed_seconds=total_elapsed if attempts > 0 else 0.0,
+            attempt_details=attempt_logs,
             raw_response=best_response,
         )
         return record, feedback
@@ -205,6 +237,9 @@ class LLMEvaluator:
         score: float,
         llm_solved: bool,
         raw_response: str,
+        attempt_logs: list[dict],
+        total_tokens: int,
+        elapsed_seconds: float,
     ) -> FeedbackBundle:
         message_lines: list[str] = []
         suggestions: list[str] = []
@@ -238,6 +273,14 @@ class LLMEvaluator:
 
         if not raw_response.strip():
             suggestions.append("Ensure the evaluator model is reachable; configure OPENAI_API_KEY.")
+
+        if attempt_logs:
+            avg_time = sum(log.get("elapsed_seconds", 0.0) for log in attempt_logs) / max(1, len(attempt_logs))
+            message_lines.append(
+                f"Attempts: {len(attempt_logs)}, avg runtime {avg_time:.2f}s, total tokens {total_tokens}."
+            )
+        elif elapsed_seconds:
+            message_lines.append(f"Evaluation runtime: {elapsed_seconds:.2f}s.")
 
         message = "\n".join(message_lines)
         return FeedbackBundle(

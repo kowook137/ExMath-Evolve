@@ -6,6 +6,7 @@ from rich.console import Console
 from datetime import datetime
 
 from agents import Agent, WebSearchTool, Runner
+from agents.agent_output import AgentOutputSchema
 from agents.tracing import gen_trace_id, trace, custom_span
 from agents.model_settings import ModelSettings
 
@@ -186,14 +187,14 @@ class ResearcherAgent:
             name="Planner Agent",
             instructions=PLANNER_INSTRUCTIONS,
             model=planner,
-            output_type=PlanningOutput,
+            output_type=AgentOutputSchema(PlanningOutput, strict_json_schema=False),
             model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if planner in reasoning_models else ModelSettings(),
         )
         self.reflection_agent = Agent(
             name="Reflection Agent",
             instructions=REFLECTION_INSTRUCTIONS,
             model=planner,
-            output_type=ReflectionPlan,
+            output_type=AgentOutputSchema(ReflectionPlan, strict_json_schema=False),
             model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if planner in reasoning_models else ModelSettings(),
         )
         self.search_agent = Agent(
@@ -207,7 +208,7 @@ class ResearcherAgent:
             name="Writing Agent",
             instructions=WRITER_INSTRUCTIONS,
             model=writer,
-            output_type=ReportData,
+            output_type=AgentOutputSchema(ReportData, strict_json_schema=False),
             model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if writer in reasoning_models else ModelSettings(),
         )
         self.reader_agent = Agent(
@@ -215,7 +216,7 @@ class ResearcherAgent:
             instructions=PAPER_READER_INSTRUCTIONS,
             tools=[WebSearchTool()],
             model=searcher,
-            output_type=IdeaData,
+            output_type=AgentOutputSchema(IdeaData, strict_json_schema=False),
             model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if searcher in reasoning_models else ModelSettings(),
         )
         self.search_time_bias = False

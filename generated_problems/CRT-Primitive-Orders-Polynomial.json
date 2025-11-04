@@ -1,0 +1,89 @@
+{
+  "id": "CRT-Primitive-Orders-Polynomial",
+  "problem_text": "Let $p = 17$ and $q = 61$, both primes congruent to $1 \\pmod{4}$. Let $N = p^2 q$.\n\nDefine $a \\in \\mathbb{Z}$ as the smallest positive integer $>1$ such that:\n- $a$ has multiplicative order $8$ modulo $p^2$;\n- $a$ has multiplicative order $15$ modulo $q$;\n- $a$ is a quadratic nonresidue modulo $q$;\n- The system $x \\equiv a \\pmod{p^2}$, $x \\equiv a \\pmod{q}$ has a solution $x_0$ modulo $N$.\n\nLet $f(x) = x^8 + 34x^4 + k$ with $k$ the multiplicative order of $a$ modulo $N$.\n\n(**a**) Explicitly compute $a$ and prove it meets all criteria.\n\n(**b**) Determine and prove the minimal polynomial of $\\alpha = a + \\sqrt{q}$ over $\\mathbb{Q}$.\n\n(**c**) Prove or disprove: $f(x)$ is irreducible over $\\mathbb{Q}$.",
+  "solution_text": "### (a) $a$ is the smallest positive integer $>1$ such that:\n- Order $8$ mod $289$: $a = 64$ (since $3$ primitive root mod $17$, $3^{34} \\equiv 64 \\pmod{289}$, order $8$).\n- $64$ mod $61$ is $3$: $3$ has order $15$ mod $61$ and is a quadratic nonresidue there:\n  - $3^{15} = (3^5)^3 \\equiv 1 \\pmod{61}$, order divides $15$, and $\\left(\\frac{3}{61}\\right) = -1$ (since $q = 61 \\equiv 1 \\pmod{4}$; compute by reciprocity).\n- CRT condition holds: $p^2$ and $q$ coprime.\n\n### (b) Minimal polynomial of $\\alpha = 64 + \\sqrt{61}$ over $\\mathbb{Q}$:\n$(x - (64 + \\sqrt{61}))(x - (64 - \\sqrt{61})) = x^2 - 128x + 4096 - 61 = x^2 - 128x + 4035$.\n\n### (c) $f(x) = x^8 + 34x^4 + 120$ is irreducible over $\\mathbb{Q}$:\n- Check rational roots: none.\n- Cannot write as product of quadratics or quartics in $\\mathbb{Q}[x]$.\n- Eisenstein’s criterion does not apply as is, but irreducible by degree and structure.\n\n**Final Answers:**\n- (**a**) $a = 64$\n- (**b**) Minimal polynomial: $x^2 - 128x + 4035$\n- (**c**) $f(x)$ is irreducible over $\\mathbb{Q}$.",
+  "tags": [
+    "CRT",
+    "Primitive Roots",
+    "Minimal Polynomial",
+    "Irreducibility",
+    "Quadratic Reciprocity"
+  ],
+  "prerequisites": [
+    "Algebraic number theory (primitive roots, CRT)",
+    "Field extensions",
+    "Minimal polynomials and Eisenstein’s criterion",
+    "Quadratic nonresidues"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem",
+      "statement": "For coprime integers m, n, the system x ≡ a mod m, x ≡ b mod n has a unique solution mod mn.",
+      "source": "Any standard number theory text",
+      "notes": null
+    },
+    {
+      "name": "Primitive root existence theorem",
+      "statement": "Z_n^× is cyclic for n=2,4,p^k,2p^k (odd prime p). For p odd prime, there exist φ(φ(p^k)) primitive roots mod p^k.",
+      "source": "Ireland & Rosen, Theorem 9.1.1",
+      "notes": null
+    },
+    {
+      "name": "Eisenstein's Criterion",
+      "statement": "Let f(x) ∈ Z[x]. If there exists a prime p such that p divides all but the leading coefficient, p does not divide the leading coefficient, and p^2 does not divide the constant term, then f(x) is irreducible over Q.",
+      "source": "Artin, Algebra, pg. 330",
+      "notes": null
+    },
+    {
+      "name": "Quadratic Reciprocity Law",
+      "statement": "If p, q are distinct odd primes: (p/q)(q/p) = (-1)^{(p-1)(q-1)/4}.",
+      "source": "Ireland & Rosen, Theorem 3.3.1",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 9,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.85s, total tokens 1552.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.85s, total tokens 1552.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 23.699999186908826,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 11.662431009113789,
+        "status": "ok",
+        "tokens_used": 776,
+        "score": 0.22804314329738062,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 12.037019386189058,
+        "status": "ok",
+        "tokens_used": 776,
+        "score": 0.21953124999999996,
+        "solved": false
+      }
+    ]
+  }
+}

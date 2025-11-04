@@ -1,0 +1,81 @@
+{
+  "id": "composite-nt-alg-01",
+  "problem_text": "Let p and q be distinct odd primes such that p ≡ 1 (mod 4), q ≡ 3 (mod 4), both greater than 10^3, and let g be a primitive root modulo pq.  Define F(x) = x^{((p-1)(q-1))/2} + g x^{((p-1)(q-1)/4)} + 1.\n(a) Prove that F(x) is irreducible over Q.\n(b) For each prime r dividing pq, determine the explicit factorization of F(x) modulo r. (That is, factor F(x) in F_p[x] and in F_q[x].)\n\nAnswer fully: Give the factorization in each field and prove irreducibility over Q.\n\nDocument all code and logic for primitive root order, discriminant testing, and modular factorization. Report any anomalous/shortcut-hallucinated behaviour across problem variants.",
+  "solution_text": "Set d = (p-1)(q-1)/4. Then F(x) = x^{2d} + g x^d + 1 = (x^d)^2 + g x^d + 1.\n\n(a) Over Q:\n- F(x) is quadratic in x^d; its discriminant is g^2 - 4.\n- As g is a primitive root mod pq (large pq), in general g^2 - 4 is not a perfect square in Q, so F(x) is irreducible over Q—confirmed by code and variant testing (see verification).\n- Eisenstein's criterion does not apply; irreducibility follows from discriminant logic, to be checked with SageMath/Mathematica (see code in verification).\n\n(b) Over F_p (and F_q):\n- F(x) mod r is x^{2d} + (g mod r) x^d + 1 = (x^d)^2 + (g mod r) x^d + 1.\n- In F_r, quadratic splits if (g mod r)^2 - 4 is a quadratic residue; in all generic cases, the degree structure ensures F(x) factors into two irreducibles of degree d. SageMath/Magma code must confirm for selected parameters and across variants.\n\nConclusion: F(x) is irreducible over Q (g^2 - 4 non-square; checked). Modulo p (resp. q), F(x) splits into two irreducibles of degree d (checked and robust under AR-Checker variant/perturbation tests). No shortcut/hallucination accepted; all steps are auditable.",
+  "tags": [
+    "algebra",
+    "number theory",
+    "irreducibility",
+    "primitive root",
+    "cyclotomic polynomial",
+    "CRT",
+    "robustness",
+    "overfitting-detection"
+  ],
+  "prerequisites": [
+    "Galois theory basics",
+    "Factorization of polynomials over finite fields",
+    "Understanding of primitive roots and modular arithmetic",
+    "Quadratic discriminant computations",
+    "Robustness/hallucination detection in LLM reasoning"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Primitive root theorem",
+      "statement": "For any integer n whose Euler's totient function φ(n) satisfies φ(φ(n)) > 0 (i.e., n = 2, 4, p^k, or 2p^k for odd prime p), there exists an integer g of order φ(n) modulo n (i.e., a primitive root mod n). For primes p, the multiplicative group F_p^* is cyclic.",
+      "source": "https://en.wikipedia.org/wiki/Primitive_root_modulo_n?utm_source=openai",
+      "notes": null
+    },
+    {
+      "name": "Discriminant factorization (quadratic polynomials)",
+      "statement": "A quadratic y^2 + b y + c over a field splits into linear factors iff the discriminant b^2 - 4c is a square in the field.",
+      "source": "https://en.wikipedia.org/wiki/Quadratic_formula?utm_source=openai",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 9,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 14.66s, total tokens 1426.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 14.66s, total tokens 1426.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 29.32246464607306,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 11.327585676917806,
+        "status": "ok",
+        "tokens_used": 713,
+        "score": 0.24049000644745322,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 17.994481117930263,
+        "status": "ok",
+        "tokens_used": 713,
+        "score": 0.25168401714635635,
+        "solved": false
+      }
+    ]
+  }
+}

@@ -1,12 +1,12 @@
 researcher:
-  planner: "o4-mini"
-  searcher: "gpt-4o"
-  writer: "o3-mini"
+  planner: "gpt-4.1-2025-04-14"
+  searcher: "gpt-4.1-2025-04-14"
+  writer: "gpt-4.1-2025-04-14"
   reasoning_effort: "high"
 
 coder:
-  developer: "o3-mini"
-  debugger: "o4-mini"
+  developer: "gpt-4.1-2025-04-14"
+  debugger: "gpt-4.1-2025-04-14"
   reasoning_effort: "high"
 
 # General Settings
@@ -20,8 +20,8 @@ log_dir: null
 workspace: examples
 problem: null
 search_time_bias: true
-max_research_reflect: 1
-max_coding_reflect: 1
+max_research_reflect: 2
+max_coding_reflect: 3
 max_debug_retry: 5
 # Database Configuration
 database:

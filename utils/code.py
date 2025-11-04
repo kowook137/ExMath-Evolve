@@ -13,6 +13,38 @@ from utils.datatypes import ProblemPair
 
 logger = logging.getLogger(__name__)
 
+ANCHOR_START_PREFIX = "### >>> DEEPEVOLVE-BLOCK-START:"
+ANCHOR_END_PREFIX = "### <<< DEEPEVOLVE-BLOCK-END"
+
+
+def _extract_anchor_label(lines: List[str]) -> Optional[str]:
+    """Return the label used in the DEEPEVOLVE block start marker, if present."""
+    for line in lines:
+        if ANCHOR_START_PREFIX in line:
+            return line.split(ANCHOR_START_PREFIX, 1)[1].strip()
+    return None
+
+
+def _find_anchor_region(lines: List[str], label: str) -> Optional[Tuple[int, int]]:
+    """Locate the start/end indices of the DEEPEVOLVE block with the given label."""
+    start_idx = None
+    for idx, line in enumerate(lines):
+        if ANCHOR_START_PREFIX in line:
+            candidate = line.split(ANCHOR_START_PREFIX, 1)[1].strip()
+            if candidate == label:
+                start_idx = idx
+                break
+    if start_idx is None:
+        return None
+    end_idx = None
+    for j in range(start_idx + 1, len(lines)):
+        if ANCHOR_END_PREFIX in lines[j]:
+            end_idx = j
+            break
+    if end_idx is None:
+        return None
+    return start_idx, end_idx
+
 def get_files_and_code(
     local_path, online_link, workspace_dir, code_extension=".py"
 ) -> Tuple[Dict[str, str], str]:
@@ -203,9 +235,70 @@ def parse_evolve_blocks(code: str) -> List[Tuple[int, int, str]]:
 
 
 def extract_diffs(diff_text: str) -> List[Tuple[str, str]]:
-    pattern = r"<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE"
-    blocks = re.findall(pattern, diff_text, re.DOTALL)
+    """Extract SEARCH/REPLACE diff blocks with tolerant parsing.
+
+    - 허용: 마커 주변 공백, 선택적 코드펜스(```language ... ```), CRLF/LF 차이
+    - 형식: <<<<<<< SEARCH ... ======= ... >>>>>>> REPLACE
+    """
+    # 개행 정규화 및 코드펜스 제거
+    text = diff_text.replace("\r\n", "\n").replace("\r", "\n")
+    # ```python, ``` 등 코드펜스 라인을 제거 (블록 내부 텍스트만 보존)
+    text = re.sub(r"^```[\w-]*\n", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\n```\s*$", "\n", text, flags=re.MULTILINE)
+
+    # 마커 주변의 선택적 공백 허용
+    pattern = re.compile(
+        r"<<<<<<<\s*SEARCH\s*\n"  # 시작 마커
+        r"(.*?)"                     # SEARCH 본문(탐욕X)
+        r"\n?=======\s*\n"          # 구분자
+        r"(.*?)"                     # REPLACE 본문(탐욕X)
+        r"\n?>>>>>>>\s*REPLACE",     # 종료 마커
+        re.DOTALL | re.MULTILINE,
+    )
+    blocks = pattern.findall(text)
     return [(a.rstrip("\n"), b.rstrip("\n")) for a, b in blocks]
+
+def _normalize_newlines(text: str) -> str:
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _rstrip_lines(lines: List[str]) -> List[str]:
+    return [ln.rstrip() for ln in lines]
+
+
+def _strip_inline_comment(line: str) -> str:
+    """
+    Remove inline comments (`# ...`) from a single line while being mindful of basic
+    string literals so that `#` characters inside quotes are preserved.
+    """
+    in_single = False
+    in_double = False
+    escaped = False
+    for idx, ch in enumerate(line):
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch == "'" and not in_double:
+            in_single = not in_single
+            continue
+        if ch == '"' and not in_single:
+            in_double = not in_double
+            continue
+        if ch == "#" and not in_single and not in_double:
+            return line[:idx]
+    return line
+
+
+def _normalize_no_comment(lines: List[str]) -> List[str]:
+    """
+    Normalize a list of lines by trimming trailing whitespace and stripping
+    inline comments. Useful when developer SEARCH blocks omit trailing comments.
+    """
+    return [_strip_inline_comment(ln).rstrip() for ln in lines]
+
 
 def apply_diff(original_code: str, diff_text: str) -> str:
     """
@@ -218,6 +311,10 @@ def apply_diff(original_code: str, diff_text: str) -> str:
     Returns:
         Modified code
     """
+    # Normalize newlines to be robust to CRLF vs LF
+    original_code = _normalize_newlines(original_code)
+    diff_text = _normalize_newlines(diff_text)
+
     # Split into lines for easier processing
     original_lines = original_code.split("\n")
     result_lines = original_lines.copy()
@@ -230,14 +327,129 @@ def apply_diff(original_code: str, diff_text: str) -> str:
         search_lines = search_text.split("\n")
         replace_lines = replace_text.split("\n")
 
-        # Find where the search pattern starts in the original code
+        # Right-strip lines to ignore trailing whitespace differences
+        search_norm = _rstrip_lines(search_lines)
+        search_no_comment = _normalize_no_comment(search_lines)
+
+        matched = False
+
+        # Anchor-based replacement using DEEPEVOLVE block markers (if available)
+        anchor_label = _extract_anchor_label(search_lines)
+        if anchor_label:
+            anchor_region = _find_anchor_region(result_lines, anchor_label)
+            if anchor_region is not None:
+                start_idx, end_idx = anchor_region
+                result_lines[start_idx : end_idx + 1] = replace_lines
+                matched = True
+
         for i in range(len(result_lines) - len(search_lines) + 1):
-            if result_lines[i : i + len(search_lines)] == search_lines:
+            window_norm = _rstrip_lines(result_lines[i : i + len(search_lines)])
+            if window_norm == search_norm:
                 # Replace the matched section
                 result_lines[i : i + len(search_lines)] = replace_lines
+                matched = True
                 break
+        if not matched and search_lines:
+            for i in range(len(result_lines) - len(search_lines) + 1):
+                window_no_comment = _normalize_no_comment(
+                    result_lines[i : i + len(search_lines)]
+                )
+                if window_no_comment == search_no_comment:
+                    result_lines[i : i + len(search_lines)] = replace_lines
+                    matched = True
+                    break
+        if not matched:
+            # Fallback 1: exact string replace on the whole code snapshot
+            original_text = "\n".join(result_lines)
+            search_text_exact = "\n".join(search_lines)
+            replace_text = "\n".join(replace_lines)
+            if search_text_exact and search_text_exact in original_text:
+                original_text = original_text.replace(search_text_exact, replace_text, 1)
+                result_lines = original_text.split("\n")
+                matched = True
+            else:
+                # Fallback 2: strip-trimmed string replace
+                normalized_original = "\n".join(_rstrip_lines(result_lines))
+                normalized_search = "\n".join(search_norm)
+                normalized_replace = "\n".join(_rstrip_lines(replace_lines))
+                if normalized_search and normalized_search in normalized_original:
+                    normalized_original = normalized_original.replace(
+                        normalized_search,
+                        normalized_replace,
+                        1,
+                    )
+                    result_lines = normalized_original.split("\n")
+                    matched = True
 
-    return "\n".join(result_lines)
+        if not matched and search_lines:
+            # Fuzzy window search to tolerate minor structural drift
+            search_text_exact = "\n".join(search_lines)
+            best_score = -1.0
+            best_range: Optional[Tuple[int, int]] = None
+            min_len = max(1, len(search_lines) - 2)
+            max_len = min(len(result_lines), len(search_lines) + 2)
+            for window_len in range(min_len, max_len + 1):
+                for i in range(len(result_lines) - window_len + 1):
+                    window_text = "\n".join(result_lines[i : i + window_len])
+                    score = 1.0 - Levenshtein.normalized_distance(
+                        search_text_exact, window_text
+                    )
+                    if score > best_score:
+                        best_score = score
+                        best_range = (i, i + window_len)
+            if best_range is not None and best_score >= 0.80:
+                start_idx, end_idx = best_range
+                result_lines[start_idx:end_idx] = replace_lines
+                matched = True
+
+        if not matched and search_lines:
+            first_nonempty = next((ln for ln in search_lines if ln.strip()), "")
+            stripped = first_nonempty.strip()
+            if stripped.startswith("def ") or stripped.startswith("class "):
+                signature = stripped
+                sig_idx = None
+                for idx, line in enumerate(result_lines):
+                    if line.strip() == signature:
+                        sig_idx = idx
+                        break
+                if sig_idx is not None:
+                    indent = len(result_lines[sig_idx]) - len(result_lines[sig_idx].lstrip())
+                    end_idx = sig_idx + 1
+                    while end_idx < len(result_lines):
+                        line = result_lines[end_idx]
+                        stripped_line = line.strip()
+                        if stripped_line == "":
+                            end_idx += 1
+                            continue
+                        curr_indent = len(line) - len(line.lstrip())
+                        if curr_indent <= indent and not stripped_line.startswith("@"):
+                            break
+                        end_idx += 1
+                    result_lines[sig_idx:end_idx] = replace_lines
+                    matched = True
+
+        if not matched:
+            replace_norm = _rstrip_lines(replace_lines)
+            current_norm = _rstrip_lines(result_lines)
+            replace_text = "\n".join(replace_norm).strip()
+            if replace_text and replace_text in "\n".join(current_norm):
+                matched = True
+
+        if not matched:
+            try:
+                first = search_lines[0] if search_lines else ""
+                logger.warning(
+                    "apply_diff: SEARCH 블록을 찾지 못해 적용 실패 (첫 줄 미리보기): %r",
+                    first,
+                )
+            except Exception:
+                pass
+
+    result_code = "\n".join(result_lines)
+    if any(marker in result_code for marker in ("<<<<<<<", "=======", ">>>>>>>")):
+        logger.warning("apply_diff: conflict markers detected after applying diff; reverting to original code.")
+        return original_code
+    return result_code
 
 
 def normalize_math_text(text: str) -> str:

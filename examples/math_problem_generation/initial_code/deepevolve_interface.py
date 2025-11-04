@@ -2,14 +2,26 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Dict, Tuple
+import os
 
-from .generator import MathProblemGenerator
-from .llm_evaluator import LLMEvaluator
-from .verification import VerificationRunner
+from generator import MathProblemGenerator
+from llm_evaluator import LLMEvaluator
+from verification import VerificationRunner
 from utils.code import ensure_problem_id, save_problem_pair
-from utils.datatypes import EvalRecord, FeedbackBundle, ProblemPair, VerificationReport
+from utils.datatypes import (
+    EvalRecord,
+    FeedbackBundle,
+    ProblemMetadata,
+    ProblemPair,
+    VerificationReport,
+)
 
-OUTPUT_DIR = Path(__file__).resolve().parent.parent / "generated_problems"
+_env_dir = os.getenv("DEEPEVOLVE_OUTPUT_DIR")
+if _env_dir:
+    OUTPUT_DIR = Path(_env_dir)
+else:
+    # Fallback to current working directory to avoid TemporaryDirectory paths
+    OUTPUT_DIR = Path.cwd() / "generated_problems"
 
 
 def _build_metrics(
@@ -32,6 +44,7 @@ def _build_metrics(
         "llm_model": evaluation.llm_model,
         "llm_attempts": float(evaluation.attempts or 0),
         "llm_tokens": float(evaluation.tokens_used or 0),
+        "llm_elapsed_seconds": float(evaluation.elapsed_seconds or 0.0),
         "verification_notes": verification.notes,
         "difficulty_message": feedback.message,
         "difficulty_suggestions": "\n".join(feedback.suggestions),
@@ -57,16 +70,16 @@ def deepevolve_interface() -> Tuple[bool, Dict[str, float] | str]:
         evaluator = LLMEvaluator()
         evaluation, feedback = evaluator.evaluate(problem)
 
-        problem.metadata.update(
-            {
-                "verification_notes": verification.notes or "",
-                "evaluation_model": evaluation.llm_model,
-                "evaluation_prompt": evaluation.prompt_style,
-                "evaluation_feedback": feedback.model_dump(),
-                "difficulty_message": feedback.message,
-                "difficulty_suggestions": feedback.suggestions,
-            }
-        )
+        metadata = problem.metadata or ProblemMetadata()
+        metadata.verification_notes = verification.notes or ""
+        metadata.evaluation_model = evaluation.llm_model
+        metadata.evaluation_prompt = evaluation.prompt_style
+        metadata.evaluation_feedback = feedback
+        metadata.difficulty_message = feedback.message
+        metadata.difficulty_suggestions = list(feedback.suggestions)
+        metadata.evaluation_elapsed_seconds = evaluation.elapsed_seconds
+        metadata.evaluation_attempt_details = evaluation.attempt_details
+        problem.metadata = metadata
 
         output_path = save_problem_pair(problem, str(OUTPUT_DIR))
 

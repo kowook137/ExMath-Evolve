@@ -1,0 +1,38 @@
+{
+  "topic": "Composite Number Theory and Algebra Synthesis",
+  "subtopics": [
+    "Orders modulo prime powers",
+    "CRT (Chinese Remainder Theorem)",
+    "Minimal polynomial construction for algebraic integers",
+    "Polynomial irreducibility via discriminant or advanced algorithm",
+    "Order structure and cyclic groups"
+  ],
+  "objectives": [
+    "Blend advanced modular arithmetic and field theory for a unique answer.",
+    "Mandate multi-step reasoning across disparate algebraic domains.",
+    "Block rote LLM/agent attacks by explicit modular structuring and algebraic gluing, with feasibility pre-checked.",
+    "All steps checkable symbolically and algorithmically.",
+    "Every subtask explicitly tagged, supporting multi-dimensional (SMART/MCP-Bench) scoring."
+  ],
+  "difficulty_target": "Hard graduate/senior undergraduate, agent/LLM multi-domain fusion; instance pipeline supports multi-metric scoring and systematic refinement.",
+  "required_theorems": [
+    "CRT",
+    "Structure theorem for multiplicative groups of units modulo n",
+    "Minimal polynomials and field extensions",
+    "Irreducibility tests: discriminant, Berlekamp–Zassenhaus, Newton polygon, computational algebra",
+    "Rational Root Theorem"
+  ],
+  "pitfalls": [
+    "Instance generator always runs parameter feasibility and order existence checks to ensure viability.",
+    "No direct answer template; each problem instance carries solution-tree and counterexample history.",
+    "Tags and scoring enable diagnosis of shortcut learning.",
+    "Integrates self-refinement/abstraction refinement best practices."
+  ],
+  "constraints": [
+    "Unique minimal polynomial in Z[x], explicitly determined by construction.",
+    "Element selection requires CRT gluing and automated feasibility screening.",
+    "All verification steps are modular and code-supported; counterexample archiving and feedback integration is pipelined.",
+    "Every subtask tagged for multi-dimensional agent evaluation (SMART/MCP-Bench).",
+    "Failed or ambiguous generations are archived and inform new instance heuristics."
+  ]
+}

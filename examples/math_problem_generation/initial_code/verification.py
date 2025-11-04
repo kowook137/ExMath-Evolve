@@ -5,7 +5,16 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 import sympy as sp
 
-from utils.datatypes import ProblemPair, VerificationReport
+from utils.datatypes import (
+    ExtraDataItem,
+    ProblemMetadata,
+    ProblemPair,
+    SubstitutionCheck,
+    SymbolicEqualityCheck,
+    VariableConstraint,
+    VerificationReport,
+    VerificationTasks,
+)
 
 
 class VerificationError(Exception):
@@ -17,7 +26,7 @@ class VerificationRunner:
     Execute symbolic and sampling-based checks to validate the drafted solution.
 
     기본 전략:
-    1) problem.metadata["verification_tasks"]에 정의된 지침을 기반으로 검증.
+    1) problem.metadata.verification_tasks에 정의된 지침을 기반으로 검증.
     2) substitution 테스트: 지정된 범위의 정수/실수 샘플을 치환해 기대 결과와 일치하는지 검사.
     3) symbolic equalities: SymPy를 활용해 두 식의 차이를 단순화, 필요 시 추가 샘플링으로 확인.
     4) 실패한 첫 번째 반례나 오류를 기록하여 추후 Planner/Developer가 참고할 수 있도록 함.
@@ -28,13 +37,14 @@ class VerificationRunner:
         self._max_attempts = max_attempts
 
     def run(self, problem: ProblemPair) -> VerificationReport:
-        tasks = (problem.metadata or {}).get("verification_tasks", {})
+        metadata: ProblemMetadata = problem.metadata or ProblemMetadata()
+        tasks: VerificationTasks = metadata.verification_tasks or VerificationTasks()
 
         substitution_result, substitution_notes, counterexamples = self._run_substitution_checks(
-            tasks.get("substitution", [])
+            tasks.substitution
         )
         symbolic_result, symbolic_notes = self._run_symbolic_checks(
-            tasks.get("symbolic_equalities", [])
+            tasks.symbolic_equalities
         )
 
         notes: List[str] = []
@@ -42,12 +52,17 @@ class VerificationRunner:
             notes.append(substitution_notes)
         if symbolic_notes:
             notes.append(symbolic_notes)
-        if not tasks:
+        if not tasks.substitution and not tasks.symbolic_equalities:
             notes.append("verification_tasks metadata not provided; defaulted to pass with warnings.")
 
-        extra_data: Dict[str, str] = {}
+        extra_data: List[ExtraDataItem] = []
         if counterexamples:
-            extra_data["counterexamples"] = repr(counterexamples[:5])
+            extra_data.append(
+                ExtraDataItem(
+                    key="counterexamples",
+                    value=repr(counterexamples[:5]),
+                )
+            )
 
         return VerificationReport(
             substitution_pass=substitution_result,
@@ -61,7 +76,7 @@ class VerificationRunner:
     # Substitution checks
     # ------------------------------------------------------------------
     def _run_substitution_checks(
-        self, checks: Iterable[Dict]
+        self, checks: Iterable[SubstitutionCheck]
     ) -> Tuple[bool, str, List[Dict[str, str]]]:
         if not checks:
             return True, "No substitution checks specified.", []
@@ -72,14 +87,14 @@ class VerificationRunner:
 
         for idx, spec in enumerate(checks, start=1):
             try:
-                expr = self._parse_expression(spec.get("expression"))
+                expr = self._parse_expression(spec.expression)
             except VerificationError as exc:
                 overall_pass = False
                 notes.append(f"[Substitution {idx}] Failed to parse expression: {exc}")
                 continue
 
-            variables = self._create_symbols(spec.get("variables", {}))
-            num_samples = int(spec.get("num_samples", 30))
+            variables = self._create_symbols(spec.variables)
+            num_samples = int(spec.num_samples or 30)
 
             failures: List[Dict[str, str]] = []
             success_count = 0
@@ -100,7 +115,7 @@ class VerificationRunner:
                     overall_pass = False
                     counterexamples.append(
                         {
-                            "expression": spec.get("expression", ""),
+                            "expression": spec.expression,
                             "value": repr(value),
                             "assignment": repr(assignment),
                         }
@@ -111,7 +126,7 @@ class VerificationRunner:
                 if len(failures) > 3:
                     break
 
-            description = spec.get("description") or spec.get("expression") or f"check-{idx}"
+            description = spec.description or spec.expression or f"check-{idx}"
             if failures:
                 notes.append(
                     f"[Substitution {idx}] {description}: {len(failures)} failure(s) out of {num_samples} samples. "
@@ -126,7 +141,7 @@ class VerificationRunner:
 
     def _check_substitution_result(
         self,
-        spec: Dict,
+        spec: SubstitutionCheck,
         value: sp.Expr,
         assignment: Dict[sp.Symbol, sp.Expr],
         failures: List[Dict[str, str]],
@@ -142,12 +157,11 @@ class VerificationRunner:
         if value.has(sp.zoo, sp.nan):
             failures.append({"reason": "non-finite", "assignment": repr(assignment)})
             return False
-
-        expected = spec.get("expected")
-        expected_mod = spec.get("expected_mod", spec.get("expected_modulus"))
-        modulus = spec.get("mod") or spec.get("modulus")
-        target_values = spec.get("target_values")
-        predicate = spec.get("predicate")
+        expected = spec.expected
+        expected_mod = spec.remainder
+        modulus = spec.modulus
+        target_values = spec.target_values or None
+        predicate = spec.predicate
 
         simplified_value = sp.simplify(value)
         try:
@@ -233,7 +247,7 @@ class VerificationRunner:
     # Symbolic equalities
     # ------------------------------------------------------------------
     def _run_symbolic_checks(
-        self, specs: Iterable[Dict]
+        self, specs: Iterable[SymbolicEqualityCheck]
     ) -> Tuple[bool, str]:
         if not specs:
             return True, "No symbolic equality checks specified."
@@ -242,16 +256,16 @@ class VerificationRunner:
         notes: List[str] = []
 
         for idx, spec in enumerate(specs, start=1):
-            description = spec.get("description") or f"symbolic-equality-{idx}"
+            description = spec.description or f"symbolic-equality-{idx}"
             try:
-                lhs = self._parse_expression(spec.get("lhs"))
-                rhs = self._parse_expression(spec.get("rhs"))
+                lhs = self._parse_expression(spec.lhs)
+                rhs = self._parse_expression(spec.rhs)
             except VerificationError as exc:
                 overall_pass = False
                 notes.append(f"[Symbolic {idx}] {description}: parsing failed ({exc})")
                 continue
 
-            variables = self._create_symbols(spec.get("variables", {}))
+            variables = self._create_symbols(spec.variables)
             diff = sp.simplify(lhs - rhs)
 
             if diff == 0:
@@ -312,10 +326,10 @@ class VerificationRunner:
         except Exception as exc:
             raise VerificationError(f"Could not parse expression '{expression}': {exc}") from exc
 
-    def _create_symbols(self, spec: Dict[str, Dict]) -> Dict[str, Dict[str, object]]:
+    def _create_symbols(self, spec: Iterable[VariableConstraint]) -> Dict[str, Dict[str, object]]:
         symbols: Dict[str, Dict[str, object]] = {}
-        for name, metadata in spec.items():
-            kind = (metadata or {}).get("type", "real")
+        for variable in spec:
+            kind = (variable.kind or "real")
             assumptions = {}
             if kind == "integer":
                 assumptions["integer"] = True
@@ -327,9 +341,14 @@ class VerificationRunner:
                 assumptions["nonnegative"] = True
             elif kind == "real":
                 assumptions["real"] = True
-            symbols[name] = {
-                "symbol": sp.symbols(name, **assumptions),
-                "meta": metadata or {},
+            metadata: Dict[str, object] = {"type": kind}
+            if variable.minimum is not None:
+                metadata["min"] = variable.minimum
+            if variable.maximum is not None:
+                metadata["max"] = variable.maximum
+            symbols[variable.name] = {
+                "symbol": sp.symbols(variable.name, **assumptions),
+                "meta": metadata,
             }
         return symbols
 

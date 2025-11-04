@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -66,13 +66,13 @@ class IdeaData(BaseModel):
 
 
 class ReportData(BaseModel):
-    markdown_report: str 
+    markdown_report: str
     """The final report"""
 
-    idea: IdeaData 
+    idea: Optional[IdeaData] = None
     """The new idea from the research report."""
 
-    related_work: list[ResearchWork] 
+    related_work: List[ResearchWork] = Field(default_factory=list)
     """A list of existing research works that are relevant to the query."""
 
     problem_spec: Optional[ProblemSpec] = None
@@ -159,6 +159,111 @@ class ProblemSpec(BaseModel):
     "Hard constraints that the problem must satisfy (e.g., integer solutions, no calculus)."
 
 
+class ExtraDataItem(BaseModel):
+    key: str
+    "Identifier for the metadata entry."
+
+    value: str
+    "Serialized value for the metadata entry."
+
+
+class VariableConstraint(BaseModel):
+    name: str
+    "Symbolic variable name."
+
+    kind: str = "real"
+    "Sampling domain; e.g., integer, positive_integer, natural, real."
+
+    minimum: Optional[Union[int, float]] = None
+    "Lower bound for sampling when applicable."
+
+    maximum: Optional[Union[int, float]] = None
+    "Upper bound for sampling when applicable."
+
+
+class SubstitutionCheck(BaseModel):
+    expression: str
+    "SymPy-compatible expression to evaluate."
+
+    expected: Optional[Union[int, float, str]] = None
+    "Exact value the expression should match."
+
+    modulus: Optional[int] = None
+    "Modulus for congruence checks."
+
+    remainder: Optional[int] = None
+    "Expected remainder under the provided modulus."
+
+    target_values: List[Union[int, float, str]] = Field(default_factory=list)
+    "Allowed values for the evaluated expression."
+
+    predicate: Optional[str] = None
+    "Optional predicate expression that must evaluate True."
+
+    variables: List[VariableConstraint] = Field(default_factory=list)
+    "Variables to sample while validating the expression."
+
+    num_samples: int = 30
+    "Number of samples for stochastic validation."
+
+    description: Optional[str] = None
+    "Human-readable description of the check."
+
+
+class SymbolicEqualityCheck(BaseModel):
+    lhs: str
+    "Left-hand side expression."
+
+    rhs: str
+    "Right-hand side expression."
+
+    variables: List[VariableConstraint] = Field(default_factory=list)
+    "Variables required for validation."
+
+    description: Optional[str] = None
+    "Human-readable description of the symbolic check."
+
+
+class VerificationTasks(BaseModel):
+    substitution: List[SubstitutionCheck] = Field(default_factory=list)
+    "Numeric or modular substitution checks."
+
+    symbolic_equalities: List[SymbolicEqualityCheck] = Field(default_factory=list)
+    "Symbolic equality validations."
+
+
+class ProblemMetadata(BaseModel):
+    status: Optional[str] = None
+    "High-level status label for the problem (e.g., placeholder)."
+
+    verification_tasks: Optional[VerificationTasks] = None
+    "Verification instructions used by the evaluator."
+
+    verification_notes: Optional[str] = None
+    "Latest verification notes stored alongside the problem."
+
+    evaluation_model: Optional[str] = None
+    "LLM identifier used during evaluation."
+
+    evaluation_prompt: Optional[str] = None
+    "Prompt template provided to the evaluator."
+
+    evaluation_feedback: Optional[FeedbackBundle] = None
+    "Structured feedback returned by the evaluator."
+
+    difficulty_message: Optional[str] = None
+    "Headline difficulty message derived from evaluation."
+
+    difficulty_suggestions: List[str] = Field(default_factory=list)
+    "Actionable suggestions reported by the evaluator."
+
+    evaluation_elapsed_seconds: Optional[float] = None
+    "Total evaluation runtime in seconds."
+
+    evaluation_attempt_details: List[dict] = Field(default_factory=list)
+    "Fine-grained telemetry for each evaluation attempt."
+
+
 class VerificationReport(BaseModel):
     substitution_pass: bool
     "True if plugging the provided solution into the problem validates correctly."
@@ -172,7 +277,7 @@ class VerificationReport(BaseModel):
     notes: Optional[str] = None
     "Free-form notes from the verifier."
 
-    extra_data: Dict[str, str] = Field(default_factory=dict)
+    extra_data: List[ExtraDataItem] = Field(default_factory=list)
     "Additional structured data (e.g., sample evaluations, residuals)."
 
 
@@ -201,8 +306,8 @@ class ProblemPair(BaseModel):
     difficulty_estimate_author: Optional[int] = None
     "Self-assessed difficulty on a coarse ordinal scale."
 
-    metadata: Dict[str, str] = Field(default_factory=dict)
-    "Additional metadata such as curriculum week, variant, etc."
+    metadata: Optional[ProblemMetadata] = None
+    "Additional structured metadata such as status, verification tasks, etc."
 
 
 class EvalRecord(BaseModel):
@@ -229,6 +334,12 @@ class EvalRecord(BaseModel):
 
     attempts: int = 1
     "Number of model attempts."
+
+    elapsed_seconds: Optional[float] = None
+    "Total wall-clock time spent across all attempts."
+
+    attempt_details: List[dict] = Field(default_factory=list)
+    "Per-attempt telemetry (elapsed time, tokens, score, etc.)."
 
     raw_response: Optional[str] = None
     "Raw text returned by the evaluator model."
