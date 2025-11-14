@@ -119,6 +119,82 @@ class DeepEvolve:
 
         logger.info(f"Logging to {log_file}")
 
+    def _preload_seed_problems(self) -> None:
+        """Load all seed problems from the math_problem_generation generator and add them as inspirations.
+
+        This lets the evolutionary process reference the entire seed corpus instead of a single rotating example.
+        """
+        try:
+            # Only applicable for math_problem_generation
+            if self.problem_name != "math_problem_generation":
+                return
+
+            import importlib.util
+            gen_path = os.path.join(self.workspace, "initial_code", "generator.py")
+            if not os.path.exists(gen_path):
+                logger.warning(f"Seed generator not found at {gen_path}")
+                return
+
+            spec = importlib.util.spec_from_file_location("_seed_generator_mod", gen_path)
+            if spec is None or spec.loader is None:
+                logger.warning("Failed to import seed generator module")
+                return
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)  # type: ignore
+
+            if not hasattr(mod, "MathProblemGenerator"):
+                logger.warning("MathProblemGenerator not found in generator module")
+                return
+
+            gen = getattr(mod, "MathProblemGenerator")()
+            if not hasattr(gen, "_frontier_math_entries"):
+                logger.warning("Seed entries provider not found in MathProblemGenerator")
+                return
+            entries = gen._frontier_math_entries()
+            if not entries:
+                logger.info("No frontier seed entries to preload")
+                return
+
+            # Build a light-weight IdeaData for each seed and add as Program with initial code
+            from utils.datatypes import EvaluationData
+            for idx, entry in enumerate(entries):
+                try:
+                    seed_title = entry.get("prefix", f"frontier_seed_{idx}")
+                    seed_desc = f"Frontier seed inspiration: {seed_title}"
+                    idea = IdeaData(
+                        description=seed_desc,
+                        motivation="Use as inspiration for harder fused problems.",
+                        implementation_notes="No direct implementation. Acts as prior art reference.",
+                        pseudocode="",
+                        originality=EvaluationData(score=5, positive="Diverse seed", negative="Baseline only"),
+                        future_potential=EvaluationData(score=6, positive="Good fusion potential", negative="Needs evolution"),
+                        code_difficulty=EvaluationData(score=3, positive="Reference only", negative="No code"),
+                    )
+
+                    prog = Program(
+                        id=str(uuid.uuid4()),
+                        code=self.initial_code,
+                        idea=idea,
+                        parent_id="root",
+                        language=self.language,
+                        metrics={"combined_score": 0.0},
+                        iteration_found=0,
+                        evolution_history=[],
+                        report=entry.get("problem_text", ""),
+                        metadata={
+                            "seed_entry": entry,
+                            "is_seed_inspiration": True,
+                        },
+                    )
+                    # Distribute seeds across islands to improve diversity
+                    target_island = idx % self.database.config.num_islands
+                    self.database.add(prog, iteration=0, target_island=target_island)
+                except Exception as seed_err:
+                    logger.warning(f"Skipping seed preload due to error: {seed_err}")
+            logger.info(f"Preloaded {len(entries)} seed inspirations into the database")
+        except Exception as exc:
+            logger.warning(f"Preload seed inspirations failed: {exc}")
+
     async def run(
         self,
         iterations: Optional[int] = None,
@@ -201,6 +277,11 @@ class DeepEvolve:
                 report=self.initial_idea_info["content"],
             )
             self.database.add(initial_program)
+            # Also: preload all seed problems as inspirations so evolution can reference the full corpus
+            try:
+                self._preload_seed_problems()
+            except Exception as preload_err:
+                logger.warning(f"Failed to preload seed problems as inspirations: {preload_err}")
         else:
             logger.info(
                 f"Skipping initial program addition (resuming from iteration {start_iteration} with {len(self.database.programs)} existing programs)"

@@ -1,25 +1,32 @@
 [
   {
-    "name": "Chinese Remainder Theorem",
-    "statement": "Let n1,...,nk be pairwise coprime integers. Then the system x ≡ ai (mod ni) has a unique solution mod N = n1...nk.",
-    "source": "Standard algebra/number theory texts",
-    "notes": "Supports explicit instance generator code for CRT solution steps and feasibility verification."
+    "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
+    "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
+    "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054",
+    "notes": "Algorithmic basis construction and pole order justification via Newton–Puiseux/Hensel."
   },
   {
-    "name": "Structure theorem for multiplicative groups mod p^k",
-    "statement": "For odd prime p and k ≥ 1, the group (Z/p^k Z)^× is cyclic of order φ(p^k) = p^k - p^{k-1}.",
-    "source": "Standard number theory texts",
-    "notes": "Instance feasibility pre-filtering script uses group structure to confirm all element orders required in each problem instance truly exist."
+    "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
+    "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
+    "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136",
+    "notes": "Provides explicit table lookup or algorithm for minimal-norm representatives."
   },
   {
-    "name": "Minimal polynomial for a + sqrt(q)",
-    "statement": "Let a ∈ Z, q > 0 not a perfect square. Then the minimal polynomial of a + sqrt(q) over Q is x^2 - 2a x + (a^2 - q).",
-    "source": "Any algebra textbook (field extensions)"
+    "name": "Automorphism group and Schur square invariants for AG codes",
+    "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
+    "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004.",
+    "notes": "Tabulated invariants show AG codes are inequivalent to RS/BCH/tRS for genus > 1; canonical-form/dimension sequence techniques are available for close-invariant cases."
   },
   {
-    "name": "Irreducibility via discriminant (and algorithm for higher degree)",
-    "statement": "Quadratic x^2 + bx + c ∈ Z[x] is irreducible over Q iff discriminant D = b^2 - 4c is not a perfect square. For higher degree or factorization questions, use Berlekamp–Zassenhaus, Newton polygon, or computational algebra, all scriptable and code-supported.",
-    "source": "Standard algebra texts; CAS documentation; Berlekamp’s original paper",
-    "notes": "Pipeline provides hooks for invoking required algorithm per SMART/MCP-Bench scoring and verification."
+    "name": "Minimum distance theorem for AG codes",
+    "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
+    "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition, Theorem 2.2.3.",
+    "notes": "Equality can be checked case by case by enumerating codewords."
+  },
+  {
+    "name": "Canonical forms and dimension sequences for code equivalence",
+    "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
+    "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059",
+    "notes": "Should be referenced for subtle or close-invariant discrimination."
   }
 ]

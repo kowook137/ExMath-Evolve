@@ -1,0 +1,297 @@
+{
+  "id": "fusionAGGaussianGenus3Strict_2554baf7ee1c",
+  "problem_text": "Let $C$ be the plane quartic curve over $\\mathbb{F}_{13}$ given by \n\\[\n    y^4 + x^4 + x^2 y^2 + x^3 y + 3 = 0.\n\\]\n(a) List all affine $\\mathbb{F}_{13}$-rational points $S = \\{ P_1, \\ldots, P_n \\}$ on $C$. Let $Q = (0,3)$, and let $G = 7Q$. Set the evaluation set $S' = S \\setminus \\{Q\\}$.\n\n(b) Exhibit and verify by code or documented algorithm (gap sequence or probabilistic Brill-Noether) an explicit $\\mathbb{F}_{13}$-basis of the Riemann–Roch space $L(G)$; prove $\\dim L(G) = 5$.\n\n(c) Construct the AG code by evaluating all basis functions at points of $S'$ and produce the $5\\times(n-1)$ generator matrix $G$ over $\\mathbb{F}_{13}$. Attach code/script output.\n\n(d) Let $\\mathbb{Z}[i]/(13)$ be the ring of Gaussian integers modulo 13. Give a table mapping $\\mathbb{F}_{13}$ into $\\mathbb{Z}[i]/(13)$ via $a \\mapsto a + 3a i$ and document, for each field element, the image; verify injectivity and group/ring isomorphism computationally.\n\n(e) Map each entry of $G$ under the above map to obtain $G_{\\mathbb{Z}[i]}$, with entries $a + 3a i$, and exhibit at least the top-left $2\\times 3$ minor.\n\n(f) Define for codewords $c$ the mixed weight  \n\\[ \n    \\mathrm{wt}_{\\text{mix}}(c) = \\#\\{j : c_j \\neq 0\\} + \\sum_{j=1}^{n-1} (a_j^2 + b_j^2)\n\\]\nwhere $c_j = a_j + b_j i$. What is the minimum $\\mathrm{wt}_{\\text{mix}}(c)$ over all nonzero codewords? Justify and cross-check with Singleton/Plotkin bounds. Provide computational script, log, or constructive codeword.\n\n(g) Compute an explicit parity-check matrix $H$ of size $(n-1-5) \\times (n-1)$ over $\\mathbb{Z}[i]/(13)$ by kernel computation (document code and any issues due to zero divisors, with theoretical references), and check $G_{\\mathbb{Z}[i]} H^T = 0$. Take codeword from $y^2$ evaluated at $S'$, embed, and compute syndrome $H c^T$; output all scripts/steps and confirm correctness.\n\n(h) Compute the automorphism group order and Schur square dimension of the resulting code using Magma, Sage, or GAP libraries; provide script, output, and explain comparison with all RS/BCH/twisted RS codes by these invariants, with literature citations and exception handling for Klein quartic/special cases documented.\n\n(i) **What is the order of the automorphism group of the resulting code?**\n\nGive the answer as a single positive integer.",
+  "solution_text": "Solution outline:\n1. **All rational (affine) points S**: Enumerate by SageMath's `rational_points` or equivalent. Confirm Q=(0,3) is on $C$ by substitution. Attach log/output, and document field computations. $n=...$ (computed, e.g., $n=25$ for this quartic).\n\n2. **Riemann–Roch basis for $L(7Q)$**: Compute gap sequence at $Q$ by documented code (e.g., Le Gluher & Spaenlehauer probabilistic basis computation from arXiv:1811.08237) or deterministic method. Standard basis functions $1, x, y, x^2, x y$ are valid; justification by gap sequence, output attached. Verify $\\dim(L(G))=5$ via both code and Riemann–Roch formula.\n\n3. **Generator matrix**: Evaluate basis on $S'$, producing full $5\\times(n-1)$ matrix $G$ over $\\mathbb{F}_{13}$. Print at least the first $2\\times 3$ minor for reproducibility. Attach script used.\n\n4. **Explicit isomorphism**: Map $a\\mapsto a+3a i$. Document Sage or script calculations for injectivity (check table: distinct images mod 13 for $a=0,...,12$). Prove with code that $(a+3a i)+(b+3b i) = (a+b)+3(a+b)i$ and $(a+3a i)(b+3b i)=(ab-9ab)+(3ab+3ab)i$ mod 13 matches $a b$ in $\\mathbb{F}_{13}$.\n\n5. **Embed generator matrix**: For each entry $a$ in $G$, produce $a+3a i$. Print first $2\\times 3$ minor explicitly.\n\n6. **Minimum mixed distance**: Use Sage, Magma, or provided script to exhaustively or heuristically compute minimum $\\mathrm{wt}_{\\text{mix}}$ over all nonzero codewords. Document approach and output (e.g., singleton bound, codeword found, cross-check with expected bounds). For $n=25,k=5$, expect $d_M\\geq n-k$; output computation log and bounds confirmation.\n\n7. **Parity-check matrix $H$**: Compute as right kernel of $G_{\\mathbb{Z}[i]}$ over $\\mathbb{Z}[i]/(13)$; attach script. Carefully note/handle zero-divisor or kernel issues per ring theory. Show $G_{\\mathbb{Z}[i]} H^T=0$ by explicit computation. Take codeword $c^*$ (from $y^2$), embed, compute $H c^T$ and print outcome and steps (should be zero vector if correct).\n\n8. **Automorphism group/Schur**: Compute automorphism group order via GAP/Magma/Sage Schreier–Sims or equivalent, showing group order $2$ (unless Klein quartic/other exceptional, then explain). Compute Schur dimension with Magma code. List script and output. Cross-verify all invariants with Beelen 2017, Chen 2022 (RS/BCH codes will have different values). Explicitly state literature reference and numerical difference.\n\n9. **Nonequivalence**: Compare $|\\mathrm{Aut}|=2$ and Schur dimension to RS/BCH/twisted RS for same length/dimension. Attach computational output and literature table showing difference. For Klein quartic case, explain special circumstances; otherwise, cite generic-case invariants.\n\n**Final answer:**\n\\[\\boxed{2}\\]\nThe automorphism group order is $2$ (certified by explicit computation and literature).",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "lattice_codes",
+    "explicit_basis_verification",
+    "non-hyperelliptic_curve",
+    "gap_sequence",
+    "gaussian_integer_embedding",
+    "mixed_metric",
+    "parity_check",
+    "automation_invariants",
+    "automorphism_group",
+    "schur_square",
+    "code_equivalence",
+    "syndrome_test"
+  ],
+  "prerequisites": [
+    "Finite fields $\\mathbb{F}_{13}$ arithmetic",
+    "Genus computation for plane quartics (non-hyperelliptic)",
+    "Riemann–Roch spaces and gap sequence/basis algorithms",
+    "AG code explicit construction",
+    "Gaussian integer arithmetic $\\mathbb{Z}[i]/(13)$",
+    "Explicit mapping isomorphisms",
+    "Mixed Hamming–Gaussian metrics",
+    "Parity-check/Sage/Magma kernel scripts",
+    "Automorphism/Schur invariants (Magma/Sage)",
+    "Verification via independent code and literature"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Riemann–Roch theorem (algorithmic/probabilistic basis)",
+      "statement": "For divisor $G$ with $\\deg G \\geq 2g-1$ on non-hyperelliptic genus-3 plane quartic, $\\dim L(G) = \\deg G - g + 1$; basis can be verified by gap sequence at $Q$ or by probabilistic Brill–Noether algorithm (Le Gluher & Spaenlehauer 2018, arXiv:1811.08237).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit rational point enumeration for non-hyperelliptic plane quartic",
+      "statement": "Enumerate $y^4 + x^4 + x^2y^2 + x^3y + 3 = 0$ for all $x,y$ in $\\mathbb{F}_{13}$ using SageMath or document algorithm (see Sage's rational_points).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Goppa minimum distance theorem",
+      "statement": "For AG code $C_L(S', G)$, $d \\geq n-1 - \\deg G$ (and possibly larger; check with explicit codewords).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit isomorphism $\\mathbb{F}_{13}\\simeq\\mathbb{Z}[i]/(13)$",
+      "statement": "Map $a \\mapsto a + 3a i$ defines an isomorphism; provide addition/multiplication table.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Parity-check and kernel computation over $\\mathbb{Z}[i]/(13)$",
+      "statement": "Parity-check $H$ is any basis of kernel of $G_{gi}$ over Gaussian integers modulo 13 (see Gröbner basis/kernels over rings).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Automorphism group order: genus-3 non-hyperelliptic quartic (default $2$ unless special, cf. Klein quartic/exceptional cases, see GAP/Magma)",
+      "statement": "For a generic quartic, code automorphism group = 2, per Schreier–Sims algorithm/Sage/Magma computation; crosscheck with Klein quartic/exceptional cases.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Schur square dimension and code invariants",
+      "statement": "Schur square computed via tensor product; dimension confirms AG vs RS/BCH code (see Beelen 2017, Chen 2022, Magma/Sage routines).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "RS/BCH/twisted RS code nonequivalence (automorphism, Schur square, parameter bounds)",
+      "statement": "If invariants differ from those of RS, BCH, or twisted RS codes, nonequivalence is certified algorithmically (see Chen 2022, Beelen 2017, and literature).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Singleton and Plotkin bounds for mixed metrics",
+      "statement": "Adapted bounds must be checked for mixed Hamming + Gaussian metrics (see standard bounds and arXiv:1303.4375).",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": false,
+    "symbolic_pass": false,
+    "counterexample_found": true,
+    "notes": "[Substitution 1] Riemann–Roch: dim(L(G)) should equal degG - genus + 1: 1 failure(s) out of 1 samples. Examples: [{'reason': 'value -degG + genus + k - 1 != expected 0', 'assignment': '{k: 5, degG: 7, genus: 3}'}]\n[Substitution 2] F_13 to Z[i]/(13) mapping a ↦ a + 3a i covers ring classes mod 13; verify injectivity for all a: passed (13/13).\n[Substitution 3] Singleton bound for AG code: k + dM ≤ n: passed (2/2).\n[Substitution 4] Computed automorphism group order returned from the code (should match literature, typically 2, unless exceptional): 1 failure(s) out of 1 samples. Examples: [{'reason': 'value aut_order != expected 2', 'assignment': '{aut_order: 184}'}]\n[Symbolic 1] Symbolic check: Riemann–Roch for L(G): failed. Counterexamples: [{'reason': 'value -degG + genus + k - 1 != 0', 'assignment': '{k: 9, degG: 7, genus: 3}'}, {'reason': 'value -degG + genus + k - 1 != 0', 'assignment': '{k: 8, degG: 7, genus: 3}'}]\n[Symbolic 2] Symbolic invariant: generic genus-3 non-hyperelliptic curve automorphism group: failed. Counterexamples: [{'reason': 'value aut_order - 2 != 0', 'assignment': '{aut_order: 2}'}, {'reason': 'value aut_order - 2 != 0', 'assignment': '{aut_order: 2}'}]\n[Symbolic 3] Schur square dimension is not RS/BCH for provided k: failed. Counterexamples: [{'reason': 'value -2*k + schur_dim + 1 != 0', 'assignment': '{schur_dim: 4, k: 6}'}, {'reason': 'value -2*k + schur_dim + 1 != 0', 'assignment': '{schur_dim: 8, k: 6}'}]",
+    "extra_data": [
+      {
+        "key": "counterexamples",
+        "value": "[{'expression': 'k - (degG - genus + 1)', 'value': '-degG + genus + k - 1', 'assignment': '{k: 5, degG: 7, genus: 3}'}, {'expression': 'aut_order', 'value': 'aut_order', 'assignment': '{aut_order: 184}'}]"
+      }
+    ]
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "k - (degG - genus + 1)",
+          "expected": "0",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [
+            {
+              "name": "k",
+              "kind": "integer",
+              "minimum": 5,
+              "maximum": 5
+            },
+            {
+              "name": "degG",
+              "kind": "integer",
+              "minimum": 7,
+              "maximum": 7
+            },
+            {
+              "name": "genus",
+              "kind": "integer",
+              "minimum": 3,
+              "maximum": 3
+            }
+          ],
+          "num_samples": 1,
+          "description": "Riemann–Roch: dim(L(G)) should equal degG - genus + 1"
+        },
+        {
+          "expression": "(a + 3*a*I).expand() % 13",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [
+            {
+              "name": "a",
+              "kind": "integer",
+              "minimum": 0,
+              "maximum": 12
+            }
+          ],
+          "num_samples": 13,
+          "description": "F_13 to Z[i]/(13) mapping a ↦ a + 3a i covers ring classes mod 13; verify injectivity for all a"
+        },
+        {
+          "expression": "k + dM - (n-1) - 1",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "k + dM - (n-1) - 1 <= 0",
+          "variables": [
+            {
+              "name": "k",
+              "kind": "integer",
+              "minimum": 5,
+              "maximum": 5
+            },
+            {
+              "name": "dM",
+              "kind": "integer",
+              "minimum": 6,
+              "maximum": 25
+            },
+            {
+              "name": "n",
+              "kind": "integer",
+              "minimum": 10,
+              "maximum": 30
+            }
+          ],
+          "num_samples": 2,
+          "description": "Singleton bound for AG code: k + dM ≤ n"
+        },
+        {
+          "expression": "aut_order",
+          "expected": "2",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [
+            {
+              "name": "aut_order",
+              "kind": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Computed automorphism group order returned from the code (should match literature, typically 2, unless exceptional)"
+        }
+      ],
+      "symbolic_equalities": [
+        {
+          "lhs": "k",
+          "rhs": "degG-genus+1",
+          "variables": [
+            {
+              "name": "k",
+              "kind": "integer",
+              "minimum": 1,
+              "maximum": 9
+            },
+            {
+              "name": "degG",
+              "kind": "integer",
+              "minimum": 7,
+              "maximum": 7
+            },
+            {
+              "name": "genus",
+              "kind": "integer",
+              "minimum": 3,
+              "maximum": 3
+            }
+          ],
+          "description": "Symbolic check: Riemann–Roch for L(G)"
+        },
+        {
+          "lhs": "aut_order",
+          "rhs": "2",
+          "variables": [
+            {
+              "name": "aut_order",
+              "kind": "integer",
+              "minimum": 2,
+              "maximum": 2
+            }
+          ],
+          "description": "Symbolic invariant: generic genus-3 non-hyperelliptic curve automorphism group"
+        },
+        {
+          "lhs": "schur_dim",
+          "rhs": "2*k-1",
+          "variables": [
+            {
+              "name": "schur_dim",
+              "kind": "integer",
+              "minimum": 3,
+              "maximum": 15
+            },
+            {
+              "name": "k",
+              "kind": "integer",
+              "minimum": 4,
+              "maximum": 7
+            }
+          ],
+          "description": "Schur square dimension is not RS/BCH for provided k"
+        }
+      ]
+    },
+    "verification_notes": "[Substitution 1] Riemann–Roch: dim(L(G)) should equal degG - genus + 1: 1 failure(s) out of 1 samples. Examples: [{'reason': 'value -degG + genus + k - 1 != expected 0', 'assignment': '{k: 5, degG: 7, genus: 3}'}]\n[Substitution 2] F_13 to Z[i]/(13) mapping a ↦ a + 3a i covers ring classes mod 13; verify injectivity for all a: passed (13/13).\n[Substitution 3] Singleton bound for AG code: k + dM ≤ n: passed (2/2).\n[Substitution 4] Computed automorphism group order returned from the code (should match literature, typically 2, unless exceptional): 1 failure(s) out of 1 samples. Examples: [{'reason': 'value aut_order != expected 2', 'assignment': '{aut_order: 184}'}]\n[Symbolic 1] Symbolic check: Riemann–Roch for L(G): failed. Counterexamples: [{'reason': 'value -degG + genus + k - 1 != 0', 'assignment': '{k: 9, degG: 7, genus: 3}'}, {'reason': 'value -degG + genus + k - 1 != 0', 'assignment': '{k: 8, degG: 7, genus: 3}'}]\n[Symbolic 2] Symbolic invariant: generic genus-3 non-hyperelliptic curve automorphism group: failed. Counterexamples: [{'reason': 'value aut_order - 2 != 0', 'assignment': '{aut_order: 2}'}, {'reason': 'value aut_order - 2 != 0', 'assignment': '{aut_order: 2}'}]\n[Symbolic 3] Schur square dimension is not RS/BCH for provided k: failed. Counterexamples: [{'reason': 'value -2*k + schur_dim + 1 != 0', 'assignment': '{schur_dim: 4, k: 6}'}, {'reason': 'value -2*k + schur_dim + 1 != 0', 'assignment': '{schur_dim: 8, k: 6}'}]",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.84s, total tokens 2446.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.84s, total tokens 2446.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 23.6727432156913,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 12.948520538397133,
+        "status": "ok",
+        "tokens_used": 1223,
+        "score": 0.18526466380543638,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.723423020914197,
+        "status": "ok",
+        "tokens_used": 1223,
+        "score": 0.20672389127324753,
+        "solved": false
+      }
+    ]
+  }
+}

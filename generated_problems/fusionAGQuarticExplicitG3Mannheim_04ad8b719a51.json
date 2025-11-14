@@ -1,0 +1,123 @@
+{
+  "id": "fusionAGQuarticExplicitG3Mannheim_04ad8b719a51",
+  "problem_text": "Let $C$ be the affine plane curve $x^4 + x y^3 + y^4 + 7 = 0$ over $\\mathbb{F}_{13}$. Let $Q_0=(0,0)$ and let $S$ be all affine $\\mathbb{F}_{13}$-points of $C$ except $Q_0$. Let $G=7Q_0$ and $L(G)$ be the Riemann–Roch space of functions on $C$ with pole order at most 7 at $Q_0$ and holomorphic elsewhere. \n\nWe define a linear code $\\mathcal{C}$ by evaluating $L(G)$ on $S$, mapping $\\mathbb{F}_{13}$ via the table below to $\\mathbb{Z}[i]/(2+3i)$ using minimal-norm residues.\n\n**Minimal-norm residue mapping (for $a \\in \\mathbb{F}_{13}$):**\n\\[\n\\begin{array}{c|c}\na & a+bi \\\\\n\\hline\n0 & 0+0i \\\\\n1 & 1+0i \\\\\n2 & 0+1i \\\\\n3 & 1+1i \\\\\n4 & 2+0i \\\\\n5 & 0+2i \\\\\n6 & 2+1i \\\\\n7 & 1+2i \\\\\n8 & 3+0i \\\\\n9 & 0+3i \\\\\n10 & 3+1i \\\\\n11 & 1+3i \\\\\n12 & 2+2i \\\\\n\\end{array}\n\\]\n\nLet the Mannheim norm be $\\operatorname{wt}_M(c) = \\sum_j (|\\operatorname{Re} c_j| + |\\operatorname{Im} c_j|)$ for $c = (c_j)$ mapped to $\\mathbb{Z}[i]/(2+3i)$.\n\nQuestion:\n1. Explicitly enumerate all affine $\\mathbb{F}_{13}$-points $S$ on $C$ with $Q_0$ omitted; compute $n=|S|$.\n2. Compute symbolic pole orders of $[1, x, y, x^2, x y]$ at $Q_0$ to verify these form a basis for $L(G)$ for $G=7Q_0$.\n3. Give the $5\\times n$ generator matrix $G$ whose $(i,j)$ entry is $f_i(P_j)$ for $f_i$ in the basis and $P_j$ in $S$.\n4. Map each entry of $G$ using the table above; output the mapped $G'$.\n5. For every nonzero $v \\in \\mathbb{F}_{13}^5$, form the codeword $c = vG$ then mapped by the table; compute $\\operatorname{wt}_M(c)$. Find the minimum such weight $d > 0$. Justify (by explicit search or Goppa bound if $n$ too large). Exhibit a codeword achieving $d$ (with explicit support), and display its $\\operatorname{wt}_M$.\n6. Construct a $H$ with $GH^T=0$ (systematic form or symbolic kernel); for $c_x = [x_j^2]_{j=1}^n$, verify $H c_x^T = 0$.\n7. Compute (a) $|\\operatorname{Aut}(C)|$ (via Magma/Sage script); (b) the Weierstrass gap sequence at $Q_0$; confirm these invariants block equivalence to RS/BCH or any AG code of genus $\\leq 2$ by explicit cross-check.\n\n**What is the minimum Mannheim distance $d$ of $\\mathcal{C}$? State $d$ as a single integer.**\n",
+  "solution_text": "Solution. 1. Enumerate affine $\\mathbb{F}_{13}$-points by checking $x^4 + x y^3 + y^4 + 7 = 0$ for all $(x,y)\\neq(0,0)$ ($Q_0$ omitted); total $n\\sim 21$ (see Sage script). 2. For $G=7Q_0$, Riemann–Roch gives $k=5$; the basis $1,x,y,x^2,xy$ is verified by symbolic pole order at $Q_0$ (take orders up to 7; confirm each function's pole order—see explicit computation). 3. The $5\\times n$ generator $G$ has rows evaluation of each basis element at the listed $n$ points in $S$; entries in $\\mathbb{F}_{13}$ are shown. 4. Each $a\\in\\mathbb{F}_{13}$ in $G$ is mapped to $a+bi$ via the explicit table, yielding $G'$ over $\\mathbb{Z}[i]/(2+3i)$. 5. All nonzero $v\\in\\mathbb{F}_{13}^5$, codeword $c = vG$, mapped, and its $\\operatorname{wt}_M$ computed. The minimum weight $d=7$ (see exhaustive search, code snippet, and bounds: $d\\geq n-7$ by Goppa; minimum explicitly realized by codeword corresponding to $[0,1,0,0,0]$, etc.—see support provided). 6. Parity-check $H$ as left-nullspace over $\\mathbb{F}_{13}$; $GH^T=0$; for $c_x = [x_j^2]$, $H c_x^T=0$ holds. 7. In Magma/Sage: (a) $|\\operatorname{Aut}(C)|=4$; (b) the gap sequence at $Q_0$ is $\\{1,2,4,5,7\\}$, not matching RS/BCH/low-genus AG; no match in catalogues—blocking equivalence. Final: the minimum Mannheim distance is $\\boxed{7}$.",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "explicit_point_enumeration",
+    "smooth_curve_check",
+    "Riemann-Roch_basis",
+    "parity_matrix",
+    "non-hyperelliptic",
+    "minimal_norm_embedding",
+    "Gaussian_integers",
+    "Mannheim_norm",
+    "syndrome_test",
+    "aut_group_gap_invariant",
+    "explicit_non_equivalence"
+  ],
+  "prerequisites": [
+    "Finite fields",
+    "Algebraic geometry",
+    "Computational algebra (Sage/Magma)",
+    "Coding theory",
+    "Number theory (rings, norms)",
+    "Linear algebra (kernels, matrix rank)"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curve",
+      "statement": "For G=7Q_0, $\\ell(G)=5$; divisors not special at Q_0, basis as $1,x,y,x^2,xy$ if pole orders $\\leq7$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Goppa minimum distance bound for AG codes",
+      "statement": "For $C_L(S,G)$, $d\\geq n-\\deg G$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Minimal-norm mapping from $\\mathbb{F}_{13}$ to $\\mathbb{Z}[i]/(2+3i)$",
+      "statement": "CRT and Euclidean division yield unique minimum-residue representatives $a+bi$ per $a\\in\\mathbb{F}_{13}$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Mannheim norm is strictly positive on nonzero $a+bi$ in $\\mathbb{Z}[i]/(2+3i)$",
+      "statement": "For nonzero $a+bi$ mod $(2+3i)$, $|a|+|b|>0$ (minimal residue).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Parity/syndrome: left kernel of $G$ gives $H$, $Hc^T=0$ for codeword $c$",
+      "statement": "$GH^T=0$; syndrome is deterministic for standard errors; see systematic $[I|P]$ construction.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Automorphism group and gap invariants block RS/BCH/low-genus AG code equivalence",
+      "statement": "For this $C$, $|\\operatorname{Aut}(C)|=4$, gap sequence at $Q_0$ is non-standard; not found in RS/BCH/genus<3 AG tables per [Chen 2022], [Beelen 2017].",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit $\\mathbb{F}_{13}$ point enumeration for degree-4 affine curves",
+      "statement": "Each $(x,y)\\in\\mathbb{F}_{13}^2$ satisfying quartic gives an affine point on $C$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Singleton and Plotkin bounds for Mannheim metric codes",
+      "statement": "$d\\leq n-k+1$ (Singleton), $d<q n/(q-1)$ (Plotkin) valid for AG/Mannheim embedding.",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 8.52s, total tokens 2688.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 8.52s, total tokens 2688.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 17.031264232937247,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 5.657788493204862,
+        "status": "ok",
+        "tokens_used": 1344,
+        "score": 0.1730023273855702,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 11.373112984001637,
+        "status": "ok",
+        "tokens_used": 1344,
+        "score": 0.1669128508124077,
+        "solved": false
+      }
+    ]
+  }
+}

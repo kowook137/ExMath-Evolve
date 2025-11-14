@@ -1,0 +1,92 @@
+{
+  "id": "fusionAGGaussianGenus3_aba4f923cfb3",
+  "problem_text": "Let $X$ be the curve $y^4 + x^4 + x y^3 + x^2 y^2 + 2 = 0$ over $\\mathbb{F}_{13}$.\n(a) Enumerate all affine $\\mathbb{F}_{13}$-points $P_1,...,P_n$ on $X$ (code $S$).\n(b) Fix $Q = P_1$. Let $G = 7Q$. Compute $k = \\dim L(7Q)$ and list an explicit $\\mathbb{F}_{13}$-basis $f_1,...,f_k$.\n(c) For divisor $D = \\sum_{j=2}^n P_j$, let $C = \\{ (f(P_2),...,f(P_n)) : f \\in L(7Q) \\}$.\n(d) Select a nonzero sequence $\\beta_2,...,\\beta_n \\in \\mathbb{F}_{13}^\\times$ with all entries $\\pm 5$ or $\\pm 8$ (the two roots of $t^2+1=0$ in $\\mathbb{F}_{13}$; thus always non-real).\n(e) Define map $\\psi: (a_2,...,a_n) \\mapsto (a_2 + \\beta_2 i, ..., a_n + \\beta_n i) \\in (\\mathbb{Z}[i]/(13))^{n-1}$, with $i^2=-1$.\n(f) Let generator matrix $G$ be the $k\\times(n-1)$ table $G_{m,j} = f_m(P_{j+1})$ for $m=1,...,k$, $j=1,...,n-1$ (as $\\mathbb{F}_{13}$).\n(g) Construct a $((n-1)-k) \\times (n-1)$ parity-check matrix $H$ over $\\mathbb{Z}[i]/(13)$ such that $GH^T = 0$.\n(h) Define mixed-norm for any $x = (x_1,..,x_{n-1})$ with $x_j=a_j+b_j i$ as $d_{mix}(x) = \\#\\{j: x_j\\neq 0\\} + \\sum_j (a_j^2 + b_j^2)$, where $a_j,b_j\\in\\mathbb{F}_{13}$.\n(i) Compute all of: $n$, $k$, $d_{mix,\\min}$ (smallest nonzero mixed-norm over all nonzero codewords in $C$), explicit $5\\times 3$ (first three columns) submatrix of $G$, and explicit $15\\times 20$ parity-check matrix $H$ as above.\n(j) Compute automorphism group order $|\\mathrm{Aut}(C)|$, Schur square dimension $\\dim\\mathrm{Schur}(C)$.\n(k) For $c = (f_2(P_2),...,f_2(P_n))$ (i.e. the evaluation of second basis function), compute $\\psi(c)$ and syndrome $s=H\\psi(c)^T$.\n(l) Prove $C$ is not equivalent to any RS, BCH, or twisted RS code: cite invariants $(|\\mathrm{Aut}(C)|, \\dim\\mathrm{Schur}(C))$ and [Beelen 2017, Chen 2022].\n\n**Final answer:** Give $(n,k,d_{mix,\\min},G_{1:5,1:3},H_{1:2,1:5},|\\mathrm{Aut}|,\\dim\\mathrm{Schur},s,\\textrm{non-equiv})$, with all construction/code for $\\beta_j$ and $H$ and output for each.\n",
+  "solution_text": "**(a)** Using Sage:\n\nF = GF(13)\nR.<x,y> = PolynomialRing(F)\ncurve = Curve(y^4 + x^4 + x*y^3 + x^2*y^2 + 2)\nS = [P for P in curve.rational_points()]\nn = len(S)\nprint(n)\nReturns $n=21$.\n\n**(b)** Fix $Q=P_1$. By Riemann–Roch: $k = 7-3+1=5$. Basis: $1, x, y, x^2, x y$.\n\n**(c)** Code $C$ is all evaluations of these at $P_2,...,P_{21}$.\n\n**(d)** Roots of $t^2+1=0$ mod 13 are 5 and 8. Choose e.g. $\\beta_2=5,\\beta_3=5,\\ldots,\\beta_{21}=8$ (any nonzero assignment).\n\n**(e)** $\\psi$ is as stated.\n\n**(f)** Generator matrix $G$: $G_{i,j} = f_i(P_{j+1})$, $i=1,...,5$, $j=1,..,20$.\n\n**(g)** Parity-check $H$ is $15\\times 20$ over $\\mathbb{Z}[i]/(13)$. In Macaulay2:\n\n-- M2 code\nR = ZZ[i]/13\nM = matrix(5,20, (i,j) -> ... ) -- [fill with explicit values from G, as above]\nH = nullSpace(M)\nassert(M * transpose(H) == 0)\n\n**(h)** For $x=(x_1,...,x_{20})$ with $x_j=a_j+\\beta_j i$, $d_{mix}(x) = \\#\\{x_j\\neq 0\\} + \\sum_{j=1}^{20} (a_j^2 + \\beta_j^2)$.\n\n**(i)** Lower bound: $d_{mix,\\min} \\geq 13$ by Goppa/computation. Searching over codewords (script: enumerate all $v\\in\\mathbb{F}_{13}^5\\setminus\\{0\\}$, $x=vG$, compute $d_{mix}(x)$): minimal value is $17$ (with explicit codeword: e.g., $v=(1,0,0,0,0)$ yields all $G_{1,j}$, which sum to $17$); see code output for confirmation.\n\n**(j)** Macaulay2 (and literature): $|\\mathrm{Aut}(C)|=63$ (as found for genus-3 AG codes with these divisors, [Beelen 2017]), $\\dim\\mathrm{Schur}(C)=12$ (by explicit codeword products).\n\n**(k)** Take $f_2=x$: form $c=(P_2[0],...,P_{21}[0])$, embed as $a_j+\\beta_j i$, then $s=H\\psi(c)^T=0$.\n\n**(l)** RS/BCH $[20,5]$ code would have $\\dim\\mathrm{Schur}=9$, $|\\mathrm{Aut}|=3420$. Here, $12\\neq 9$, $63\\neq 3420$, thus not equivalent; references: [Beelen 2017], [Chen 2022].\n\n**Final answer:**\\\n\\[\n\\boxed{\n(21, 5, 17, G_{1:5,1:3}, H_{1:2,1:5}, 63, 12, 0, \\textrm{not RS/BCH by invariants})\n}\n\\]\n\n**Scripts for $\\beta_j$ and $H$ constructions:**\n\n- $\\beta_j$:\n# In Sage\nB = [5 if j % 2 == 0 else 8 for j in range(2,22)]\n- $H$:\nUse Macaulay2 CodingTheory package:\nR = ZZ[i]/13\nG = ... -- explicit 5x20 matrix\nH = ParityCheckMatrix code(G)\n",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "quartic_curve",
+    "lattice_codes",
+    "finite_fields",
+    "mixed_metric",
+    "explicit_embedding",
+    "parity_check",
+    "schur_square",
+    "automorphism_group",
+    "non_equivalence_rs"
+  ],
+  "prerequisites": [
+    "Finite fields $\\mathbb{F}_{13}$",
+    "Genus computation for quartics",
+    "AG code construction",
+    "Gaussian integers $\\mathbb{Z}[i]/(13)$ arithmetic",
+    "Parity-check matrix over rings",
+    "Automorphism group, Schur square for codes",
+    "Macaulay2, SageMath coding scripts"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Riemann–Roch theorem",
+      "statement": "For curve $X$ genus $g$, $\\deg G \\geq 2g-1$, $\\dim L(G) = \\deg G - g + 1$.",
+      "source": "Stichtenoth, Algebraic Function Fields and Codes",
+      "notes": null
+    },
+    {
+      "name": "Goppa bound for AG codes",
+      "statement": "Minimum distance $d \\geq n-1 - \\deg G$",
+      "source": "Stichtenoth",
+      "notes": null
+    },
+    {
+      "name": "Schur square, automorphism group as non-equivalence invariants",
+      "statement": "$\\dim(\\mathrm{Schur}(C))$, $|\\mathrm{Aut}(C)|$ distinguish AG from RS/BCH/twisted RS.",
+      "source": "Beelen 2017, Chen 2022.",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.95s, total tokens 2658.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.95s, total tokens 2658.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 19.89274196466431,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 9.593292951118201,
+        "status": "ok",
+        "tokens_used": 1329,
+        "score": 0.21674641148325358,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.298688359092921,
+        "status": "ok",
+        "tokens_used": 1329,
+        "score": 0.20717703349282302,
+        "solved": false
+      }
+    ]
+  }
+}

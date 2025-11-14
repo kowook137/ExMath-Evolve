@@ -322,7 +322,10 @@ class VerificationRunner:
         if not expression:
             raise VerificationError("Expression is missing.")
         try:
-            return sp.sympify(expression, convert_xor=True)
+            result = sp.sympify(expression, convert_xor=True)
+            if isinstance(result, bool):
+                result = sp.true if result else sp.false
+            return result
         except Exception as exc:
             raise VerificationError(f"Could not parse expression '{expression}': {exc}") from exc
 

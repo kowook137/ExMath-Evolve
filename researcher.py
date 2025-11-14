@@ -130,6 +130,22 @@ Return valid JSON with fields:
 }
 """
 
+# Olympiad-style transformation constraints (non-breaking extension):
+# We keep the JSON output schema (ReportData) unchanged, but strengthen how the
+# problem is constructed. These constraints should be applied when drafting
+# problem_pair.problem_text / solution_text. Do NOT change the return format.
+WRITER_INSTRUCTIONS += """
+
+Additional Olympiad-style transformation constraints (apply when suitable):
+- Target difficulty: challenging Olympiad (IMO shortlist level) while remaining machine-verifiable and bounded in runtime.
+- Deep synthesis: the solution must critically depend on the interplay between a central theorem and a supporting concept/tool, in a way that feels integral to the problem (no superficial use).
+- Disguised theorem: do not name the central theorem explicitly in the problem text; instead, implicitly require the idea. You may record the theorem name and source in `theorem_refs` for metadata.
+- Multi-step reasoning: require at least 2–3 non-trivial intermediate steps/lemmas that logically connect setup → key lemmas → theorem application → final conclusion.
+- Generalization/abstraction when appropriate: consider parameters (instead of fixed small numbers) to avoid rote patterns and increase conceptual challenge, but ensure verification remains deterministic.
+- Single final answer: design the task so the final answer is a single integer. If the natural product is a construction, add a final integer quantity to compute (e.g., count, index, minimal value, unique parameter).
+- Verification: include a concrete, deterministic verification plan and, where possible, machine-checkable tests in `verification_notes` (e.g., substitution ranges, equivalence checks, boundary cases). Do not leak the full solution in the problem text.
+"""
+
 
 USER_TEMPLATE = """
 ## User Query
@@ -344,9 +360,13 @@ class ResearcherAgent:
         all_search_results = []
         all_reports = []
         current_problem_spec: ProblemSpec | None = None
+        metadata_query = self.query or ""
+        max_metadata_len = 508
+        if len(metadata_query) > max_metadata_len:
+            metadata_query = metadata_query[:max_metadata_len - 3] + "..."
         with trace(
             f"DeepEvolve_{self.problem_name}",
-            metadata={"query": self.query},
+            metadata={"query": metadata_query},
             trace_id=trace_id,
             disabled=False,
         ):

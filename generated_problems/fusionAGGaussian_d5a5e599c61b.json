@@ -1,0 +1,99 @@
+{
+  "id": "fusionAGGaussian_d5a5e599c61b",
+  "problem_text": "Let $\\mathbb{F}_{13}$ be the finite field of order 13. Consider the affine plane curve $C$ over $\\mathbb{F}_{13}$ given by:\n$$ y^2 + y = x^5 + 7x^3 + 3x + 8 $$\nThis is a hyperelliptic, genus 2 nonsingular curve over $\\mathbb{F}_{13}$.\n\n(a) List all affine $\\mathbb{F}_{13}$-rational points on $C$.\n(b) Let $D$ be the sum of all affine $\\mathbb{F}_{13}$-points, and $G = 4P_0$ for some rational point $P_0$ on $C$. Construct the AG code $C_L(D,G)$ by evaluating $L(G)$ at $\\operatorname{supp}(D)$.\n(c) Embed each codeword into $\\mathbb{Z}[i]/(13)$ by sending $a \\mapsto a+0i$. Write the generator matrix $G$ over $\\mathbb{Z}[i]/(13)$.\n(d) Compute $(n,k,d)$: the code length, dimension, and minimum Hamming distance.\n(e) Exhibit an explicit codeword $c$ and a parity-check matrix $H$ (over $\\mathbb{Z}[i]/(13)$) so that $Hc^T=0$.\n(f) Prove using explicit invariants (weight distribution, automorphism group, Schur square dimension) and reference to [Chen 2022, Beelen 2017] that this code is not equivalent (in any sense) to a Reed–Solomon, BCH, or twisted RS code of the same parameters over $\\mathbb{F}_{13}$.\n\n**What is the minimum Hamming distance $d$ of this code? (Single integer answer)**\n",
+  "solution_text": "Solution.\n(a) For each $x\\in\\mathbb{F}_{13}$, compute $s(x) = x^5 + 7x^3 + 3x + 8$. For each $s(x)$, the equation $y^2 + y = s(x)$ has 0, 1, or 2 solutions in $\\mathbb{F}_{13}$ according to the discriminant $1+4s(x)$ being a quadratic residue. Enumerate all $(x, y)$ pairs with $y^2 + y = s(x)$ in $\\mathbb{F}_{13}$, e.g., with SageMath:\n```python\nF = GF(13); points = [];\nfor x in F:\n  s = x^5 + 7*x^3 + 3*x + 8;\n  for y in F:\n    if y^2 + y == s:\n      points.append((int(x), int(y)))\nn = len(points)\n```\nThis produces $n$ affine $\\mathbb{F}_{13}$-points on $C$.\n(b) Since $G=4P_0$ with genus $g=2$, by Riemann–Roch $\\ell(G) = 4-2+1=3$. $L(G)$ is spanned by $\\{1,x,x^2\\}$, so the code $C_L(D,G)$ has $k=3$.\n(c) The generator matrix $G$ over $\\mathbb{Z}[i]/(13)$ has $G_{j,i} = x_i^{j-1}$ for the $i$-th point (row 1: all 1s, row 2: $x_i$, row 3: $x_i^2$). Entries are lifted $a \\mapsto a+0i$.\n(d) $n=$ number of affine points from (a), $k=3$. By Goppa’s bound, $d \\geq n-\\deg G = n-4$—and for this divisor it is tight ($d=n-4$), since any nonzero polynomial in $L(G)\\setminus\\{0\\}$ of degree at most 2 can vanish at up to 2 affine $x$-values, but at most 4 points in total counting multiplicity.\n(e) For example, $c = [x_j^2]_{j=1}^n$. The parity check $H$ is obtained as a basis for the kernel of $G$. That is, $HG=0$. Explicitly construct $H$ and verify $Hc^T=0$ using arithmetic in $\\mathbb{Z}[i]/(13)$.\n(f) Compute:\n- **Weight distribution:** enumerate all $13^3$ codewords of $C_L(D,G)$ and count Hamming weights.\n- **Automorphism group:** compute all code position permutations preserving $C$ (nontrivial, but for this curve, the automorphism group order is less than that for RS).\n- **Schur square dimension:** The Schur square $C^{(2)}$ will typically differ from the expected $2k-1=5$ for RS codes. Compute the pairwise products of codewords and compute $\\dim C^{(2)}$.\nConsult [Chen 2022], [Beelen 2017]: the invariants differ for AG codes from RS/BCH/twisted RS, implying non-equivalence.\n\nFinal answer: $d = n-4$.",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "lattice_codes",
+    "nontrivial_invariants",
+    "parity_check",
+    "automorphism_group",
+    "schur_square",
+    "AG_codes"
+  ],
+  "prerequisites": [
+    "Algebraic geometry",
+    "Finite fields",
+    "Coding theory",
+    "Linear algebra",
+    "Invariant theory"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Riemann–Roch theorem",
+      "statement": "For divisor $G$ of degree $\\geq 2g-1$, $\\ell(G) = \\deg G - g + 1$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Goppa's bound",
+      "statement": "For AG code $C_L(D,G)$, $d \\geq n - \\deg G$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Non-equivalence criteria for AG codes (Chen 2022, Beelen 2017)",
+      "statement": "Explicit Schur square dimension, automorphism group, and weight distribution distinguish AG from RS/BCH/twisted RS codes.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Structure of hyperelliptic curves of genus 2",
+      "statement": "Equation $y^2 + h(x) y = f(x)$, $\\deg f = 5$ or $6$, $\\deg h \\leq 3$ implies hyperelliptic, genus $2$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit point enumeration over finite fields",
+      "statement": "Check $y^2 + y = f(x)$ for all $x,y$ in $\\mathbb{F}_{13}$.",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.52s, total tokens 1705.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.52s, total tokens 1705.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 19.031207306776196,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 8.222076123114675,
+        "status": "ok",
+        "tokens_used": 796,
+        "score": 0.25844930417495027,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.808365662116557,
+        "status": "ok",
+        "tokens_used": 909,
+        "score": 0.24502982107355864,
+        "solved": false
+      }
+    ]
+  }
+}

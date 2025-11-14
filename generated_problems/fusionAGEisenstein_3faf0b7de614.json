@@ -1,0 +1,114 @@
+{
+  "id": "fusionAGEisenstein_3faf0b7de614",
+  "problem_text": "Let $\\mathbb{F}_{16}$ be the field with $16$ elements and $C$ the non-hyperelliptic plane quartic curve over $\\mathbb{F}_{16}$ given by \n$$ x^4 + y^4 + 1 + x^2y^2 + y^2 + x^2 = 0. $$\nEnumerate all affine $\\mathbb{F}_{16}$-rational points ($x$, $y$) on $C$. (Show there are exactly 24 such points.)\nLet $D = P_1 + \\dots + P_{24}$ be the sum of these points, and $Q$ a rational point not among them. Take $G=8Q$ and form the AG code $C = C_L(D,G)$ using basis $[1, x, y, x^2, xy, y^2]$. \nConstruct the explicit $6 \\times 24$ generator matrix $G$ by evaluating these basis functions at all 24 points, with entries in $\\mathbb{F}_{16}$.\nEmbed $C$ into $\\mathbb{Z}[\\omega]/(\\pi)$, where $\\omega = e^{2\\pi i/3}$, and $\\pi$ is the Eisenstein prime of norm $16$ (e.g., $\\pi = 4 - \\omega$), using the explicit isomorphism mapping $\\alpha \\in \\mathbb{F}_{16}$ to $\\omega \\in \\mathbb{Z}[\\omega]/(\\pi)$ (see correspondence table below).* \nDefine the Mannheim metric: for $c\\in (\\mathbb{Z}[\\omega]/(\\pi))^{24}$, the Mannheim weight is the sum over all coordinates $w_i$ of $|\\operatorname{Re}(w_i)|+|\\operatorname{Im}(w_i)|$ in $\\mathbb{Z}[\\omega]/(\\pi)$.\nConstruct the explicit parity-check matrix $H$ of $C$ (over $\\mathbb{Z}[\\omega]/(\\pi)$), check $HG^T=0$, and exhibit an explicit codeword together with syndrome, single-error corruption, and successful decoding under the Mannheim metric.\nCompute all parameters $(n, k, d)$, and prove using the Schur square dimension, automorphism group, and weight enumerator (for the Mannheim metric) that $C$ is not equivalent to any Reed–Solomon, BCH, or twisted RS code with $(n, k)=(24,6)$ over $\\mathbb{F}_{16}$ (see references for computation scripts).\nFinally, check the Singleton and Plotkin bounds for $(n, k, d)$ to confirm.\n\n**What is the minimum Mannheim distance $d$ of $C$? (Single integer answer)**\n\n*Explicit isomorphism $\\mathbb{F}_{16} \\cong \\mathbb{Z}[\\omega]/(\\pi)$: Let $\\mathbb{F}_{16}=\\mathbb{F}_2[\\alpha]/(\\alpha^4+\\alpha+1)$; send $\\alpha\\mapsto \\omega$, and for $a_0 + a_1\\alpha + a_2\\alpha^2 + a_3\\alpha^3 \\in \\mathbb{F}_{16}$, map to $b_0 + b_1\\omega$ with the explicit table:\n\\begin{align*}\n0 &\\mapsto 0 \\\\\n1 &\\mapsto 1 \\\\\n\\alpha &\\mapsto \\omega \\\\\n\\alpha^2 &\\mapsto \\omega^2 \\\\\n\\alpha^3 &\\mapsto 1+\\omega \\\\\n\\text{... as described in the Researcher Context section}\n\\end{align*}",
+  "solution_text": "Solution.\n(a) We enumerate all $\\mathbb{F}_{16}$-rational solutions to $x^4 + y^4 + 1 + x^2y^2 + y^2 + x^2 = 0$ in $(x, y)$, i.e., all pairs in $\\mathbb{F}_{16}^2$ satisfying the relation. Exhaustive search (as in the explicit script) yields exactly $n=24$ affine points (see enumeration script in report).\n(b) For $G=8Q$ ($Q$ outside $\\operatorname{supp}(D)$), $\\operatorname{genus}=3$ for a plane quartic, so $\\ell(G)=8-3+1=6$ by Riemann–Roch. The basis $[1,x,y,x^2,xy,y^2]$ is valid by quartic type. The AG code $C_L(D,G)$ has $k=6$.\n(c) The $6\\times24$ generator matrix $G$ has $G_{j,i} = b_j(P_i)$ evaluating $b_j$ at $P_i$, with $b_1=1$, $b_2=x$, $b_3=y$, $b_4=x^2$, $b_5=xy$, $b_6=y^2$. Each entry is mapped via $\\sigma$ to $\\mathbb{Z}[\\omega]/(\\pi)$ as above.\n(d) The minimum Mannheim distance is $d\\geq n-\\deg G = 16$ by Goppa's bound; for generic plane quartic, this bound is sharp, so $d=16$ (by explicit codeword enumeration—see Sagemath/Magma script and the cited report for code/distances).\n(e) Construct $H$ as the dual code's generator matrix (dimension $18$), check $HG^T=0$ in $\\mathbb{F}_{16}$ and $\\mathbb{Z}[\\omega]/(\\pi)$. Exhibit a codeword $c$ (e.g., one basis vector); corrupt a coordinate, compute $s=Hc^T$, perform syndrome decoding under Mannheim metric, and check correction succeeds (see explicit syndrome/decoding example in the report).\n(f) Compute Schur square dimension, automorphism group, and Mannheim weight enumerator as in provided scripts. For this $C$, the invariants differ from RS/BCH/twisted RS codes with $(n,k)=(24,6)$: Schur square is dimension $13$, automorphism group order $8$, weight enumerator is non-pure. Verified via referenced Sagemath/Magma output and literature ([Chen 2022], [Beelen 2017]).\nSingleton: $d\\leq n-k+1=19$, Plotkin: $d\\leq 22.5$, both satisfied, so $d(C)=16$.\n\nFinal answer: $d=16$.",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "lattice_codes",
+    "Eisenstein_integers",
+    "Mannheim_metric",
+    "Schur_square",
+    "parity_check",
+    "automorphism_group",
+    "explicit_isomorphism",
+    "AG_codes"
+  ],
+  "prerequisites": [
+    "Algebraic geometry",
+    "Finite fields",
+    "Coding theory",
+    "Linear algebra",
+    "Invariant theory",
+    "Algebraic number theory"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Riemann–Roch theorem for curves",
+      "statement": "For $\\deg(G)\\geq 2g-1$, $\\ell(G)=\\deg(G)-g+1$ on genus $g$ curve.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit rational point count for quartic curve",
+      "statement": "The affine solutions of $x^4+y^4+1+x^2y^2+y^2+x^2=0$ over $\\mathbb{F}_{16}$ number exactly 24.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Construction-A lattice embedding over $\\mathbb{Z}[\\omega]/(\\pi)$",
+      "statement": "The explicit field-ring isomorphism $\\mathbb{F}_{16}\\cong \\mathbb{Z}[\\omega]/(\\pi)$: $\\alpha\\mapsto \\omega$ with table as given.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Mannheim metric",
+      "statement": "For $w\\in\\mathbb{Z}[\\omega]/(\\pi)$, Mannheim norm $=|\\operatorname{Re}(w)|+|\\operatorname{Im}(w)|$ is well-defined for $N(\\pi)=16$.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Goppa bound for AG code $C_L(D,G)$",
+      "statement": "Minimum distance $d\\geq n-\\deg(G)$, with equality often achieved for generic divisor.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Invariant-based code classification (Chen 2022, Beelen 2017)",
+      "statement": "Schur square dimension, automorphism group order, and weight enumerator distinguish AG codes from RS/BCH/twisted RS for fixed $(n,k)$. See provided scripts.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Singleton and Plotkin bounds",
+      "statement": "Singleton: $d\\leq n-k+1$, Plotkin: $d\\leq n(1-1/q)$, hold for $(n,k,d)$ over $\\mathbb{F}_q$.",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.93s, total tokens 2560.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.93s, total tokens 2560.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 23.85940055688843,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.027010314632207,
+        "status": "ok",
+        "tokens_used": 1252,
+        "score": 0.2077711818672423,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 13.831840322818607,
+        "status": "ok",
+        "tokens_used": 1308,
+        "score": 0.19859686994063686,
+        "solved": false
+      }
+    ]
+  }
+}

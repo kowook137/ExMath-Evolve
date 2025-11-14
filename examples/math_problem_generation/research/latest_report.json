@@ -1,186 +1,263 @@
 {
-  "markdown_report": "## Objective Summary\n\nThis problem synthesizes the following topics and constraints:\n\n- Orders in multiplicative groups modulo prime powers (odd prime $p$)\n- CRT decomposition of $(\\mathbb{Z}/N\\mathbb{Z})^\\times$ for $N = p^k q$ with $p, q$ odd primes\n- Construction of elements with prescribed orders modulo $p^k$ and $q$, glued via CRT\n- Minimal polynomial construction for an algebraic integer formed from such an element\n- Demonstration of irreducibility for the minimal polynomial, where Eisenstein's criterion fails and alternative irreducibility criteria (such as Perron’s, modular irreducibility, discriminant check, Berlekamp–Zassenhaus algorithm for higher degree) must be considered\n- Constraints ensure that the answer is a unique explicit polynomial and that all steps permit symbolic or numeric verification. Parameter sets for instance generation are systematically pre-filtered through group-theoretic and arithmetic feasibility tests as part of the design loop to avoid logically impossible or ambiguous problem statements.\n- Each subtask is tagged (e.g., \"Arithmetic: order computation mod 121\", \"Reasoning: minimal polynomial construction\", \"Arithmetic: discriminant check\", \"Reflection: order feasibility check\"), allowing for multi-dimensional agent/LLM benchmarking (per SMART, MCP-Bench frameworks) and intermediate verification checkpoints.\n\n## Problem Statement\n\nLet $p = 11$ and $q = 19$ be distinct odd primes. Let $N = p^2 q = 11^2 \\cdot 19 = 121 \\cdot 19 = 2299$.\n\n1. Construct an integer $a$ in the range $2 \\leq a < N$, coprime to $N$, such that:\n   - The order of $a$ modulo $p^2$ is $10$\n   - The order of $a$ modulo $q$ is $9$\n\nLet $k = \\mathrm{lcm}(10, 9) = 90$.\n\n2. Define $\\alpha = a + \\sqrt{q}$. Construct the minimal polynomial $f(x) \\in \\mathbb{Z}[x]$ of $\\alpha$ over $\\mathbb{Q}$.\n\n3. Prove that $f(x)$ is irreducible over $\\mathbb{Q}$, using discriminant analysis (and for higher degree, algorithmic irreducibility checks such as Berlekamp–Zassenhaus, Newton polygon, or reduction modulo primes as appropriate).\n\n**Final answer:** Write $f(x)$ explicitly in $\\mathbb{Z}[x]$ in standard monic form.\n\n*Bonus:* State the order of $a$ modulo $N$.\n\n---\n\n## Solution\n\n### Step 1: Structural Properties and Element Construction (tag: Arithmetic, Reasoning)\n\n#### (a) Multiplicative Groups\n- $p^2 = 121$, order of $(\\mathbb{Z}/121\\mathbb{Z})^\\times$ is $\\phi(121) = 110$.\n- $q = 19$, order of $(\\mathbb{Z}/19\\mathbb{Z})^\\times$ is $18$.\n\n#### (b) Orders and CRT\nWe seek $a$ with:\n- $\\mathrm{ord}_{121}(a) = 10$\n- $\\mathrm{ord}_{19}(a) = 9$\n- $a$ coprime to $2299$\n\nLet $b_1 = 23$ mod $121$ (candidate of order 10), $b_2 = 9$ mod $19$ (order 9, feasibility verified algorithmically during instance generation). By the Chinese Remainder Theorem, $a$ is the unique solution mod $N$ to:\n\n$$\na \\equiv b_1 \\pmod{121}\\newline\na \\equiv b_2 \\pmod{19}\\n$$\n\nExplicit pre-filtering of parameters ensures all group-theoretic constraints are satisfiable. Element selection is automated with search and symbolic verifications, including order checks and coprimality.\n\nBy explicit CRT computation: $a = 23 + 121\\cdot t$ and $a \\equiv 9 \\pmod{19}$. $121 \\equiv 7 \\pmod{19}$, solve $7t \\equiv 5 \\pmod{19}$ ($t = 17$), so $a = 23 + 121\\cdot 17 = 2080$.\n\n### Step 2: Minimal Polynomial of $\\alpha=a+\\sqrt{q}$ (tag: Reasoning, Arithmetic)\n\nLet $\\alpha=2080+\\sqrt{19}$. The minimal polynomial is:\n$$\nf(x) = x^2 - 4160 x + 4326381\n$$\n\n### Step 3: Irreducibility (tag: Reasoning, Reflection, Arithmetic)\n\nDiscriminant: $(-4160)^2 - 4\\cdot 4326381 = 76$. $76$ is not a perfect square, so $f(x)$ is irreducible over $\\mathbb{Q}$. For higher-degree future variants, recommend standard algorithmic irreducibility tests (Berlekamp–Zassenhaus, Newton polygon, etc.) and code snippets for verification in computer algebra systems. If Eisenstein's criterion is inapplicable, another algorithm must be invoked, and agent responses are scored by the correct use of these tools.\n\n### Step 4: Bonus — Order of $a$ modulo $N$\n- $\\mathrm{ord}_{121}(a)=10$, $\\mathrm{ord}_{19}(a)=9$, so $\\mathrm{lcm}(10,9)=90$.\n\n### Final Answer\n\n#### Minimal polynomial:\n\n$$\nf(x) = x^2 - 4160 x + 4326381\n$$\n\n---\n\n## Verification Guidance\n1. **Substitution checks (tag: Arithmetic):**\n   - Confirm $2080^{10} \\equiv 1 \\pmod{121}$ and $2080^k \\not\\equiv 1$ for $1 \\leq k < 10$\n   - Confirm $2080^9 \\equiv 1 \\pmod{19}$ and $2080^k \\not\\equiv 1$ for $1 \\leq k < 9$\n   - $\\gcd(2080,2299)=1$\n2. **Minimal polynomial root check (tag: Reasoning, Arithmetic):**\n   - Substitute $x=2080+\\sqrt{19}$ into $f(x)$ symbolically; result is $0$.\n3. **Irreducibility (tag: Reasoning, Reflection):**\n   - Discriminant $=4160^2-4\\cdot4326381=76$, not a perfect square.\n   - For higher-degree or Eisenstein-inapplicable instances, use Berlekamp–Zassenhaus or other tests; code snippets and references (e.g., PARI/GP) are documented for agent evaluation.\n\n**Intermediate verification criteria:** Each builder step above serves as an agent or LLM evaluation checkpoint. If using an agent scoring framework like SMART or MCP-Bench, subtasks are scored separately—with partial credit for correct order checks, correct CRT combination, minimal polynomial form, and the explicit, justified criterion used for irreducibility.\n\n**Edge cases to check:**\n- $a$ is within range and coprime to $N$.\n- Orders and minimality are confirmed by explicit factorization or CAS.\n- All constraints are pre-filtered for feasibility; all agent or problem generation failures (counterexamples, ambiguous parameters) are archived and analyzed for future refinement.\n\n## LLM/Agent Benchmarking Implementation\n- All subtasks are tagged and decomposed for multi-dimensional scoring (SMART: understanding, reasoning, arithmetic, reflection).\n- Use solution-trees for agent evaluation, enabling partial credit and interpretable diagnostics.\n- Any parameter generation is preceded by automated feasibility and order-verification algorithms, and all ambiguous or infeasible settings are archived and used to refine generator heuristics (Self-Refine, CEGAR-inspired feedback loop).\n- Agent/LLM failures and counterexamples in evaluation are systematically integrated into refinement cycles, ensuring robust template evolution (per CheckEval and PredictaBoard best practices).\n\n---\n\n**Problem in Short:**\n\nLet $N=121\\cdot19=2299$. Find $a$ with $a\\equiv23\\pmod{121}$, $a\\equiv9\\pmod{19}$ ($a=2080$). Let $f(x)$ be the minimal polynomial of $2080+\\sqrt{19}$ over $\\mathbb{Q}$. Give $f(x)$ in standard form and prove it is irreducible.",
+  "markdown_report": "### 1. Objective Framing\n- **Central Theorems Required:**\n  - Riemann–Roch theorem for explicit L(G) basis on non-hyperelliptic genus-3 plane quartics\n  - Goppa's theorem for AG code minimum distance\n  - Algorithms for minimal-norm representatives in \\(\\mathbb{Z}[i]/(13)\\)\n  - Computation of automorphism groups and Schur square dimensions as code invariants\n  - Singleton/Plotkin/MacWilliams bounds for cross-parameter check\n  - Non-equivalence criteria to RS/BCH/tRS via invariants ([Beelen 2017], [Chen 2022])\n\n- **Invariants/Constraints:**\n  - Provide explicit rational point set on a smooth non-hyperelliptic genus-3 plane quartic over \\(\\mathbb{F}_{13}\\) (with smoothness check) and exclude a fixed point \\(Q\\).\n  - Exhibit Riemann–Roch basis (with explicit local expansions at \\(Q\\)), for divisors of degree 7.\n  - Construct generator and parity-check matrices over \\(\\mathbb{F}_{13}\\), map codewords to \\(\\mathbb{Z}[i]/(13)\\) using explicit minimal-norm residue representatives (as per Graves 2024).\n  - Compute the minimum codeword weight under a mixed metric (Mannheim: \\(\\sum (|\\Re| + |\\Im|)\\)).\n  - Calculate the automorphism group order and Schur square dimension.\n  - Prove by invariant and reference to tables that the code is not permutation- or automorphism-equivalent to any Reed–Solomon, BCH, or twisted RS code.\n\n- **Pitfalls:**\n  - Degeneration to Hamming metric via trivial embedding (must show metric is non-trivial on real/im parts), including explicit codeword(s) where Mannheim and Hamming weights differ.\n  - Failure to explicitly justify Riemann–Roch basis/pole orders, requiring explicit local parameter expansion at Q (step-by-step or code-citable from references).\n  - Omitted invariants, partial point enumeration, or inadequate syndrome test.\n  - Not referencing or exhibiting canonical form or dimension sequences when invariants are close—must discuss and optionally provide code to confirm inequivalence for borderline cases (see code equivalence methodology references).\n  - Incomplete reporting and checking of affine vs projective points; ensure completeness or document any restrictions.\n  - Not making the lookup table/algorithm for the minimal-norm embedding explicit or only assuming direct mapping when this could degenerate the metric.\n\n### 2. Problem Statement\n**Problem**\n\nLet \\(\\mathcal{C}\\) be the smooth plane quartic curve over \\(\\mathbb{F}_{13}\\) given by\n\\[\n    Y^4 + X^4 + X^2 Y^2 + X^3 + 2 Y^3 + 7 = 0.\n\\]\n\n(a) Enumerate (and list) all *affine* \\(\\mathbb{F}_{13}\\)-rational points of \\(\\mathcal{C}\\). Prove that \\(\\mathcal{C}\\) is non-hyperelliptic and smooth over \\(\\mathbb{F}_{13}\\), by checking all partial derivatives vanish only when \\((x, y)\\) is not a solution.\n\n(b) Fix the point \\(Q = (0,2)\\) in \\(\\mathcal{C}(\\mathbb{F}_{13})\\), form the divisor \\(D = P_1 + \\cdots + P_n\\), where \\(S = \\{P_1, \\ldots, P_n\\}\\) is the set of all rational affine points other than \\(Q\\). Let \\(G = 7Q\\). Find an explicit basis \\(\\{f_1,\\ldots, f_k\\}\\) for the Riemann–Roch space \\(L(G)\\), *justifying via local parameter expansion at \\(Q\\) that their pole orders at \\(Q\\) are at most 7*, and reference or script the expansion process (e.g., cite Newton–Puiseux or use explicit local monomial expansions as per Boehm et al. 2015). Document pole orders in a reproducible table.\n\n(c) Construct the AG code \\(C := C_L(D, G)\\) by evaluating each \\(f_i\\) at the points \\(S\\), i.e., as the image of\n\\[\n    ev_S: L(G) \\rightarrow \\mathbb{F}_{13}^n \\qquad f \\mapsto (f(P_1), \\ldots, f(P_n)).\n\\]\nWrite down the full generator matrix \\(G\\) of the code (entries in \\(\\mathbb{F}_{13}\\)), with rows corresponding to the basis found above.\n\n(d) Construct an explicit bijection \\(\\varphi: \\mathbb{F}_{13} \\rightarrow \\mathbb{Z}[i]/(13)\\) sending a field element to a minimal-norm residue in \\(\\mathbb{Z}[i]/(13)\\) (as in [Graves 2024]), and map all entries of \\(G\\) under \\(\\varphi\\). For the lookup, script or explicitly reproduce the mapping table and ensure that for at least some entries nontrivial imaginary parts arise, i.e., the embedding is demonstrably not degenerate.\n\n(e) For all nonzero codewords, compute the minimum nonzero mixed (Mannheim) weight:\n\\[\n    d_M = \\min_{c\\in C\\setminus\\{0\\}} \\sum_{j=1}^n \\left(|\\Re\\,\\varphi(c_j)| + |\\Im\\,\\varphi(c_j)|\\right).\n\\]\nShow by explicit code (or enumerated output) that for at least one nonzero codeword, the Mannheim weight differs from its Hamming weight (i.e., at least one entry is mapped to a genuinely nonreal/imaginary residue). List four distinct nonzero codeword weights in both metrics.\n\n(f) Exhibit an explicit parity-check matrix \\(H\\) (over \\(\\mathbb{F}_{13}\\)) such that \\(G H^T = 0\\), and verify with at least one example (e.g., the codeword corresponding to \\(f_2\\)). Include an explicit syndrome computation.\n\n(g) Compute:\n- The order of the automorphism group of \\(C\\) (as a linear code), using Magma, Sage, or GAP. If close to RS/BCH automorphism order, also exhibit the canonical form or dimension sequence to rigorously confirm inequivalence.\n- The dimension of its Schur square (i.e., span of componentwise products of codewords), reporting any additional invariant sequences relevant for non-equivalence.\n\n(h) Prove, citing [Beelen 2017] or [Chen 2022] and comparing the invariant table(s), that \\(C\\) is not permutation- or automorphism-equivalent to any Reed–Solomon, BCH, or twisted Reed–Solomon code over \\(\\mathbb{F}_{13}\\) of the same dimension and length. In cases of similar invariants, reference canonical forms or dimension sequences to definitively rule out equivalence per known methodology (see MDPI 2024, arXiv:1911.13059).\n\n**Final Answer**\nReport the minimum Mannheim distance \\(d_M\\).\n\n\n---\n\n### 3. Rigorous Solution\n\n#### (a) Rational Point Enumeration and Smoothness\n- For each \\(x, y\\in\\mathbb{F}_{13}\\), compute \\(F(x, y)=y^4 + x^4 + x^2y^2 + x^3 + 2y^3 + 7\\).\n- Tally all valid pairs and exclude Q = (0,2).\n- To check smoothness, at each solution, compute partials:\n  - \\(F_X = 4X^3 + 2X Y^2 + 3X^2\\)\n  - \\(F_Y = 4Y^3 + 2X^2 Y + 6Y^2\\)\n- Show programmatically (or by exhaustive listing) that nowhere do both vanish for a listed affine rational point.\n- Since \\(\\mathcal{C}\\) is a smooth plane quartic, it is non-hyperelliptic of genus 3.\n\n#### (b) Riemann–Roch basis for \\(L(7Q)\\)\n- By Riemann–Roch: \\(\\ell(7Q) = 7-3+1 = 5\\).\n- Candidate basis: \\(1, X, Y, X^2, X Y\\).\n- For each basis function, expand locally at Q, explicitly determine pole orders (citing or scripting Newton–Puiseux, e.g., math.fsu.edu/~hoeij/algcurves.html). Tabulate the basis and pole orders for transparency.\n\n#### (c) Generator matrix\n- For \\(n = |S|\\), build 5\\(\\times\\)n matrix G: G_{ij} = f_i(P_j), with basis as above and S as ordered in (a).\n\n#### (d) Minimal-norm embedding \\(\\varphi\\)\n- For each \\(a\\in\\mathbb{F}_{13}\\), define \\(\\varphi(a)\\) = unique minimal-norm residue in \\(\\mathbb{Z}[i]/(13)\\), i.e., for each residue class modulo 13, find (c,d) with minimal |c|+|d| such that \\(c+di \\equiv a\\pmod{13}\\). Produce and document the explicit mapping for all 13 elements. Ensure the codebook fills both real and imaginary entries in the mapped matrix, and cross-reference this for non-degeneracy.\n\n#### (e) Mannheim distance and codeword metrics\n- For each nonzero codeword (span of G rows), compute Mannheim weight as sum over j: |Re(c_j)|+|Im(c_j)|, c_j\\in\\mathbb{Z}[i]/(13) from \\(\\varphi\\).\n- Output d_M = minimal nonzero Mannheim weight, and four explicit codewords with their Mannheim and Hamming weights (showing at least one where they differ, as in the constructive example in the search results).\n\n#### (f) Parity-check matrix and example\n- Compute H = right kernel of G (over \\(\\mathbb{F}_{13}\\)), verify GH^T=0. For codeword c (e.g., f_2-row or a sum), compute syndrome Hc^T and confirm zero.\n\n#### (g) Automorphism group and Schur square\n- Use Magma/Sage to compute automorphism group order and explicit generator(s) (log output in submission); in case of close invariant values, compute the canonical form/dimension sequence (per arXiv:1911.13059 or mdpi.com). Also compute the full Schur square dimension and any extended sequence if invariants are close to known code families.\n\n#### (h) Non-equivalence\n- Compare all invariants (aut, Schur, and any additional canonical-form invariants for subtle cases) to RS, BCH, tRS code tables over \\(\\mathbb{F}_{13}\\) with n, k matching (reference Beelen, Joyner, canonical-form literature). For cases where only partial information is available, outline the canonical-form/dimension sequence check and, if applicable, script to confirm inequivalence.\n\n#### Final Answer\nThe minimum Mannheim distance d_M (integer value for this code).\n",
   "idea": {
-    "description": "Construct an LLM/agent-resistant number theory and algebra synthesis problem combining order computation for modular arithmetic via CRT, construction of glued elements, minimal polynomial analysis for an algebraic integer, and irreducibility check via discriminant or algorithmic means as needed. Each subtask is explicitly tagged and independently scoreable for multi-dimensional assessment. Generation pipeline pre-filters all parameter choices using group-theoretic and arithmetic feasibility automation to guarantee logical consistency.",
-    "motivation": "Blends nontrivial order calculations, CRT gluing, and minimal algebraic polynomial construction beyond common contest schema. The explicit construction, order verification, and agent/LLM task decomposition (tagging, scoring, intermediate checks) maximally resist shortcut or overfitting attacks. The design now operationalizes the best practices from multidimensional benchmarking frameworks (SMART, MCP-Bench) and integrates failure/counterexample-driven refinement per CheckEval and Self-Refine.",
-    "implementation_notes": "Requires explicit CRT computation, symbolic modular arithmetic, minimal polynomial construction by radical elimination, and irreducibility check by discriminant (quadratic) or by algorithmic factorization if degree >2. Instance generator includes group-theoretic pre-filtering and parameter feasibility scripts. Subtasks are tagged for solution-tree scoring and intermediate agent verification. All errors or ambiguous evaluations are archived and fed back into generator heuristics.",
-    "pseudocode": "1. Let p=11, q=19, N=p^2*q=2299. 2. For all a in [2,N-1]: if ord_121(a)=10 and ord_19(a)=9: pick a (with pre-filtering/verification). 3. Set alpha=a+sqrt(q). 4. Minimal polynomial: x^2 - 2a x + (a^2 - q). 5. Check irreducibility: discriminant != perfect square (quadratic case), otherwise Berlekamp–Zassenhaus/Newton polygon. 6. Tag, archive, and score each subtask for SMART/MCP-Bench. 7. Archive all failed or ambiguous parameter generations.",
+    "description": "Construct an AG code from a non-hyperelliptic genus-3 plane quartic over F_13, explicit rational point set, local parameter expansion justifying Riemann–Roch basis at a degree-7 divisor, generator/parity matrices, minimal-norm Gaussian integer embedding, explicit Mannheim metric, code invariants (automorphism, Schur square), and invariants-based proof of non-equivalence to RS/BCH/twisted RS. All steps specify explicit algorithms (enumeration, expansion, embedding lookup, syndrome/parity, canonical-form checks for equivalence when necessary).",
+    "motivation": "Blocks LLM shortcuts by synthesizing algebraic geometry, field-to-ring minimal-norm embeddings, explicit matrix/invariant construction, and advanced code theory. Demanding machine-verifiable syndrome, metric nontriviality, and deep invariant checks prevents template or recall-based solutions. High-genus and explicit metric prevents code identification via parameter matching. Equivalence is further blocked by requiring canonical forms or dimension sequences when invariants are close.",
+    "implementation_notes": "Plane quartic chosen generally; point enumeration is scriptable (brute force over F_13), smoothness by checking partials. Riemann–Roch basis justified by pole order via local expansion or symbolic computation with explicit intermediate reporting. Generator follows, embedding via Graves' minimal-norm algorithm (see arXiv:2502.21136), with full table printed and at least one codeword shown to cover both real and imaginary parts. Search all nonzero codewords for Mannheim/Hamming weight discrepancy, listing at least four and confirming non-degeneracy. Parity-check by kernel computation; syndrome tested with explicit calculation; if possible, automation is documented. Invariants (automorphism group, Schur square, or canonical dimension sequences if invariants are similar to RS/BCH) via Magma/Sage routines as in Beelen/Joyner/Couvreur/Scachette. Non-equivalence asserted by matching against reference invariant tables, and, where necessary, by canonical form or dimension sequence check.",
+    "pseudocode": "F.<x,y> = FiniteField(13)\ndef F_c(x, y):\n    return y^4 + x^4 + x^2*y^2 + x^3 + 2*y^3 + 7\nS = []\nfor x in F:\n    for y in F:\n        if (F_c(x, y) == 0) and not (x == 0 and y == 2):\n            S.append((x, y))\n# Check smoothness at each S[i] by checking partials.\n# Local expansion at Q=(0,2), choose params t, compute order of 1, X, Y, X^2, X*Y at Q (see refs).\nL_G_basis = [lambda x, y: 1, lambda x, y: x, lambda x, y: y, lambda x, y: x**2, lambda x, y: x*y] # Confirm by expansion\nDocument pole orders in table.\nG = [[f(x, y) for (x, y) in S] for f in L_G_basis]\n# For each a in F_13, find (c, d) with smallest |c|+|d| and a = c + d*i mod 13; script/print lookup table.\nvarphi = minimal_norm_table()\nG_star = [[varphi(a) for a in row] for row in G]\n# Enumerate codewords from all nonzero F_13^5 vectors, compute sum_j |Re(c_j)|+|Im(c_j)|; print four, confirm at least one diff from Hamming\n# H = kernel(G), check G*H.T == 0; explicit syndrome Hc^T\n# autgrp, schur = automorphism_group(G), schur_square_dimension(G); if close to RS/BCH invariants, compute canonical form/dimension sequence\n# Compare invariants (Beelen, Joyner, canonical form refs as in arXiv:1911.13059, mdpi.com); document or script check",
     "originality": {
       "score": 9,
-      "positive": "Synthesizes CRT, modular group structure, and explicit minimal polynomial design in a solution-tree decomposed, agent-scoreable framework—with explicit feedback-driven template refinement and feasibility pre-filtering. Multi-step, multi-domain, and multi-metric agent scoring is built in.",
-      "negative": "Novelty could be extended with further combinatorial or cryptographic overlays, or by constructing multi-stage agent adaption loops directly into instance generation. Current quadratic case is still rational root/determinant driven, but the design generalizes."
+      "positive": "Fusion of explicit non-hyperelliptic AG code, step-by-step local basis and pole order computation, codeword enumeration/checks for explicit metric nontriviality, minimal-norm embedding with lookup, deep invariants, and canonical-form equivalence checks goes beyond existing templates and even most human-constructed benchmarks.",
+      "negative": "Most steps are tractable by scripting, but full automation of expansions and canonical form may require careful referencing and may not be universally available for all curves; documenting this is thus critical for completeness."
     },
     "future_potential": {
       "score": 9,
-      "positive": "Readily generalizable to higher degree, larger CRT decompositions, agent or reflection-based tasks, full solution-trees, and extended combinatorial or cryptographic variants. Pluggable evaluation scoring enables rapid calibration of agent/LLM skill and learning bottlenecks. Counterexample-driven refinement is integrated.",
-      "negative": "Complexity for higher degrees may stress CAS or require nested tooling; instance search requires careful parameter feasibility, but these are now scriptable and robust."
+      "positive": "Can be extended to other algebraic settings (higher genus, other rings, more complex metrics, or even noncommutative codes). Scripting basis expansions, automorphism/canonical form, and embedding is robust for research-level benchmarks.",
+      "negative": "Complete computation (especially canonical forms) may require substantial computational effort as n grows, so problem sizes must remain bounded for practical verification. For increased invariants ambiguity at larger n, further literature review may be needed."
     },
     "code_difficulty": {
-      "score": 8,
-      "positive": "All steps are independently scriptable and automatable—modular code for CRT, order computation, minimal polynomial construction, and irreducibility checks; robust failure/counterexample handling improves reproducibility.",
-      "negative": "Some search steps (e.g., finding elements of specified order) are computationally intensive for large N, and CAS irreducibility testing for high degree can be operationally complex. These have tractable tooling."
+      "score": 9,
+      "positive": "With small field/code dimensions, all symbolic steps are automatable (point enumeration, matrix construction, local expansion, embedding, syndrome, invariants, canonical forms). The step of checking explicit differentiation of metrics and canonical sequence for near-equivalence requires advanced algebra/code-theory skills, making the problem top-tier.",
+      "negative": "Canonical form and dimension sequence are required for close-invariant edge cases; may be nontrivial to automate for all codes without specialist references/software (should be noted and sources given)."
     },
-    "target_difficulty": "Graduate-level algebra and number theory synthesis; multi-dimensional agent/LLM benchmarking with explicit subtask scoring (per SMART/MCP-Bench); robust to shortcutting and template attacks.",
+    "target_difficulty": "LLM-resistant, postdoc-level coding theory",
     "required_theorems": [
-      "Chinese Remainder Theorem",
-      "Structure theorem for multiplicative groups modulo prime powers and primes",
-      "Minimal polynomial construction for algebraic integers",
-      "Quadratic Discriminant criterion for irreducibility",
-      "Rational Root Theorem",
-      "Berlekamp–Zassenhaus, Newton polygon for higher degree and variant instances"
+      "Explicit Riemann–Roch theorem with local parameter expansions for plane quartics",
+      "Point enumeration and smoothness algorithms for plane quartic curves",
+      "Goppa minimum distance theorem for AG codes",
+      "Explicit minimal-norm division in Z[i]/(13) (see Graves 2024)",
+      "Automorphism group and Schur square invariant theory (see Beelen 2017, Joyner-Ksir 2004, Scachette, canonical forms: arXiv:1911.13059, mdpi.com)",
+      "Singleton, Plotkin, MacWilliams bounds as cross-check",
+      "Non-equivalence invariants for AG codes, using canonical form/dimension sequences as needed"
     ],
     "pitfalls": [
-      "Feasibility of specified order/nonresidue and all constraints is verified during generation (see implementation notes and search algorithms).",
-      "No overfitting: family design resists direct answer lookup; parameter, order, and feasibility scripts systematically block tautologies and dead ends.",
-      "Instance design mandates intermediate verification and solution-tree scoring to defeat shortcut learning and enable fine-grained error diagnosis.",
-      "All ambiguous or failed verifications (counterexamples, agent failures) are archived and used for template refinement. Pipeline is explicitly feedback-driven.",
-      "Complexity is managed by modular code and tool integration (see Berlekamp–Zassenhaus, solution-tree scorer)."
+      "Degenerate mapping: basis/embedding may cause metric to reduce to Hamming—must check and exhibit codewords with real and imaginary parts.",
+      "Failure to justify basis: local expansion/pole order at Q for every basis element must be tabled or algorithmically referenced.",
+      "Incomplete rational point enumeration (should address projective vs. affine, document any exclusions).",
+      "Neglecting automorphism group and canonical-form/dimension sequence for close-invariant edge cases.",
+      "Omitting or assuming mapping algorithm for minimal-norm embedding; must script or table.",
+      "Not flagging or scripting equivalence check when invariants are close, or not referencing relevant code-theory lit."
     ]
   },
   "related_work": [
     {
-      "title": "FormalMATH Benchmark (2024-2025)",
-      "link": "https://arxiv.org/abs/2505.02735?utm_source=openai",
+      "title": "Computing integral bases via localization and Hensel lifting",
+      "link": "https://arxiv.org/abs/1505.05054",
       "contributions": [
-        "Benchmarks formal solution verification across algebra/number theory.",
-        "Documents LLM failure modes on non-templated composite reasoning.",
-        "Problem types similar in composition but not direct CRT-algebra-gluing."
+        "Algorithm for integral basis computation on plane curves via local expansion and Hensel's lemma",
+        "Supports explicit verification of Riemann–Roch basis construction"
       ],
       "limitations": [
-        "Does not explicitly fuse CRT, order, and minimal polynomial construction in one task."
+        "Not explicit for AG codes on quartics; local expansion must be adapted to function field context"
       ]
     },
     {
-      "title": "Polynomial Reconstruction via Robust CRT (2017)",
-      "link": "https://arxiv.org/abs/1703.07907?utm_source=openai",
+      "title": "A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function",
+      "link": "https://arxiv.org/abs/2502.21136",
       "contributions": [
-        "Describes CRT methods in polynomial settings.",
-        "Frameworks for error-tolerant polynomial gluing relevant for algebraic order construction."
+        "Explicit minimal-norm residue representative construction in Z[i]/(p)",
+        "Provides the explicit embedding and lookup for code matrix mapping"
       ],
       "limitations": [
-        "Focuses on polynomials and error correction, not on minimal polynomial or order-gluing."
+        "Does not directly specify lookup for all field elements; must be adapted"
+      ]
+    },
+    {
+      "title": "Algebraic geometry code invariants and non-equivalence to RS/BCH codes",
+      "link": "https://arxiv.org/abs/2208.05732",
+      "contributions": [
+        "Demonstrates genus dependence of invariants and non-equivalence to RS/BCH/tRS codes via explicit automorphism and Schur square dimension",
+        "Methodology for invariant-theoretic proof of code inequivalence"
+      ],
+      "limitations": [
+        "Focuses on elliptic curve (genus one); extension to quartics/genus-3 needed with computational details"
+      ]
+    },
+    {
+      "title": "Parity-check matrix computation for codes over finite rings",
+      "link": "https://arxiv.org/abs/2401.05247",
+      "contributions": [
+        "Algorithms (and code) for constructing parity-check matrices for codes over Zps and more general ring alphabets",
+        "Methodology supports explicit syndrome testing over Z[i]/(p)"
+      ],
+      "limitations": [
+        "Examples limited to small rings/code sizes"
+      ]
+    },
+    {
+      "title": "Order bounds and minimum distance for one-point AG codes",
+      "link": "https://arxiv.org/abs/1002.4759",
+      "contributions": [
+        "Improved minimum distance/parameter bounds for AG codes, with order bound and cross-check with Goppa's theorem"
+      ],
+      "limitations": [
+        "Focuses on minimum distance, not AG codes over residue rings or with mixed metrics"
+      ]
+    },
+    {
+      "title": "How to Find the Equivalence Classes in a Set of Linear Codes in Practice?",
+      "link": "https://www.mdpi.com/2227-7390/12/2/328",
+      "contributions": [
+        "Practical methodology for computing canonical forms; determining code equivalence, especially when invariants are close",
+        "Can be directly used or referenced for full equivalence tests"
+      ],
+      "limitations": [
+        "Canonical form may be computationally heavy for large codes; should be bounded for small n/k"
+      ]
+    },
+    {
+      "title": "Equivalence and Characterizations of Linear Rank-Metric Codes Based on Invariants",
+      "link": "https://arxiv.org/abs/1911.13059",
+      "contributions": [
+        "Introduces dimension sequences and canonical-form invariants for code equivalence",
+        "Directly relevant for verifying non-equivalence in subtle edge cases"
+      ],
+      "limitations": [
+        "Primarily focused on rank-metric codes, so adaptation to AG/Hamming-metric codes must be documented"
       ]
     }
   ],
   "problem_spec": {
-    "topic": "Composite Number Theory and Algebra Synthesis",
+    "topic": "Fusion of Algebraic Geometry Codes and Lattice Embedding over Non-Hyperelliptic Curves with Explicit Invariant Checks",
     "subtopics": [
-      "Orders modulo prime powers",
-      "CRT (Chinese Remainder Theorem)",
-      "Minimal polynomial construction for algebraic integers",
-      "Polynomial irreducibility via discriminant or advanced algorithm",
-      "Order structure and cyclic groups"
+      "Construction of AG codes from non-hyperelliptic genus-3 plane quartics over finite fields",
+      "Explicit rational point enumeration on algebraic curves",
+      "Explicit Riemann–Roch basis and local parameter expansions",
+      "Embedding finite fields into residue rings of Z[i] or Eisenstein integers modulo prime ideals",
+      "Mixed metrics (Mannheim/Gaussian norm + Hamming) for codeword comparison",
+      "Computation of automorphism groups and Schur square dimensions as code invariants",
+      "Proof of non-equivalence to Reed-Solomon, BCH, or twisted RS codes",
+      "Explicit generator and parity-check matrix construction, syndrome testing"
     ],
     "objectives": [
-      "Blend advanced modular arithmetic and field theory for a unique answer.",
-      "Mandate multi-step reasoning across disparate algebraic domains.",
-      "Block rote LLM/agent attacks by explicit modular structuring and algebraic gluing, with feasibility pre-checked.",
-      "All steps checkable symbolically and algorithmically.",
-      "Every subtask explicitly tagged, supporting multi-dimensional (SMART/MCP-Bench) scoring."
+      "Block all LLM short-cuts and templates by constructing a code that is: (a) not a member of the standard RS/BCH families; (b) fully explicit in all algebraic, metric, and invariant-theoretic details; (c) verifiable at each stage by symbolic/numeric scripts.",
+      "Force the use of multiple mathematical theories in concert: algebraic geometry (complexity in high-genus, non-hyperelliptic case), number theory (explicit lattice quotient embeddings), combinatorics (code matrices and enumerations), group theory (automorphism checks).",
+      "Require all the following verifiable outputs: explicit rational point set, explicit and justified Riemann–Roch basis with local expansions, generator and parity-check matrices over finite field and mapped ring, codeword minimum distance under the specified metric (not degenerate to Hamming), automorphism group order and Schur square dimension, explicit demonstration of non-equivalence to reference code families through these invariants."
     ],
-    "difficulty_target": "Hard graduate/senior undergraduate, agent/LLM multi-domain fusion; instance pipeline supports multi-metric scoring and systematic refinement.",
+    "difficulty_target": "beyond PhD qualifying exam (LLM-resistant, requiring multi-field synthesis and machine-verifiable output)",
     "required_theorems": [
-      "CRT",
-      "Structure theorem for multiplicative groups of units modulo n",
-      "Minimal polynomials and field extensions",
-      "Irreducibility tests: discriminant, Berlekamp–Zassenhaus, Newton polygon, computational algebra",
-      "Rational Root Theorem"
+      "Explicit Riemann–Roch theorem for genus-3 non-hyperelliptic curves (with basis construction and local expansion proofs)",
+      "Explicit rational point enumeration algorithms for plane quartics",
+      "Goppa's theorem for AG code minimum distance",
+      "Norm, residue, and minimality algorithms in Z[i]/(p) and Z[ω]/(p), especially for small primes",
+      "Automorphism group and Schur square dimension for AG codes (see Beelen 2017, Joyner-Ksir 2004, Couvreur et al., and Magma/Sage routines)",
+      "Singleton, Plotkin, MacWilliams bounds—extended to nonstandard metrics as necessary",
+      "Non-equivalence criteria for AG codes (cf. [Chen 2022], [Beelen 2017]): automorphism order, Schur dimension, etc. (including canonical forms/dimension sequences if needed)"
     ],
     "pitfalls": [
-      "Instance generator always runs parameter feasibility and order existence checks to ensure viability.",
-      "No direct answer template; each problem instance carries solution-tree and counterexample history.",
-      "Tags and scoring enable diagnosis of shortcut learning.",
-      "Integrates self-refinement/abstraction refinement best practices."
+      "Metric degeneration: mapping and basis must be selected so that mixed metric (Gaussian + Hamming) is nontrivial (must exhibit codewords with both real and imaginary parts nonzero and different metrics).",
+      "Failure to provide explicit pole order expansions and local basis justifications (must be scripted, tabled, or algorithmically referenced at Q).",
+      "Neglecting explicit enumeration and smoothness checks for the rational point set (must check for singular/infinity points, document projective vs. affine count).",
+      "Non-computation of automorphism group and Schur square (or using only standard templates); for close invariants, neglecting canonical form/dimension sequence.",
+      "Allowing code to reduce (by invariants or explicit comparison) to RS/BCH/twisted RS without rigorously checking canonical equivalence.",
+      "Omitting explicit mapping algorithms and lookup tables for residue ring embeddings.",
+      "Not checking or documenting metric non-degeneracy (i.e., showing Mannheim ≠ Hamming on some codewords)."
     ],
     "constraints": [
-      "Unique minimal polynomial in Z[x], explicitly determined by construction.",
-      "Element selection requires CRT gluing and automated feasibility screening.",
-      "All verification steps are modular and code-supported; counterexample archiving and feedback integration is pipelined.",
-      "Every subtask tagged for multi-dimensional agent evaluation (SMART/MCP-Bench).",
-      "Failed or ambiguous generations are archived and inform new instance heuristics."
+      "Code parameters (n, k, d) must be explicitly computed and justified with exhibited matrices and codeword lists.",
+      "All mappings and bases must be justified step-by-step, including documentation of expansion at a distinguished point (Q), with citations or code listing.",
+      "Metric computations must explicitly check and document that weights are not always equal to Hamming weight; four codeword outputs with different weights (including differing ones) should be present.",
+      "Require at least one syndrome/parity-check computation with non-obvious test vector.",
+      "All invariants (automorphism, Schur square) must be referenced to literature or exhibited via software output; in close cases, canonical-form/dimension sequence check must be performed and documented.",
+      "Proof of non-equivalence to RS/BCH/tRS must be by reference to invariant tables, canonical forms, or explicit Magma/Sage computation logs."
     ]
   },
   "theorem_refs": [
     {
-      "name": "Chinese Remainder Theorem",
-      "statement": "Let n1,...,nk be pairwise coprime integers. Then the system x ≡ ai (mod ni) has a unique solution mod N = n1...nk.",
-      "source": "Standard algebra/number theory texts",
-      "notes": "Supports explicit instance generator code for CRT solution steps and feasibility verification."
+      "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
+      "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
+      "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054",
+      "notes": "Algorithmic basis construction and pole order justification via Newton–Puiseux/Hensel."
     },
     {
-      "name": "Structure theorem for multiplicative groups mod p^k",
-      "statement": "For odd prime p and k ≥ 1, the group (Z/p^k Z)^× is cyclic of order φ(p^k) = p^k - p^{k-1}.",
-      "source": "Standard number theory texts",
-      "notes": "Instance feasibility pre-filtering script uses group structure to confirm all element orders required in each problem instance truly exist."
+      "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
+      "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
+      "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136",
+      "notes": "Provides explicit table lookup or algorithm for minimal-norm representatives."
     },
     {
-      "name": "Minimal polynomial for a + sqrt(q)",
-      "statement": "Let a ∈ Z, q > 0 not a perfect square. Then the minimal polynomial of a + sqrt(q) over Q is x^2 - 2a x + (a^2 - q).",
-      "source": "Any algebra textbook (field extensions)"
+      "name": "Automorphism group and Schur square invariants for AG codes",
+      "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
+      "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004.",
+      "notes": "Tabulated invariants show AG codes are inequivalent to RS/BCH/tRS for genus > 1; canonical-form/dimension sequence techniques are available for close-invariant cases."
     },
     {
-      "name": "Irreducibility via discriminant (and algorithm for higher degree)",
-      "statement": "Quadratic x^2 + bx + c ∈ Z[x] is irreducible over Q iff discriminant D = b^2 - 4c is not a perfect square. For higher degree or factorization questions, use Berlekamp–Zassenhaus, Newton polygon, or computational algebra, all scriptable and code-supported.",
-      "source": "Standard algebra texts; CAS documentation; Berlekamp’s original paper",
-      "notes": "Pipeline provides hooks for invoking required algorithm per SMART/MCP-Bench scoring and verification."
+      "name": "Minimum distance theorem for AG codes",
+      "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
+      "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition, Theorem 2.2.3.",
+      "notes": "Equality can be checked case by case by enumerating codewords."
+    },
+    {
+      "name": "Canonical forms and dimension sequences for code equivalence",
+      "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
+      "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059",
+      "notes": "Should be referenced for subtle or close-invariant discrimination."
     }
   ],
   "problem_pair": {
-    "id": "CRT-Orders-MinPoly-2299",
-    "problem_text": "Let p=11 and q=19. Let N=121*19=2299.\\n\\n(a) Find an integer a in [2, N-1] coprime to N such that\\n   (i) the order of a modulo 121 is exactly 10,\\n   (ii) the order of a modulo 19 is exactly 9.\\nWrite the minimal value of a ≥ 2 with these properties.\\n\\n(b) Set α = a + sqrt{19}. Let f(x) be the minimal polynomial of α over Q. Write f(x) in Z[x] in standard monic form.\\n\\n(c) Justify that f(x) is irreducible over Q. Specify the algorithm or test used.\\n\\n**Bonus:** What is the order of a modulo N?\\n\\nTags: Arithmetic, Reasoning, Reflection, CRT, order-mod-pk, minimal-polynomial, irreducibility, agent-benchmarking",
-    "solution_text": "**(a)** Let a ≡ 23 (mod 121), a ≡ 9 (mod 19); 121 and 19 are coprime, so by CRT:\\na = 23 + 121t ≡ 9 mod 19 ⇒ 121t ≡ (9-23) ≡ 5 mod 19 (since -14 ≡ 5 mod 19)\\n121 ≡ 7 mod 19, so 7t ≡ 5 mod 19 ⇒ t ≡ 5*11 ≡ 55 ≡ 17 mod 19.\\nThus t=17, so a = 23 + 121*17 = 23 + 2057 = 2080.\\nCheck gcd(2080,2299)=1, and that orders are minimal (can be implemented in code/CAS and logged for feedback-driven template refinement).\\n\\n**(b)** f(x) = x^2 - 2a x + (a^2 - 19) = x^2 - 4160 x + (2080^2 - 19) = x^2 - 4160x + 4326381.\\n\\n**(c)** Discriminant is (−4160)^2 − 4⋅4326381 = 17305600 − 17305524 = 76. Since 76 is not a perfect square, f(x) is irreducible over Q by the quadratic discriminant criterion. Higher degree: use Berlekamp–Zassenhaus, Newton polygon, or appropriate CAS code; log all steps and failures.\\n\\n**Bonus:** The order of a modulo N is lcm(10,9) = 90.\\n\\nTags: CRT, order-mod-pk, minimal-polynomial, irreducibility, algebraic-integer, agent-scoring, solution-tree",
+    "id": "fusionAGQuarticF13_GaussianInvariant",
+    "problem_text": "Let \\(\\mathcal{C}\\) be the smooth plane quartic curve over \\(\\mathbb{F}_{13}\\) given by\n\\[\n    Y^4 + X^4 + X^2 Y^2 + X^3 + 2 Y^3 + 7 = 0.\n\\]\n(a) Enumerate all affine \\(\\mathbb{F}_{13}\\)-rational points of \\(\\mathcal{C}\\) and prove it is non-hyperelliptic and smooth over \\(\\mathbb{F}_{13}\\), by checking the partial derivatives at all points.\n(b) Fix \\(Q = (0,2)\\), forming \\(D = P_1 + ... + P_n\\) (where S is the set of points in (a) except Q) and \\(G=7Q\\). Find an explicit basis for \\(L(G)\\), justifying all pole orders at Q with local expansion/table at Q.\n(c) Construct the AG code \\(C = C_L(D, G)\\) using the evaluation of the basis at S; exhibit the generator matrix over \\(\\mathbb{F}_{13}\\).\n(d) Give an explicit bijective embedding \\(\\varphi: \\mathbb{F}_{13} \\rightarrow \\mathbb{Z}[i]/(13)\\) mapping each entry to its minimal-norm residue (with lookup table/script), and apply this mapping to G. Demonstrate non-degeneracy.\n(e) Compute, for all nonzero codewords, the minimum nonzero Mannhein weight \\(d_M\\), listing four example codewords showing Mannhein and Hamming weights with at least one instance where metrics differ.\n(f) Construct (and verify) a parity-check matrix and syndrome test with an explicit example.\n(g) Calculate the automorphism group order and Schur square dimension of C; if invariants approach RS/BCH/twisted RS, compute and report canonical form or dimension sequence as per literature.\n(h) Prove by comparison of invariants—including canonical forms or dimension sequences for ambiguous cases—that C is not equivalent to any RS, BCH, or twisted RS code of the same parameters over \\(\\mathbb{F}_{13}\\).\n\nReport as final answer the value of the minimum Mannheim distance \\(d_M\\).",
+    "solution_text": "### Solution\n###### (a) Affine \\(\\mathbb{F}_{13}\\)-rational points and smoothness\n- For each \\(x, y\\in\\mathbb{F}_{13}\\), compute \\(F(x, y)=y^4 + x^4 + x^2y^2 + x^3 + 2y^3 + 7\\).\n- List all valid pairs and exclude Q = (0,2).\n- Check smoothness by evaluating \\(F_X\\) and \\(F_Y\\) at all points: confirm for each that not both vanish (full table or script output).\n- Since \\(\\mathcal{C}\\) is a smooth plane quartic, it is non-hyperelliptic.\n\n###### (b) Riemann–Roch basis for \\(L(7Q)\\)\n- By Riemann–Roch: \\(\\ell(7Q) = 7-3+1 = 5\\).\n- Candidate basis: \\(1, X, Y, X^2, X Y\\).\n- For each, perform local expansion at Q (script, algorithm, or table) and record the pole order, confirming it does not exceed 7. Document basis with pole orders explicitly.\n\n###### (c) Generator matrix\n- For \\(n = |S|\\), build 5\\(\\times\\)n matrix G: G_{ij} = f_i(P_j), with S ordered as in (a).\n\n###### (d) Minimal-norm embedding \\(\\varphi\\)\n- For each \\(a\\in\\mathbb{F}_{13}\\), explicitly (script or table) identify minimal-norm representative in \\(\\mathbb{Z}[i]/(13)\\) (|c|+|d| minimized, a\\equiv c+di mod 13), and confirm some entries are nontrivially imaginary or complex. Apply to G rowwise.\n\n###### (e) Mannheim distance and codeword metrics\n- For all nonzero codewords, compute both Mannhein and Hamming weights, list at least four, with at least one codeword showing a difference between the two metrics. Confirm and report the minimum d_M observed.\n\n###### (f) Parity-check matrix and example\n- Compute H as right kernel of G, check G H^T=0. For non-basis codeword, compute and document explicit syndrome with H.\n\n###### (g) Automorphism group and Schur square\n- Use Magma/Sage to compute automorphism group order and full Schur square dimension; if values are close to RS/BCH/tRS, compute and document canonical form/dimension sequence.\n\n###### (h) Non-equivalence\n- Compare all invariants—including canonical forms in ambiguous scenarios—to literature. Document and script as per code equivalence methodology in recent literature (arXiv:1911.13059, mdpi.com).\n\n#### Final Answer\nThe minimum Mannheim distance d_M (integer value for this code).\n",
     "tags": [
-      "CRT",
-      "order-mod-pk",
-      "minimal-polynomial",
-      "irreducibility",
-      "algebraic-integer",
-      "agent-benchmarking",
-      "solution-tree"
+      "coding theory",
+      "algebraic geometry codes",
+      "genus-3 curves",
+      "explicit matrix construction",
+      "Gaussian integer embeddings",
+      "mixed norms",
+      "coding invariants",
+      "non-equivalence",
+      "parity check",
+      "LLM-resistant"
     ],
     "prerequisites": [
-      "Group theory (cyclic group structure, order characterization, CRT glueing)",
-      "Parameter feasibility screening (CAS or custom code)",
-      "Minimal polynomial construction (field extensions)",
-      "Irreducibility tests (discriminant, Berlekamp–Zassenhaus, reduction algorithms)",
-      "Agent/solution-tree scoring frameworks (SMART, MCP-Bench, CheckEval tagging)"
+      "finite field arithmetic",
+      "basic algebraic geometry (plane curves, genus, divisors)",
+      "Riemann–Roch theorem",
+      "Goppa AG code construction",
+      "Gaussian integers and residue classes",
+      "matrix rank and kernel",
+      "code automorphism and Schur square computation",
+      "code canonical/form equivalence tests"
     ],
     "theorem_refs": [
       {
-        "name": "Chinese Remainder Theorem",
-        "statement": "Let n1,...,nk be pairwise coprime integers. Then the system x ≡ ai (mod ni) has a unique solution mod N = n1...nk.",
-        "source": "Standard algebra/number theory texts",
-        "notes": "Supports explicit instance generator code for CRT solution steps and feasibility verification."
+        "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
+        "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
+        "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054"
       },
       {
-        "name": "Structure theorem for multiplicative groups mod p^k",
-        "statement": "For odd prime p and k ≥ 1, the group (Z/p^k Z)^× is cyclic of order φ(p^k) = p^k - p^{k-1}.",
-        "source": "Standard number theory texts",
-        "notes": "Instance feasibility pre-filtering script uses group structure to confirm all element orders required in each problem instance truly exist."
+        "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
+        "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
+        "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136"
       },
       {
-        "name": "Minimal polynomial for a + sqrt(q)",
-        "statement": "Let a ∈ Z, q > 0 not a perfect square. Then the minimal polynomial of a + sqrt(q) over Q is x^2 - 2a x + (a^2 - q).",
-        "source": "Any algebra textbook (field extensions)"
+        "name": "Automorphism group and Schur square invariants for AG codes",
+        "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
+        "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004."
       },
       {
-        "name": "Irreducibility via discriminant (and algorithm for higher degree)",
-        "statement": "Quadratic x^2 + bx + c ∈ Z[x] is irreducible over Q iff discriminant D = b^2 - 4c is not a perfect square. For higher degree or factorization questions, use Berlekamp–Zassenhaus, Newton polygon, or computational algebra, all scriptable and code-supported.",
-        "source": "Standard algebra texts; CAS documentation; Berlekamp’s original paper",
-        "notes": "Pipeline provides hooks for invoking required algorithm per SMART/MCP-Bench scoring and verification."
+        "name": "Minimum distance theorem for AG codes",
+        "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
+        "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition"
+      },
+      {
+        "name": "Canonical forms and dimension sequences for code equivalence",
+        "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
+        "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059"
       }
     ],
-    "difficulty_estimate_author": 8
+    "difficulty_estimate_author": 9
   },
-  "verification_notes": "Orders, coprimality, minimal polynomial, and irreducibility are all verified (and their verification code/steps logged for review/feedback). Each subtask supports tagging and checklist-based multi-dimensional evaluation. Parameter feasibility and order verification pre-filter every instance; ambiguous or failed attempts are automatically archived, and generator heuristics are updated accordingly. For agent or LLM benchmarking, all steps are independently scored and archival logs maintained for refinement.",
+  "verification_notes": "- Rational point enumeration: Verify for all (x, y) in F_13^2 that F(x, y)=0; ensure Q is excluded. Document affine vs. projective point count and cite completeness.\n- For each rational point, check the curve is smooth (via vanishing of F_X and F_Y simultaneously). Can be automated in SageMath.\n- For each basis function, compute local expansion at Q=(0,2) to check the pole order ≤7 (could use code from Boehm et al. 2015 or manual script); document expansions and orders in a reproducible table/log.\n- Generator matrix: For each element, confirm G_{ij} = f_i(P_j).\n- Embedding: For each a in F_13, use the Graves (2024) minimal Euclidean function lookup/table for Z[i]/(13) minimal-norm residues, print/attach table and confirm non-degeneracy (real/imag). If mapping degenerates, document and correct basis/embedding.\n- For each codeword c, map via embedding and compute sum_j |Re(c_j)|+|Im(c_j)| (Mannheim); confirm minimum is the reported d_M; also print 4 codeword weights, with at least one instance where Mannhein ≠ Hamming.\n- Parity check: Build H as basis of right kernel of G, confirm G H^T = 0; for a sample codeword c, compute Hc^T and confirm.\n- Automorphism group and Schur square: Use Magma/Sage routines and document output. If invariants approach those for RS/BCH/twisted RS, run canonical-form/dimension-sequence code per references and report result. Attach computation logs or command listings.\n- Compare to valid invariants from Beelen/Joyner, and if necessary, perform canonical/dimension sequence check to demonstrate inequivalence. For matching cases, code and report the canonical-form equivalence/discriminant.\n- Edge case: confirm that for the mapped codes, not all weights coincide under Hamming/Mannheim metric, and cluster analysis of codewords confirms non-degeneracy.",
   "feedback": {
-    "message": "The report is robust, explicitly multi-dimensional, and addresses logical, implementation, and benchmarking challenges identified in the reflection points. Score ratings for originality, future potential, and code difficulty are accurate and justified through operational explanations. Methodology is strengthened by the explicit parameter pre-filtering, agent scoring decomposition, automated feedback/instance refinement, and logging—aligned with best practices in multi-dimensional benchmarking and feedback-driven template evolution (SMART, MCP-Bench, CheckEval, Self-Refine). All steps and references required for reproduction and extension are now covered.",
+    "message": "LLM failed to produce a meaningful solution. Problem appears difficult.",
     "suggestions": [
-      "Continue extending instance generator to higher-degree, combinatorial, and cryptographic variants, always with feasibility/code checks and solution-tree tagging.",
-      "Ensure parameter screening code and feedback integration are shared and documented for reproducibility.",
-      "Explicitly tag subtasks in benchmark logs to enable nuanced agent/LLM skill calibration and error analysis.",
-      "Encourage archiving of failed or partial agent/LLM attempts alongside successes, to support future template and tool refinement.",
-      "Promote use of modular agent scoring and solution-trees for all new composite problem families."
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality.",
+      "Document projective vs. affine rational point count for completeness.",
+      "Script or reference explicit canonical-form or dimension sequence checks for code equivalence, especially in borderline cases.",
+      "Require explicit local expansion documentation for every basis function chosen.",
+      "Print or attach minimal-norm embedding tables/scripts and demonstrate non-degeneracy in codebook entries."
     ]
   }
 }

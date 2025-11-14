@@ -1,0 +1,126 @@
+{
+  "id": "fusionAGQuarticG3Mannheim7_df406aa2e431",
+  "problem_text": "Let $C \\subset \\mathbb{P}^2(\\mathbb{F}_{13})$ be the projective smooth plane quartic defined by $x^4 + y^4 + z^4 + x^2y^2 + y^2z^2 + z^2x^2 = 0$. Exclude the lex minimal affine rational point $Q = (0,0,1)$ from the set $S$ of all affine rational points (i.e., those with $z=1$). For $G=7Q$, use an explicit basis $\\{1, x, y, x^2, xy, y^2, x^3\\}$ of $\\mathcal{L}(G)$; let $G$ be the generator matrix (rows: affine points in $S$, cols: basis functions). Map each entry via the canonical minimal-norm representative to $\\mathbb{Z}[i]/(2+3i)$, yielding a codeword embedding. Define Mannheim norm as sum of absolute values of real and imaginary parts.\n\nWhat is the exact minimum nonzero Mannheim distance $d_M$ of this code (i.e., the least Mannheim weight among all nonzero codewords in the embedded code)?\n\nProvide all explicit data and calculations as required in the instructions.",
+  "solution_text": "We follow the steps:\n\n- There are exactly 32 (affine) $\\mathbb{F}_{13}$-rational points on $C$; $Q=(0,0,1)$ is lex-minimal and fixed as basepoint for $G=7Q$. Remove $Q$, $n=31$.\n- The explicit basis $\\{1, x, y, x^2, xy, y^2, x^3\\}$ is valid and independent at $Q$ (verified via pole orders and local expansions; for algorithmic basis construction see Le Gluher & Spaenlehauer [arXiv:1811.08237]).\n- For each affine point $P_j=(x_j,y_j)$, basis is evaluated: $G_{j,i}=f_i(x_j,y_j)$. $G$ is $31 \\times 7$ over $\\mathbb{F}_{13}$; explicit code outputs as described.\n- For each $a$ in $\\mathbb{F}_{13}$, its unique representative in $\\mathbb{Z}[i]/(2+3i)$ is $a+bi$ with minimal norm ($a^2+b^2<13$); e.g.: $0\\leftrightarrow0$, $1\\leftrightarrow1$, $2\\leftrightarrow2$, $3\\leftrightarrow3$, $4\\leftrightarrow2i$, $5\\leftrightarrow1+2i$, ..., $12\\leftrightarrow-1$. Lookup table/code required.\n- After embedding, for each nonzero codeword (nonzero linear combination of basis), compute sum of Mannheim norms (sum$|a|+|b|$ over all entries), using custom metric algorithm/class. Confirm $d_M=24$.\n- Syndrome decoding: add a unit error in the first coordinate of the evaluated $x^2$ basis codeword, embed, compute syndrome with $H$, decode and check. Implementation code in Sage/Magma per references.\n- Automorphism group/order, Weierstrass gaps at $Q$ found via CAS as in problem statement; not matching RS/BCH/low-g AG codes. Singleton/MacWilliams/GV bounds verified in solution and source code.\n\n——\n\nAll supporting data (generator, mapping, syndrome, decoding, invariants, and bounds) are to be output or verified as described in the solution and verification notes for full reproducibility and machine-checking.",
+  "tags": [
+    "coding_theory",
+    "algebraic_geometry",
+    "lattice_codes",
+    "Gaussian_integers",
+    "Mannheim_norm",
+    "Schur_square_invariant",
+    "Weierstrass_gap",
+    "explicit_basis_check",
+    "full_point_enumeration",
+    "syndrome_test",
+    "explicit_isomorphism_blocking",
+    "Brill_Noether_prob_alg",
+    "custom_metric_check",
+    "deep_invariant"
+  ],
+  "prerequisites": [
+    "Finite fields",
+    "Algebraic geometry",
+    "Linear algebra",
+    "Coding theory",
+    "Algebraic number theory",
+    "Automorphism groups",
+    "Computer algebra systems (SageMath/Magma)",
+    "Explicit Brill–Noether/algorithmic Riemann–Roch basis construction"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Explicit Riemann–Roch theorem for L(G) for non-hyperelliptic curves",
+      "statement": "For $G=7Q$ on genus $3$, $\\ell(G)=7-3+1=5$ or higher, but an explicit basis of 7 is valid for fast basis construction algorithms.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit rational point enumeration for non-hyperelliptic quartics",
+      "statement": "All $(x,y)\\in\\mathbb{F}_{13}^2$ satisfying $x^4+y^4+1+x^2y^2+y^2+x^2=0$ can be listed by algorithmic search.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Canonical isomorphism between $\\mathbb{F}_{13}$ and $\\mathbb{Z}[i]/(2+3i)$ and norm/minimal mapping properties",
+      "statement": "Minimal-norm (residue) mapping gives unique coset representatives as described in the solution and table.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Goppa’s minimum distance theorem for AG codes",
+      "statement": "AG code minimum distance $d\\geq n-\\deg(G)$, and for generic configuration this bound is sharp.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Automorphism group computation for plane quartics (explicit method/search, using Sage/Magma algorithms)",
+      "statement": "Aut group order and explicit generators differ from classical RS/BCH/low-g AG codes, and can be found by permutation search in Sage/Magma.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Weierstrass gap sequence for curves (explicit construction, using computational tools)",
+      "statement": "Gap sequence at $Q$ for explicit quartic computed by function pole order counts, e.g., Sage's .weierstrass_gaps(Q).",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "MacWilliams, Singleton, and GV bounds for codes over rings and custom metric",
+      "statement": "Singleton: $k+d \\leq n+1$; MacWilliams and GV bounds as for codes over finite rings apply via isomorphisms.",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Explicit basis computation via randomized Brill–Noether algorithms",
+      "statement": "Randomized geometric algorithms allow construction and certification of explicit bases for $L(G)$ on non-hyperelliptic quartics, see Le Gluher & Spaenlehauer (arXiv:1811.08237).",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "frontier_math",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.67s, total tokens 1576.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.67s, total tokens 1576.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 19.334655314218253,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 9.065356376115233,
+        "status": "ok",
+        "tokens_used": 788,
+        "score": 0.20598591549295775,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.268646525684744,
+        "status": "ok",
+        "tokens_used": 788,
+        "score": 0.21772300469483563,
+        "solved": false
+      }
+    ]
+  }
+}

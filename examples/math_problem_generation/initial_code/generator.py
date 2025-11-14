@@ -102,9 +102,22 @@ class MathProblemGenerator:
             return normalized
         for item in refs:
             if isinstance(item, dict):
-                normalized.append(item)
+                normalized_item = {
+                    "name": str(item.get("name", "")).strip(),
+                    "statement": str(item.get("statement", "") or "").strip(),
+                    "source": str(item.get("source", "") or "").strip(),
+                }
+                if "notes" in item and item["notes"]:
+                    normalized_item["notes"] = str(item["notes"]).strip()
+                normalized.append(normalized_item)
             elif isinstance(item, str):
-                normalized.append({"name": item})
+                normalized.append(
+                    {
+                        "name": item.strip(),
+                        "statement": "",
+                        "source": "",
+                    }
+                )
         return normalized
 
     def _frontier_math_entries(self) -> list[dict]:
