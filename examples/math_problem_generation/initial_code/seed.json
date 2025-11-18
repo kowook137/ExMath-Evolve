@@ -1,0 +1,32 @@
+{
+  "seeds": [
+    {
+      "prefix": "seed_binary_parity_even_or_half",
+      "problem_text": "Show that in a binary linear code either all the vectors have even weight or half have even weight and half have odd weight.",
+      "solution_text": "Let C be a binary linear code. Define the parity functional pi: C -> F2 by pi(x) = x1 + ... + xn (mod 2). This map is linear. A linear map from a finite vector space to F2 is either the zero map or surjective. If pi is identically 0, then every codeword has even weight. Otherwise ker(pi) has codimension 1, so exactly half the codewords map to 0 (even weight) and the other half map to 1 (odd weight).",
+      "tags": ["coding_theory", "linear_codes"],
+      "prerequisites": ["Linear algebra", "Coding theory basics"]
+    },
+    {
+      "prefix": "seed_binary_self_orthogonal_mod4_weights",
+      "problem_text": "Show that in a binary self-orthogonal code, either all the vectors have weight divisible by 4 or half have even weight not divisible by 4 and half have weight divisible by 4.",
+      "solution_text": "Let C be a self-orthogonal binary code. Then for any c in C, the dot product c.c = 0, which implies wt(c) is even. Define phi: C -> F2 by phi(c) = (wt(c)/2) mod 2. Using wt(u+v) = wt(u) + wt(v) - 2t and u.v = t (mod 2) = 0 for u, v in C, one checks that phi is linear. Hence phi is either the zero map (so wt(c) is 0 mod 4 for all c), or surjective (ker(phi) has index 2, giving exactly half with wt(c) = 0 mod 4 and half with wt(c) = 2 mod 4).",
+      "tags": ["coding_theory", "self_orthogonal"],
+      "prerequisites": ["Finite fields", "Inner products over F2"]
+    },
+    {
+      "prefix": "seed_subcode_zero_in_fixed_column",
+      "problem_text": "Show that in a binary [n, k] linear code with no column of 0's, the set of all codewords that are 0 in a fixed column is an [n, k-1] code.",
+      "solution_text": "Let C be a binary [n, k] code and fix a coordinate i. Define C' = { c in C : c_i = 0 }. Then C' is a subspace. Consider the linear functional phi: C -> F2 defined by phi(c) = c_i. The assumption of no all-zero column implies phi is nonzero, so rank(phi) = 1 and dim ker(phi) = k - 1. But ker(phi) = C', hence C' is an [n, k-1] code.",
+      "tags": ["coding_theory", "linear_codes"],
+      "prerequisites": ["Linear algebra", "Coding theory basics"]
+    },
+    {
+      "prefix": "seed_total_weight_sum_n_2kminus1",
+      "problem_text": "If C is an [n, k] binary linear code with a generator matrix that has no column of 0's, show that the sum of the Hamming weights of all codewords in C is n * 2^(k-1).",
+      "solution_text": "For each coordinate j, the coordinate functional phi_j: C -> F2, phi_j(c) = c_j, is linear and nonzero (no all-zero column). Exactly 2^(k-1) codewords have c_j = 1. Thus column j contributes 2^(k-1) to the total weight over all codewords. Summing over all n columns yields n * 2^(k-1).",
+      "tags": ["coding_theory", "linear_codes"],
+      "prerequisites": ["Linear algebra", "Coding theory basics"]
+    }
+  ]
+}

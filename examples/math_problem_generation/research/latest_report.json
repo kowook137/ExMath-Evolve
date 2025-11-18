@@ -1,263 +1,178 @@
 {
-  "markdown_report": "### 1. Objective Framing\n- **Central Theorems Required:**\n  - Riemann–Roch theorem for explicit L(G) basis on non-hyperelliptic genus-3 plane quartics\n  - Goppa's theorem for AG code minimum distance\n  - Algorithms for minimal-norm representatives in \\(\\mathbb{Z}[i]/(13)\\)\n  - Computation of automorphism groups and Schur square dimensions as code invariants\n  - Singleton/Plotkin/MacWilliams bounds for cross-parameter check\n  - Non-equivalence criteria to RS/BCH/tRS via invariants ([Beelen 2017], [Chen 2022])\n\n- **Invariants/Constraints:**\n  - Provide explicit rational point set on a smooth non-hyperelliptic genus-3 plane quartic over \\(\\mathbb{F}_{13}\\) (with smoothness check) and exclude a fixed point \\(Q\\).\n  - Exhibit Riemann–Roch basis (with explicit local expansions at \\(Q\\)), for divisors of degree 7.\n  - Construct generator and parity-check matrices over \\(\\mathbb{F}_{13}\\), map codewords to \\(\\mathbb{Z}[i]/(13)\\) using explicit minimal-norm residue representatives (as per Graves 2024).\n  - Compute the minimum codeword weight under a mixed metric (Mannheim: \\(\\sum (|\\Re| + |\\Im|)\\)).\n  - Calculate the automorphism group order and Schur square dimension.\n  - Prove by invariant and reference to tables that the code is not permutation- or automorphism-equivalent to any Reed–Solomon, BCH, or twisted RS code.\n\n- **Pitfalls:**\n  - Degeneration to Hamming metric via trivial embedding (must show metric is non-trivial on real/im parts), including explicit codeword(s) where Mannheim and Hamming weights differ.\n  - Failure to explicitly justify Riemann–Roch basis/pole orders, requiring explicit local parameter expansion at Q (step-by-step or code-citable from references).\n  - Omitted invariants, partial point enumeration, or inadequate syndrome test.\n  - Not referencing or exhibiting canonical form or dimension sequences when invariants are close—must discuss and optionally provide code to confirm inequivalence for borderline cases (see code equivalence methodology references).\n  - Incomplete reporting and checking of affine vs projective points; ensure completeness or document any restrictions.\n  - Not making the lookup table/algorithm for the minimal-norm embedding explicit or only assuming direct mapping when this could degenerate the metric.\n\n### 2. Problem Statement\n**Problem**\n\nLet \\(\\mathcal{C}\\) be the smooth plane quartic curve over \\(\\mathbb{F}_{13}\\) given by\n\\[\n    Y^4 + X^4 + X^2 Y^2 + X^3 + 2 Y^3 + 7 = 0.\n\\]\n\n(a) Enumerate (and list) all *affine* \\(\\mathbb{F}_{13}\\)-rational points of \\(\\mathcal{C}\\). Prove that \\(\\mathcal{C}\\) is non-hyperelliptic and smooth over \\(\\mathbb{F}_{13}\\), by checking all partial derivatives vanish only when \\((x, y)\\) is not a solution.\n\n(b) Fix the point \\(Q = (0,2)\\) in \\(\\mathcal{C}(\\mathbb{F}_{13})\\), form the divisor \\(D = P_1 + \\cdots + P_n\\), where \\(S = \\{P_1, \\ldots, P_n\\}\\) is the set of all rational affine points other than \\(Q\\). Let \\(G = 7Q\\). Find an explicit basis \\(\\{f_1,\\ldots, f_k\\}\\) for the Riemann–Roch space \\(L(G)\\), *justifying via local parameter expansion at \\(Q\\) that their pole orders at \\(Q\\) are at most 7*, and reference or script the expansion process (e.g., cite Newton–Puiseux or use explicit local monomial expansions as per Boehm et al. 2015). Document pole orders in a reproducible table.\n\n(c) Construct the AG code \\(C := C_L(D, G)\\) by evaluating each \\(f_i\\) at the points \\(S\\), i.e., as the image of\n\\[\n    ev_S: L(G) \\rightarrow \\mathbb{F}_{13}^n \\qquad f \\mapsto (f(P_1), \\ldots, f(P_n)).\n\\]\nWrite down the full generator matrix \\(G\\) of the code (entries in \\(\\mathbb{F}_{13}\\)), with rows corresponding to the basis found above.\n\n(d) Construct an explicit bijection \\(\\varphi: \\mathbb{F}_{13} \\rightarrow \\mathbb{Z}[i]/(13)\\) sending a field element to a minimal-norm residue in \\(\\mathbb{Z}[i]/(13)\\) (as in [Graves 2024]), and map all entries of \\(G\\) under \\(\\varphi\\). For the lookup, script or explicitly reproduce the mapping table and ensure that for at least some entries nontrivial imaginary parts arise, i.e., the embedding is demonstrably not degenerate.\n\n(e) For all nonzero codewords, compute the minimum nonzero mixed (Mannheim) weight:\n\\[\n    d_M = \\min_{c\\in C\\setminus\\{0\\}} \\sum_{j=1}^n \\left(|\\Re\\,\\varphi(c_j)| + |\\Im\\,\\varphi(c_j)|\\right).\n\\]\nShow by explicit code (or enumerated output) that for at least one nonzero codeword, the Mannheim weight differs from its Hamming weight (i.e., at least one entry is mapped to a genuinely nonreal/imaginary residue). List four distinct nonzero codeword weights in both metrics.\n\n(f) Exhibit an explicit parity-check matrix \\(H\\) (over \\(\\mathbb{F}_{13}\\)) such that \\(G H^T = 0\\), and verify with at least one example (e.g., the codeword corresponding to \\(f_2\\)). Include an explicit syndrome computation.\n\n(g) Compute:\n- The order of the automorphism group of \\(C\\) (as a linear code), using Magma, Sage, or GAP. If close to RS/BCH automorphism order, also exhibit the canonical form or dimension sequence to rigorously confirm inequivalence.\n- The dimension of its Schur square (i.e., span of componentwise products of codewords), reporting any additional invariant sequences relevant for non-equivalence.\n\n(h) Prove, citing [Beelen 2017] or [Chen 2022] and comparing the invariant table(s), that \\(C\\) is not permutation- or automorphism-equivalent to any Reed–Solomon, BCH, or twisted Reed–Solomon code over \\(\\mathbb{F}_{13}\\) of the same dimension and length. In cases of similar invariants, reference canonical forms or dimension sequences to definitively rule out equivalence per known methodology (see MDPI 2024, arXiv:1911.13059).\n\n**Final Answer**\nReport the minimum Mannheim distance \\(d_M\\).\n\n\n---\n\n### 3. Rigorous Solution\n\n#### (a) Rational Point Enumeration and Smoothness\n- For each \\(x, y\\in\\mathbb{F}_{13}\\), compute \\(F(x, y)=y^4 + x^4 + x^2y^2 + x^3 + 2y^3 + 7\\).\n- Tally all valid pairs and exclude Q = (0,2).\n- To check smoothness, at each solution, compute partials:\n  - \\(F_X = 4X^3 + 2X Y^2 + 3X^2\\)\n  - \\(F_Y = 4Y^3 + 2X^2 Y + 6Y^2\\)\n- Show programmatically (or by exhaustive listing) that nowhere do both vanish for a listed affine rational point.\n- Since \\(\\mathcal{C}\\) is a smooth plane quartic, it is non-hyperelliptic of genus 3.\n\n#### (b) Riemann–Roch basis for \\(L(7Q)\\)\n- By Riemann–Roch: \\(\\ell(7Q) = 7-3+1 = 5\\).\n- Candidate basis: \\(1, X, Y, X^2, X Y\\).\n- For each basis function, expand locally at Q, explicitly determine pole orders (citing or scripting Newton–Puiseux, e.g., math.fsu.edu/~hoeij/algcurves.html). Tabulate the basis and pole orders for transparency.\n\n#### (c) Generator matrix\n- For \\(n = |S|\\), build 5\\(\\times\\)n matrix G: G_{ij} = f_i(P_j), with basis as above and S as ordered in (a).\n\n#### (d) Minimal-norm embedding \\(\\varphi\\)\n- For each \\(a\\in\\mathbb{F}_{13}\\), define \\(\\varphi(a)\\) = unique minimal-norm residue in \\(\\mathbb{Z}[i]/(13)\\), i.e., for each residue class modulo 13, find (c,d) with minimal |c|+|d| such that \\(c+di \\equiv a\\pmod{13}\\). Produce and document the explicit mapping for all 13 elements. Ensure the codebook fills both real and imaginary entries in the mapped matrix, and cross-reference this for non-degeneracy.\n\n#### (e) Mannheim distance and codeword metrics\n- For each nonzero codeword (span of G rows), compute Mannheim weight as sum over j: |Re(c_j)|+|Im(c_j)|, c_j\\in\\mathbb{Z}[i]/(13) from \\(\\varphi\\).\n- Output d_M = minimal nonzero Mannheim weight, and four explicit codewords with their Mannheim and Hamming weights (showing at least one where they differ, as in the constructive example in the search results).\n\n#### (f) Parity-check matrix and example\n- Compute H = right kernel of G (over \\(\\mathbb{F}_{13}\\)), verify GH^T=0. For codeword c (e.g., f_2-row or a sum), compute syndrome Hc^T and confirm zero.\n\n#### (g) Automorphism group and Schur square\n- Use Magma/Sage to compute automorphism group order and explicit generator(s) (log output in submission); in case of close invariant values, compute the canonical form/dimension sequence (per arXiv:1911.13059 or mdpi.com). Also compute the full Schur square dimension and any extended sequence if invariants are close to known code families.\n\n#### (h) Non-equivalence\n- Compare all invariants (aut, Schur, and any additional canonical-form invariants for subtle cases) to RS, BCH, tRS code tables over \\(\\mathbb{F}_{13}\\) with n, k matching (reference Beelen, Joyner, canonical-form literature). For cases where only partial information is available, outline the canonical-form/dimension sequence check and, if applicable, script to confirm inequivalence.\n\n#### Final Answer\nThe minimum Mannheim distance d_M (integer value for this code).\n",
+  "markdown_report": "1) Objective and constraints\n- Field/length: Work over GF(13) with length n = 12. Fix the primitive element 2 ∈ GF(13)× (order 12) so the primitive 12th root of unity is α = 2, with α^j = 2^j for j = 0,…,11.\n- Locality (r = 2): Enforce that the parity-check polynomial h(x) is divisible by L(x) = 1 + x^4 + x^8. This prescribes 3-term cyclic locality checks supported on arithmetic progressions with step 4 modulo 12.\n- Dual/orthogonality: Require Euclidean self-orthogonality C ⊆ C^⊥. In defining-set language (gcd(n, q) = 1, singleton q-cyclotomic cosets), this is equivalent to Z(C) ⊇ Z_n \\ (−Z(C)), or equivalently Z(C) ∪ (−Z(C)) = Z_n; in particular the fixed points 0 and, because n is even, 6 must lie in Z(C).\n- Distance: A BCH-style designed-distance constraint may be invoked, but will be shown irrelevant given the two structural constraints above.\n- Uniqueness/verifiability: The task culminates in an exact integer count. We show the constraints are inconsistent and the exact number of admissible codes is N = 0.\n- Prohibited shortcuts: Do not place the locality factor into g(x); the locality factor must divide h(x) (dual side). Do not confuse Euclidean with Hermitian duality.\n\n2) Problem statement\nLet C be a cyclic code of length n = 12 over GF(13). Fix α = 2 ∈ GF(13) as a primitive 12th root of unity and represent exponents modulo 12. Let g(x) be the monic generator polynomial of C and h(x) = (x^12 − 1)/g(x) the monic parity-check polynomial.\n\nConstraints:\n(i) Locality: h(x) is divisible by L(x) = 1 + x^4 + x^8.\n(ii) Euclidean self-orthogonality: C ⊆ C^⊥ over GF(13).\n(iii) Designed-distance clause (BCH-type) may be used if needed but is not required to be explicitly stated in terms of consecutive exponents.\n\nQuestion. Determine the exact number N of cyclic codes C (equivalently, of monic generator polynomials g(x) | x^12 − 1) satisfying (i)–(ii). Give N as a single integer.\n\n3) Solution\nStep 0. Preliminaries.\n- Since 12 | (13 − 1), x^12 − 1 splits completely over GF(13) as ∏_{j=0}^{11} (x − α^j) with α = 2. Cyclotomic cosets modulo 12 under q = 13 are singletons, so defining sets Z ⊆ {0,…,11} correspond bijectively to cyclic codes via g(x) = ∏_{j∈Z} (x − α^j) and h(x) = ∏_{j∉Z} (x − α^j).\n- Euclidean dual defining-set rule (semisimple case): Z(C^⊥) = Z_n \\ (−Z(C)). Hence C ⊆ C^⊥ iff Z(C^⊥) ⊆ Z(C), i.e., Z ⊇ Z_n \\ (−Z). Equivalently, Z ∪ (−Z) = Z_n and thus the fixed points 0 and 6 (since 6 ≡ −6) must belong to Z.\n\nStep 1. Consequence of the locality divisibility L | h.\nFactor x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1), so L(x) = 1 + x^4 + x^8 has as zeros exactly those 12th roots whose exponents are j ≡ 1,2 (mod 3). If L | h, then every zero of L is a zero of h; equivalently, those exponents cannot be zeros of g. In defining-set language, this forces\nZ ⊆ {0,3,6,9}.\nIndeed, Z is disjoint from S := {1,2,4,5,7,8,10,11}, so Z ⊆ S^c = {0,3,6,9}.\n\nStep 2. Self-orthogonality contradicts the locality-imposed restriction.\nSelf-orthogonality requires Z ∪ (−Z) = Z_n. But if Z ⊆ {0,3,6,9}, then for the pair {1,11} neither 1 nor 11 can lie in Z, so 1 ∉ Z ∪ (−Z), violating Z ∪ (−Z) = Z_n. Therefore no defining set Z can simultaneously satisfy L | h and C ⊆ C^⊥.\n\nStep 3. Role of BCH clause.\nAny additional BCH-style distance requirement only further restricts admissible codes, so it cannot resolve the inconsistency. Therefore the feasible set is empty regardless of the designed-distance target.\n\nConclusion. The exact count of such codes is\nN = 0.\n\n4) Verification guidance\n- Exhaustive algebraic check:\n  1) Enumerate all subsets Z ⊆ {0,…,11}. Compute h implicitly via complements (zeros(h) = Z^c) or form g(x) = ∏_{j∈Z} (x − α^j) and h(x) = (x^12 − 1)/g(x).\n  2) Locality test: L | h is equivalent here to Z ∩ S = ∅ with S = {1,2,4,5,7,8,10,11} (since zeros(h) must contain the zeros of L). An equivalent computational test is h mod L = 0 in GF(13)[x].\n  3) Euclidean self-orthogonality test: verify Z ∪ (−Z) = Z_n (negation map i ↦ (12 − i) mod 12), and check that 0,6 ∈ Z.\n  4) No subset will satisfy both tests; the count must be 0.\n- Optional spectral cross-check: Compute the spectrum of L to confirm its zero set indices are S (j ≡ 1,2 mod 3). The condition L | h forces S ⊆ zeros(h), i.e., S ∩ Z = ∅; this immediately implies Z ⊆ {0,3,6,9} and contradicts self-orthogonality as above.\n- Edge checks: confirm α = 2 has order 12 in GF(13); verify factorization x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1); check that 0 and 6 are self-inverse indices and thus mandatory for self-orthogonality.\n\nFinal answer: N = 0.",
   "idea": {
-    "description": "Construct an AG code from a non-hyperelliptic genus-3 plane quartic over F_13, explicit rational point set, local parameter expansion justifying Riemann–Roch basis at a degree-7 divisor, generator/parity matrices, minimal-norm Gaussian integer embedding, explicit Mannheim metric, code invariants (automorphism, Schur square), and invariants-based proof of non-equivalence to RS/BCH/twisted RS. All steps specify explicit algorithms (enumeration, expansion, embedding lookup, syndrome/parity, canonical-form checks for equivalence when necessary).",
-    "motivation": "Blocks LLM shortcuts by synthesizing algebraic geometry, field-to-ring minimal-norm embeddings, explicit matrix/invariant construction, and advanced code theory. Demanding machine-verifiable syndrome, metric nontriviality, and deep invariant checks prevents template or recall-based solutions. High-genus and explicit metric prevents code identification via parameter matching. Equivalence is further blocked by requiring canonical forms or dimension sequences when invariants are close.",
-    "implementation_notes": "Plane quartic chosen generally; point enumeration is scriptable (brute force over F_13), smoothness by checking partials. Riemann–Roch basis justified by pole order via local expansion or symbolic computation with explicit intermediate reporting. Generator follows, embedding via Graves' minimal-norm algorithm (see arXiv:2502.21136), with full table printed and at least one codeword shown to cover both real and imaginary parts. Search all nonzero codewords for Mannheim/Hamming weight discrepancy, listing at least four and confirming non-degeneracy. Parity-check by kernel computation; syndrome tested with explicit calculation; if possible, automation is documented. Invariants (automorphism group, Schur square, or canonical dimension sequences if invariants are similar to RS/BCH) via Magma/Sage routines as in Beelen/Joyner/Couvreur/Scachette. Non-equivalence asserted by matching against reference invariant tables, and, where necessary, by canonical form or dimension sequence check.",
-    "pseudocode": "F.<x,y> = FiniteField(13)\ndef F_c(x, y):\n    return y^4 + x^4 + x^2*y^2 + x^3 + 2*y^3 + 7\nS = []\nfor x in F:\n    for y in F:\n        if (F_c(x, y) == 0) and not (x == 0 and y == 2):\n            S.append((x, y))\n# Check smoothness at each S[i] by checking partials.\n# Local expansion at Q=(0,2), choose params t, compute order of 1, X, Y, X^2, X*Y at Q (see refs).\nL_G_basis = [lambda x, y: 1, lambda x, y: x, lambda x, y: y, lambda x, y: x**2, lambda x, y: x*y] # Confirm by expansion\nDocument pole orders in table.\nG = [[f(x, y) for (x, y) in S] for f in L_G_basis]\n# For each a in F_13, find (c, d) with smallest |c|+|d| and a = c + d*i mod 13; script/print lookup table.\nvarphi = minimal_norm_table()\nG_star = [[varphi(a) for a in row] for row in G]\n# Enumerate codewords from all nonzero F_13^5 vectors, compute sum_j |Re(c_j)|+|Im(c_j)|; print four, confirm at least one diff from Hamming\n# H = kernel(G), check G*H.T == 0; explicit syndrome Hc^T\n# autgrp, schur = automorphism_group(G), schur_square_dimension(G); if close to RS/BCH invariants, compute canonical form/dimension sequence\n# Compare invariants (Beelen, Joyner, canonical form refs as in arXiv:1911.13059, mdpi.com); document or script check",
+    "description": "Fuse a dual-side locality constraint L | h with Euclidean self-orthogonality via defining-set duality in the fully split regime n | (q−1). Over GF(13), n=12, L(x)=1+x^4+x^8 forces Z ⊆ {0,3,6,9}, while self-orthogonality requires Z ∪ (−Z) = Z_n (hence 0 and 6 in Z and every pair {i,−i} represented). These are incompatible, yielding a precise impossibility (count N=0).",
+    "motivation": "Combining locality through a specific dual factor and orthogonality through the exact defining-set relation creates a tight, nontrivial constraint system. The contradiction is not from rote BCH/RS patterns but from careful use of duality and factor/zero bookkeeping, resisting shortcut methods.",
+    "implementation_notes": "Fix α = 2 as the primitive 12th root in GF(13). Compute S = {j≡1,2 (mod 3)} as the zero-index set of L. Enforcing L | h is equivalent to Z ∩ S = ∅, hence Z ⊆ {0,3,6,9}. Euclidean self-orthogonality is tested by Z ∪ (−Z) = Z_n (so fixed points 0 and 6 must be in Z). Since Z ⊆ {0,3,6,9}, indices {1,11} violate the union condition, so no solution exists. Optional brute-force enumeration over all subsets Z ⊆ Z/12Z confirms zero solutions.",
+    "pseudocode": "alpha = 2 mod 13\nN = set(range(12))\nS = {1,2,4,5,7,8,10,11}         # zeros of L(x) = 1 + x^4 + x^8\nneg = lambda T: {(-i) % 12 for i in T}\ncount = 0\nfor Z in all_subsets(N):\n    # locality test L | h  <=>  Z ∩ S = ∅\n    if not Z.isdisjoint(S):\n        continue\n    # Euclidean self-orthogonality: Z ∪ (−Z) = N (in particular 0,6 ∈ Z)\n    if (Z | neg(Z)) != N:\n        continue\n    count += 1\nreturn count  # should be 0",
     "originality": {
-      "score": 9,
-      "positive": "Fusion of explicit non-hyperelliptic AG code, step-by-step local basis and pole order computation, codeword enumeration/checks for explicit metric nontriviality, minimal-norm embedding with lookup, deep invariants, and canonical-form equivalence checks goes beyond existing templates and even most human-constructed benchmarks.",
-      "negative": "Most steps are tractable by scripting, but full automation of expansions and canonical form may require careful referencing and may not be universally available for all curves; documenting this is thus critical for completeness."
+      "score": 8,
+      "positive": "Non-binary small-length cyclic setting with explicit primitive element and a specific dual-side locality factor; contradiction emerges only via precise dual-defining-set reasoning.",
+      "negative": "Relies on standard cyclic-code duality; novelty comes from the constraint fusion and exact impossibility statement."
     },
     "future_potential": {
       "score": 9,
-      "positive": "Can be extended to other algebraic settings (higher genus, other rings, more complex metrics, or even noncommutative codes). Scripting basis expansions, automorphism/canonical form, and embedding is robust for research-level benchmarks.",
-      "negative": "Complete computation (especially canonical forms) may require substantial computational effort as n grows, so problem sizes must remain bounded for practical verification. For increased invariants ambiguity at larger n, further literature review may be needed."
+      "positive": "Generalizes to other n | (q−1) and r+1-term dual checks, or to Hermitian duality/constacyclic variants to toggle feasibility; can generate satisfiable/unsatisfiable families with exact counts.",
+      "negative": "Requires careful parameter choices to avoid trivial contradictions or trivial satisfiable cases."
     },
     "code_difficulty": {
-      "score": 9,
-      "positive": "With small field/code dimensions, all symbolic steps are automatable (point enumeration, matrix construction, local expansion, embedding, syndrome, invariants, canonical forms). The step of checking explicit differentiation of metrics and canonical sequence for near-equivalence requires advanced algebra/code-theory skills, making the problem top-tier.",
-      "negative": "Canonical form and dimension sequence are required for close-invariant edge cases; may be nontrivial to automate for all codes without specialist references/software (should be noted and sources given)."
+      "score": 6,
+      "positive": "Enumeration over 2^12 subsets with simple set operations is straightforward; divisibility can be checked either via sets or polynomial arithmetic.",
+      "negative": "Precision is required to apply the correct self-orthogonality condition (Z ∪ (−Z) = Z_n). Mixing up reciprocal/negation or using the wrong orthogonality test can invalidate results."
     },
-    "target_difficulty": "LLM-resistant, postdoc-level coding theory",
+    "target_difficulty": "advanced graduate / researcher",
     "required_theorems": [
-      "Explicit Riemann–Roch theorem with local parameter expansions for plane quartics",
-      "Point enumeration and smoothness algorithms for plane quartic curves",
-      "Goppa minimum distance theorem for AG codes",
-      "Explicit minimal-norm division in Z[i]/(13) (see Graves 2024)",
-      "Automorphism group and Schur square invariant theory (see Beelen 2017, Joyner-Ksir 2004, Scachette, canonical forms: arXiv:1911.13059, mdpi.com)",
-      "Singleton, Plotkin, MacWilliams bounds as cross-check",
-      "Non-equivalence invariants for AG codes, using canonical form/dimension sequences as needed"
+      "Duals of cyclic codes: defining-set relation for Euclidean dual C^⊥",
+      "Mattson–Solomon transform diagonalization of cyclic convolution; spectral/zero-set bookkeeping",
+      "Locality via ν-term dual checks 1 + x^s + ⋯ + x^{rs} (r = 2, s = n/3)"
     ],
     "pitfalls": [
-      "Degenerate mapping: basis/embedding may cause metric to reduce to Hamming—must check and exhibit codewords with real and imaginary parts.",
-      "Failure to justify basis: local expansion/pole order at Q for every basis element must be tabled or algorithmically referenced.",
-      "Incomplete rational point enumeration (should address projective vs. affine, document any exclusions).",
-      "Neglecting automorphism group and canonical-form/dimension sequence for close-invariant edge cases.",
-      "Omitting or assuming mapping algorithm for minimal-norm embedding; must script or table.",
-      "Not flagging or scripting equivalence check when invariants are close, or not referencing relevant code-theory lit."
+      "Confusing zeros of g with zeros of h; the locality factor lies on the dual side (h), and L | h means Z ∩ zeros(L) = ∅.",
+      "Misapplying Euclidean vs Hermitian dual relations; here Euclidean gives Z(C^⊥) = Z_n \\ (−Z(C)) and self-orthogonality requires Z ∪ (−Z) = Z_n (so 0 and 6 must be in Z).",
+      "Assuming L | h implies the coefficient vector of L itself lies in C^⊥; in general v ∈ C^⊥ iff h | v^* (for L self-reciprocal, h | L), not L | h.",
+      "Using characteristic 3 (q=3^m), where 1 + x^4 + x^8 degenerates; must keep q=13."
     ]
   },
   "related_work": [
     {
-      "title": "Computing integral bases via localization and Hensel lifting",
-      "link": "https://arxiv.org/abs/1505.05054",
+      "title": "Theory of Error-Correcting Codes",
+      "link": "https://link.springer.com/book/10.1007/978-1-4757-2050-4",
       "contributions": [
-        "Algorithm for integral basis computation on plane curves via local expansion and Hensel's lemma",
-        "Supports explicit verification of Riemann–Roch basis construction"
+        "Cyclic codes, generator/Parity-check polynomials",
+        "Euclidean duals and reciprocal relations",
+        "BCH bound generalities"
       ],
       "limitations": [
-        "Not explicit for AG codes on quartics; local expansion must be adapted to function field context"
+        "Does not center LRC locality via explicit ν-term dual checks"
       ]
     },
     {
-      "title": "A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function",
-      "link": "https://arxiv.org/abs/2502.21136",
+      "title": "On Optimal Cyclic (r, δ)-LRC Codes",
+      "link": "https://ar5iv.org/pdf/1502.01414",
       "contributions": [
-        "Explicit minimal-norm residue representative construction in Z[i]/(p)",
-        "Provides the explicit embedding and lookup for code matrix mapping"
+        "Locality via inclusion of ν-term checks in the dual (cosets of subgroup)",
+        "Spectral/DFT viewpoint for enforcing r = 2 with 1 + x^{n/3} + x^{2n/3}"
       ],
       "limitations": [
-        "Does not directly specify lookup for all field elements; must be adapted"
+        "Focuses on optimal distance trade-offs rather than dual self-orthogonality constraints"
       ]
     },
     {
-      "title": "Algebraic geometry code invariants and non-equivalence to RS/BCH codes",
-      "link": "https://arxiv.org/abs/2208.05732",
+      "title": "Cyclic Codes: The Defining-Set Duality and Hulls",
+      "link": "https://www.mdpi.com/1099-4300/25/1/37",
       "contributions": [
-        "Demonstrates genus dependence of invariants and non-equivalence to RS/BCH/tRS codes via explicit automorphism and Schur square dimension",
-        "Methodology for invariant-theoretic proof of code inequivalence"
+        "Clear statement: Z(C^⊥) = Z_n \\ (−Z(C)) in the semisimple case",
+        "Criteria for self-orthogonality in terms of defining sets (Z ∪ (−Z) = Z_n)"
       ],
       "limitations": [
-        "Focuses on elliptic curve (genus one); extension to quartics/genus-3 needed with computational details"
+        "Does not address LRC locality factors explicitly"
       ]
     },
     {
-      "title": "Parity-check matrix computation for codes over finite rings",
-      "link": "https://arxiv.org/abs/2401.05247",
+      "title": "Algebraic Codes for Data Transmission",
+      "link": "https://www.cambridge.org/core/books/algebraic-codes-for-data-transmission/codes-based-on-the-fourier-transform/693971E8F5543BC4DD90E12C865877EF",
       "contributions": [
-        "Algorithms (and code) for constructing parity-check matrices for codes over Zps and more general ring alphabets",
-        "Methodology supports explicit syndrome testing over Z[i]/(p)"
+        "Mattson–Solomon transform formalism and cyclic convolution diagonalization",
+        "Spectral interpretation of factor/zero-set constraints"
       ],
       "limitations": [
-        "Examples limited to small rings/code sizes"
-      ]
-    },
-    {
-      "title": "Order bounds and minimum distance for one-point AG codes",
-      "link": "https://arxiv.org/abs/1002.4759",
-      "contributions": [
-        "Improved minimum distance/parameter bounds for AG codes, with order bound and cross-check with Goppa's theorem"
-      ],
-      "limitations": [
-        "Focuses on minimum distance, not AG codes over residue rings or with mixed metrics"
-      ]
-    },
-    {
-      "title": "How to Find the Equivalence Classes in a Set of Linear Codes in Practice?",
-      "link": "https://www.mdpi.com/2227-7390/12/2/328",
-      "contributions": [
-        "Practical methodology for computing canonical forms; determining code equivalence, especially when invariants are close",
-        "Can be directly used or referenced for full equivalence tests"
-      ],
-      "limitations": [
-        "Canonical form may be computationally heavy for large codes; should be bounded for small n/k"
-      ]
-    },
-    {
-      "title": "Equivalence and Characterizations of Linear Rank-Metric Codes Based on Invariants",
-      "link": "https://arxiv.org/abs/1911.13059",
-      "contributions": [
-        "Introduces dimension sequences and canonical-form invariants for code equivalence",
-        "Directly relevant for verifying non-equivalence in subtle edge cases"
-      ],
-      "limitations": [
-        "Primarily focused on rank-metric codes, so adaptation to AG/Hamming-metric codes must be documented"
+        "No LRC-specific constructions"
       ]
     }
   ],
   "problem_spec": {
-    "topic": "Fusion of Algebraic Geometry Codes and Lattice Embedding over Non-Hyperelliptic Curves with Explicit Invariant Checks",
+    "topic": "Coding Theory (non-binary, structural fusion)",
     "subtopics": [
-      "Construction of AG codes from non-hyperelliptic genus-3 plane quartics over finite fields",
-      "Explicit rational point enumeration on algebraic curves",
-      "Explicit Riemann–Roch basis and local parameter expansions",
-      "Embedding finite fields into residue rings of Z[i] or Eisenstein integers modulo prime ideals",
-      "Mixed metrics (Mannheim/Gaussian norm + Hamming) for codeword comparison",
-      "Computation of automorphism groups and Schur square dimensions as code invariants",
-      "Proof of non-equivalence to Reed-Solomon, BCH, or twisted RS codes",
-      "Explicit generator and parity-check matrix construction, syndrome testing"
+      "Cyclic codes over finite fields",
+      "Euclidean duals of cyclic codes",
+      "Locally Repairable Codes (LRC) via cyclic locality checks",
+      "Mattson–Solomon transform (DFT) viewpoint",
+      "BCH-style designed distance",
+      "Idempotents in Fq[x]/(x^n−1)"
     ],
     "objectives": [
-      "Block all LLM short-cuts and templates by constructing a code that is: (a) not a member of the standard RS/BCH families; (b) fully explicit in all algebraic, metric, and invariant-theoretic details; (c) verifiable at each stage by symbolic/numeric scripts.",
-      "Force the use of multiple mathematical theories in concert: algebraic geometry (complexity in high-genus, non-hyperelliptic case), number theory (explicit lattice quotient embeddings), combinatorics (code matrices and enumerations), group theory (automorphism checks).",
-      "Require all the following verifiable outputs: explicit rational point set, explicit and justified Riemann–Roch basis with local expansions, generator and parity-check matrices over finite field and mapped ring, codeword minimum distance under the specified metric (not degenerate to Hamming), automorphism group order and Schur square dimension, explicit demonstration of non-equivalence to reference code families through these invariants."
+      "Fuse locality and self-orthogonality constraints over GF(13), n = 12, to derive a definitive, verifiable conclusion.",
+      "Use defining-set and factor/zero-set interplay to prove a contradiction.",
+      "Provide an exact, single-integer answer (the count of admissible codes)."
     ],
-    "difficulty_target": "beyond PhD qualifying exam (LLM-resistant, requiring multi-field synthesis and machine-verifiable output)",
+    "difficulty_target": "advanced graduate / researcher",
     "required_theorems": [
-      "Explicit Riemann–Roch theorem for genus-3 non-hyperelliptic curves (with basis construction and local expansion proofs)",
-      "Explicit rational point enumeration algorithms for plane quartics",
-      "Goppa's theorem for AG code minimum distance",
-      "Norm, residue, and minimality algorithms in Z[i]/(p) and Z[ω]/(p), especially for small primes",
-      "Automorphism group and Schur square dimension for AG codes (see Beelen 2017, Joyner-Ksir 2004, Couvreur et al., and Magma/Sage routines)",
-      "Singleton, Plotkin, MacWilliams bounds—extended to nonstandard metrics as necessary",
-      "Non-equivalence criteria for AG codes (cf. [Chen 2022], [Beelen 2017]): automorphism order, Schur dimension, etc. (including canonical forms/dimension sequences if needed)"
+      "Duals of cyclic codes: defining-set relation Z(C^⊥) = Z_n \\ (−Z(C))",
+      "Mattson–Solomon transform diagonalization for cyclic codes",
+      "Locality via ν-term parity-check factors in the dual"
     ],
     "pitfalls": [
-      "Metric degeneration: mapping and basis must be selected so that mixed metric (Gaussian + Hamming) is nontrivial (must exhibit codewords with both real and imaginary parts nonzero and different metrics).",
-      "Failure to provide explicit pole order expansions and local basis justifications (must be scripted, tabled, or algorithmically referenced at Q).",
-      "Neglecting explicit enumeration and smoothness checks for the rational point set (must check for singular/infinity points, document projective vs. affine count).",
-      "Non-computation of automorphism group and Schur square (or using only standard templates); for close invariants, neglecting canonical form/dimension sequence.",
-      "Allowing code to reduce (by invariants or explicit comparison) to RS/BCH/twisted RS without rigorously checking canonical equivalence.",
-      "Omitting explicit mapping algorithms and lookup tables for residue ring embeddings.",
-      "Not checking or documenting metric non-degeneracy (i.e., showing Mannheim ≠ Hamming on some codewords)."
+      "Equating zeros of g and h; mixing up roles of generator vs parity-check polynomials",
+      "Incorrect handling of negation in Z/12Z; must use Z ∪ (−Z) = Z_n for self-orthogonality (0 and 6 included)",
+      "Assuming L | h ⇒ L ∈ C^⊥; correct condition is h | L (since C^⊥ is generated by h^*)",
+      "Assuming characteristic 3 identities in GF(13)"
     ],
     "constraints": [
-      "Code parameters (n, k, d) must be explicitly computed and justified with exhibited matrices and codeword lists.",
-      "All mappings and bases must be justified step-by-step, including documentation of expansion at a distinguished point (Q), with citations or code listing.",
-      "Metric computations must explicitly check and document that weights are not always equal to Hamming weight; four codeword outputs with different weights (including differing ones) should be present.",
-      "Require at least one syndrome/parity-check computation with non-obvious test vector.",
-      "All invariants (automorphism, Schur square) must be referenced to literature or exhibited via software output; in close cases, canonical-form/dimension sequence check must be performed and documented.",
-      "Proof of non-equivalence to RS/BCH/tRS must be by reference to invariant tables, canonical forms, or explicit Magma/Sage computation logs."
+      "Field GF(13), length n = 12, α = 2 as the fixed primitive 12th root",
+      "h(x) divisible by L(x) = 1 + x^4 + x^8",
+      "Euclidean self-orthogonality C ⊆ C^⊥"
     ]
   },
   "theorem_refs": [
     {
-      "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
-      "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
-      "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054",
-      "notes": "Algorithmic basis construction and pole order justification via Newton–Puiseux/Hensel."
+      "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
+      "statement": "Let C be a cyclic code of length n over GF(q) with gcd(n, q) = 1 and defining set Z ⊆ Z/nZ. Then C^⊥ is cyclic with Z(C^⊥) = Z/nZ \\ (−Z), where −Z = {−i mod n : i ∈ Z}. In particular, C ⊆ C^⊥ iff Z ⊇ Z/nZ \\ (−Z), i.e., Z ∪ (−Z) = Z/nZ; fixed points of inversion must be in Z.",
+      "source": "Entropy 25(1):37 (2023), MacWilliams–Sloane, Ch. 7–8",
+      "notes": "Singleton cosets because n | (q − 1)."
     },
     {
-      "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
-      "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
-      "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136",
-      "notes": "Provides explicit table lookup or algorithm for minimal-norm representatives."
+      "name": "Mattson–Solomon Transform for Cyclic Codes",
+      "statement": "Evaluation at the n-th roots of unity α^i diagonalizes cyclic convolution: a cyclic code corresponds to sequences whose spectra vanish on a fixed index set T (the defining set). Factor/zero-set relations can be tracked via these spectra.",
+      "source": "Algebraic Codes for Data Transmission, Ch. on DFT-based codes",
+      "notes": "In the semisimple case (gcd(n, q) = 1), each cyclotomic coset is a singleton."
     },
     {
-      "name": "Automorphism group and Schur square invariants for AG codes",
-      "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
-      "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004.",
-      "notes": "Tabulated invariants show AG codes are inequivalent to RS/BCH/tRS for genus > 1; canonical-form/dimension sequence techniques are available for close-invariant cases."
-    },
-    {
-      "name": "Minimum distance theorem for AG codes",
-      "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
-      "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition, Theorem 2.2.3.",
-      "notes": "Equality can be checked case by case by enumerating codewords."
-    },
-    {
-      "name": "Canonical forms and dimension sequences for code equivalence",
-      "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
-      "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059",
-      "notes": "Should be referenced for subtle or close-invariant discrimination."
+      "name": "Locality via ν-term Dual Checks",
+      "statement": "If the dual contains a weight-(r+1) vector v(x) = 1 + x^s + ⋯ + x^{rs}, with s = n/(r+1), then locality r follows. In our divisibility formulation, L | h constrains zeros(h) to include zeros(L), which already suffices to derive the contradiction with self-orthogonality.",
+      "source": "Tamo–Barg–Goparaju–Calderbank (2015)",
+      "notes": "Beware: v ∈ C^⊥ iff h | v^* (for self-reciprocal v, h | v), not v dividing h."
     }
   ],
   "problem_pair": {
-    "id": "fusionAGQuarticF13_GaussianInvariant",
-    "problem_text": "Let \\(\\mathcal{C}\\) be the smooth plane quartic curve over \\(\\mathbb{F}_{13}\\) given by\n\\[\n    Y^4 + X^4 + X^2 Y^2 + X^3 + 2 Y^3 + 7 = 0.\n\\]\n(a) Enumerate all affine \\(\\mathbb{F}_{13}\\)-rational points of \\(\\mathcal{C}\\) and prove it is non-hyperelliptic and smooth over \\(\\mathbb{F}_{13}\\), by checking the partial derivatives at all points.\n(b) Fix \\(Q = (0,2)\\), forming \\(D = P_1 + ... + P_n\\) (where S is the set of points in (a) except Q) and \\(G=7Q\\). Find an explicit basis for \\(L(G)\\), justifying all pole orders at Q with local expansion/table at Q.\n(c) Construct the AG code \\(C = C_L(D, G)\\) using the evaluation of the basis at S; exhibit the generator matrix over \\(\\mathbb{F}_{13}\\).\n(d) Give an explicit bijective embedding \\(\\varphi: \\mathbb{F}_{13} \\rightarrow \\mathbb{Z}[i]/(13)\\) mapping each entry to its minimal-norm residue (with lookup table/script), and apply this mapping to G. Demonstrate non-degeneracy.\n(e) Compute, for all nonzero codewords, the minimum nonzero Mannhein weight \\(d_M\\), listing four example codewords showing Mannhein and Hamming weights with at least one instance where metrics differ.\n(f) Construct (and verify) a parity-check matrix and syndrome test with an explicit example.\n(g) Calculate the automorphism group order and Schur square dimension of C; if invariants approach RS/BCH/twisted RS, compute and report canonical form or dimension sequence as per literature.\n(h) Prove by comparison of invariants—including canonical forms or dimension sequences for ambiguous cases—that C is not equivalent to any RS, BCH, or twisted RS code of the same parameters over \\(\\mathbb{F}_{13}\\).\n\nReport as final answer the value of the minimum Mannheim distance \\(d_M\\).",
-    "solution_text": "### Solution\n###### (a) Affine \\(\\mathbb{F}_{13}\\)-rational points and smoothness\n- For each \\(x, y\\in\\mathbb{F}_{13}\\), compute \\(F(x, y)=y^4 + x^4 + x^2y^2 + x^3 + 2y^3 + 7\\).\n- List all valid pairs and exclude Q = (0,2).\n- Check smoothness by evaluating \\(F_X\\) and \\(F_Y\\) at all points: confirm for each that not both vanish (full table or script output).\n- Since \\(\\mathcal{C}\\) is a smooth plane quartic, it is non-hyperelliptic.\n\n###### (b) Riemann–Roch basis for \\(L(7Q)\\)\n- By Riemann–Roch: \\(\\ell(7Q) = 7-3+1 = 5\\).\n- Candidate basis: \\(1, X, Y, X^2, X Y\\).\n- For each, perform local expansion at Q (script, algorithm, or table) and record the pole order, confirming it does not exceed 7. Document basis with pole orders explicitly.\n\n###### (c) Generator matrix\n- For \\(n = |S|\\), build 5\\(\\times\\)n matrix G: G_{ij} = f_i(P_j), with S ordered as in (a).\n\n###### (d) Minimal-norm embedding \\(\\varphi\\)\n- For each \\(a\\in\\mathbb{F}_{13}\\), explicitly (script or table) identify minimal-norm representative in \\(\\mathbb{Z}[i]/(13)\\) (|c|+|d| minimized, a\\equiv c+di mod 13), and confirm some entries are nontrivially imaginary or complex. Apply to G rowwise.\n\n###### (e) Mannheim distance and codeword metrics\n- For all nonzero codewords, compute both Mannhein and Hamming weights, list at least four, with at least one codeword showing a difference between the two metrics. Confirm and report the minimum d_M observed.\n\n###### (f) Parity-check matrix and example\n- Compute H as right kernel of G, check G H^T=0. For non-basis codeword, compute and document explicit syndrome with H.\n\n###### (g) Automorphism group and Schur square\n- Use Magma/Sage to compute automorphism group order and full Schur square dimension; if values are close to RS/BCH/tRS, compute and document canonical form/dimension sequence.\n\n###### (h) Non-equivalence\n- Compare all invariants—including canonical forms in ambiguous scenarios—to literature. Document and script as per code equivalence methodology in recent literature (arXiv:1911.13059, mdpi.com).\n\n#### Final Answer\nThe minimum Mannheim distance d_M (integer value for this code).\n",
+    "id": "gf13_cyclic_lrc_selforth_impossible",
+    "problem_text": "Work over GF(13). Let n = 12 and fix α = 2 ∈ GF(13) as a primitive 12th root of unity (so x^12 − 1 = ∏_{j=0}^{11} (x − α^j)). Let C be a cyclic code of length 12 with monic generator polynomial g(x) and parity-check polynomial h(x) = (x^12 − 1)/g(x).\n\nAssume: (i) h(x) is divisible by L(x) = 1 + x^4 + x^8; (ii) C is Euclidean self-orthogonal (C ⊆ C^⊥) over GF(13).\n\nQuestion. How many cyclic codes C (equivalently, monic divisors g(x) of x^12 − 1) satisfy (i) and (ii)? Give the exact integer N.",
+    "solution_text": "Let Z ⊆ {0,…,11} be the defining set of C: g(x) = ∏_{j∈Z} (x − α^j). Since 12 | (13 − 1), all cyclotomic cosets are singletons.\n\n1) Locality divisibility L | h: the zeros of L are exactly indices S = {j : j ≡ 1,2 (mod 3)}. If L | h, then S ⊆ zeros(h), hence S ∩ Z = ∅ and thus Z ⊆ {0,3,6,9}.\n\n2) Euclidean self-orthogonality is equivalent to Z ⊇ Z_n \\ (−Z), i.e., Z ∪ (−Z) = Z_n; in particular 0 and 6 must lie in Z and for each pair {i, −i} at least one element must be in Z. But since Z ⊆ {0,3,6,9}, neither 1 nor 11 can lie in Z, so 1 ∉ Z ∪ (−Z), contradicting self-orthogonality.\n\nTherefore no such C exists, and the number of admissible codes is N = 0.",
     "tags": [
-      "coding theory",
-      "algebraic geometry codes",
-      "genus-3 curves",
-      "explicit matrix construction",
-      "Gaussian integer embeddings",
-      "mixed norms",
-      "coding invariants",
-      "non-equivalence",
-      "parity check",
-      "LLM-resistant"
+      "cyclic codes",
+      "GF(13)",
+      "dual defining set",
+      "Mattson–Solomon transform",
+      "locally repairable codes",
+      "self-orthogonal codes"
     ],
     "prerequisites": [
-      "finite field arithmetic",
-      "basic algebraic geometry (plane curves, genus, divisors)",
-      "Riemann–Roch theorem",
-      "Goppa AG code construction",
-      "Gaussian integers and residue classes",
-      "matrix rank and kernel",
-      "code automorphism and Schur square computation",
-      "code canonical/form equivalence tests"
+      "Finite fields and roots of unity",
+      "Cyclic codes: generator/defining sets",
+      "Euclidean duals of cyclic codes",
+      "Discrete Fourier transform over finite fields"
     ],
     "theorem_refs": [
       {
-        "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
-        "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
-        "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054"
+        "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
+        "statement": "Z(C^⊥) = Z_n \\ (−Z(C)) for gcd(n, q) = 1; C ⊆ C^⊥ iff Z ∪ (−Z) = Z_n.",
+        "source": "Entropy 25(1):37 (2023); MacWilliams–Sloane, Ch. 7–8",
+        "notes": "Singleton cosets here."
       },
       {
-        "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
-        "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
-        "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136"
-      },
-      {
-        "name": "Automorphism group and Schur square invariants for AG codes",
-        "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
-        "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004."
-      },
-      {
-        "name": "Minimum distance theorem for AG codes",
-        "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
-        "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition"
-      },
-      {
-        "name": "Canonical forms and dimension sequences for code equivalence",
-        "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
-        "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059"
+        "name": "Mattson–Solomon Transform",
+        "statement": "Cyclic convolution diagonalizes; factor/zero-set constraints transport to spectral positions.",
+        "source": "Algebraic Codes for Data Transmission",
+        "notes": "Applicable since x^12 − 1 splits and gcd(12,13) = 1."
       }
-    ],
-    "difficulty_estimate_author": 9
+    ]
   },
-  "verification_notes": "- Rational point enumeration: Verify for all (x, y) in F_13^2 that F(x, y)=0; ensure Q is excluded. Document affine vs. projective point count and cite completeness.\n- For each rational point, check the curve is smooth (via vanishing of F_X and F_Y simultaneously). Can be automated in SageMath.\n- For each basis function, compute local expansion at Q=(0,2) to check the pole order ≤7 (could use code from Boehm et al. 2015 or manual script); document expansions and orders in a reproducible table/log.\n- Generator matrix: For each element, confirm G_{ij} = f_i(P_j).\n- Embedding: For each a in F_13, use the Graves (2024) minimal Euclidean function lookup/table for Z[i]/(13) minimal-norm residues, print/attach table and confirm non-degeneracy (real/imag). If mapping degenerates, document and correct basis/embedding.\n- For each codeword c, map via embedding and compute sum_j |Re(c_j)|+|Im(c_j)| (Mannheim); confirm minimum is the reported d_M; also print 4 codeword weights, with at least one instance where Mannhein ≠ Hamming.\n- Parity check: Build H as basis of right kernel of G, confirm G H^T = 0; for a sample codeword c, compute Hc^T and confirm.\n- Automorphism group and Schur square: Use Magma/Sage routines and document output. If invariants approach those for RS/BCH/twisted RS, run canonical-form/dimension-sequence code per references and report result. Attach computation logs or command listings.\n- Compare to valid invariants from Beelen/Joyner, and if necessary, perform canonical/dimension sequence check to demonstrate inequivalence. For matching cases, code and report the canonical-form equivalence/discriminant.\n- Edge case: confirm that for the mapped codes, not all weights coincide under Hamming/Mannheim metric, and cluster analysis of codewords confirms non-degeneracy.",
+  "verification_notes": "Two independent routes:\n1) Brute-force enumeration: Iterate all subsets Z ⊆ {0,…,11}. Test locality via set avoidance (Z ∩ S = ∅ with S = {1,2,4,5,7,8,10,11}); test Euclidean self-orthogonality via Z ∪ (−Z) = Z_n (negation i ↦ (12 − i) mod 12) and confirm 0,6 ∈ Z. Count of hits must be 0. As a cross-check, construct g(x) = ∏_{j∈Z}(x − 2^j) and verify h mod L = 0.\n2) Spectral/zero-set short-circuit: zeros(L) = S forces Z ⊆ {0,3,6,9}, which immediately violates Z ∪ (−Z) = Z_n because indices 1 and 11 are excluded from Z. Boundary checks: confirm 2 has order 12 in GF(13); verify x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1); check that 0 and 6 are self-inverse in Z/12Z.\n",
   "feedback": {
-    "message": "LLM failed to produce a meaningful solution. Problem appears difficult.",
+    "message": "The corrected dual-defining-set condition (self-orthogonality ⇔ Z ∪ (−Z) = Z_n) paired with the zero-set implication of L | h yields a clean contradiction, so the exact answer remains N = 0. The report now avoids the common pitfall that L | h would imply L’s vector lies in C^⊥ (the right criterion is h | L for that).",
     "suggestions": [
-      "Consider adding optional hints or intermediate checks so we can assess reasoning quality.",
-      "Document projective vs. affine rational point count for completeness.",
-      "Script or reference explicit canonical-form or dimension sequence checks for code equivalence, especially in borderline cases.",
-      "Require explicit local expansion documentation for every basis function chosen.",
-      "Print or attach minimal-norm embedding tables/scripts and demonstrate non-degeneracy in codebook entries."
+      "If a non-empty family is desired, replace Euclidean self-orthogonality with LCD (C ∩ C^⊥ = {0}) or switch to Hermitian self-orthogonality over GF(13^2).",
+      "Alternatively, replace L by a weighted check 1 + a x^4 + a^2 x^8 with a a primitive cube root of unity to shift the forbidden zero set and recover feasibility.",
+      "For constructive instances, drop self-orthogonality and ask for the unique g(x) maximizing k subject to L | h and an explicit BCH designed distance."
     ]
   }
 }

@@ -1,55 +1,33 @@
 {
-  "id": "fusionAGQuarticF13_GaussianInvariant",
-  "problem_text": "Let \\(\\mathcal{C}\\) be the smooth plane quartic curve over \\(\\mathbb{F}_{13}\\) given by\n\\[\n    Y^4 + X^4 + X^2 Y^2 + X^3 + 2 Y^3 + 7 = 0.\n\\]\n(a) Enumerate all affine \\(\\mathbb{F}_{13}\\)-rational points of \\(\\mathcal{C}\\) and prove it is non-hyperelliptic and smooth over \\(\\mathbb{F}_{13}\\), by checking the partial derivatives at all points.\n(b) Fix \\(Q = (0,2)\\), forming \\(D = P_1 + ... + P_n\\) (where S is the set of points in (a) except Q) and \\(G=7Q\\). Find an explicit basis for \\(L(G)\\), justifying all pole orders at Q with local expansion/table at Q.\n(c) Construct the AG code \\(C = C_L(D, G)\\) using the evaluation of the basis at S; exhibit the generator matrix over \\(\\mathbb{F}_{13}\\).\n(d) Give an explicit bijective embedding \\(\\varphi: \\mathbb{F}_{13} \\rightarrow \\mathbb{Z}[i]/(13)\\) mapping each entry to its minimal-norm residue (with lookup table/script), and apply this mapping to G. Demonstrate non-degeneracy.\n(e) Compute, for all nonzero codewords, the minimum nonzero Mannhein weight \\(d_M\\), listing four example codewords showing Mannhein and Hamming weights with at least one instance where metrics differ.\n(f) Construct (and verify) a parity-check matrix and syndrome test with an explicit example.\n(g) Calculate the automorphism group order and Schur square dimension of C; if invariants approach RS/BCH/twisted RS, compute and report canonical form or dimension sequence as per literature.\n(h) Prove by comparison of invariants—including canonical forms or dimension sequences for ambiguous cases—that C is not equivalent to any RS, BCH, or twisted RS code of the same parameters over \\(\\mathbb{F}_{13}\\).\n\nReport as final answer the value of the minimum Mannheim distance \\(d_M\\).",
-  "solution_text": "### Solution\n###### (a) Affine \\(\\mathbb{F}_{13}\\)-rational points and smoothness\n- For each \\(x, y\\in\\mathbb{F}_{13}\\), compute \\(F(x, y)=y^4 + x^4 + x^2y^2 + x^3 + 2y^3 + 7\\).\n- List all valid pairs and exclude Q = (0,2).\n- Check smoothness by evaluating \\(F_X\\) and \\(F_Y\\) at all points: confirm for each that not both vanish (full table or script output).\n- Since \\(\\mathcal{C}\\) is a smooth plane quartic, it is non-hyperelliptic.\n\n###### (b) Riemann–Roch basis for \\(L(7Q)\\)\n- By Riemann–Roch: \\(\\ell(7Q) = 7-3+1 = 5\\).\n- Candidate basis: \\(1, X, Y, X^2, X Y\\).\n- For each, perform local expansion at Q (script, algorithm, or table) and record the pole order, confirming it does not exceed 7. Document basis with pole orders explicitly.\n\n###### (c) Generator matrix\n- For \\(n = |S|\\), build 5\\(\\times\\)n matrix G: G_{ij} = f_i(P_j), with S ordered as in (a).\n\n###### (d) Minimal-norm embedding \\(\\varphi\\)\n- For each \\(a\\in\\mathbb{F}_{13}\\), explicitly (script or table) identify minimal-norm representative in \\(\\mathbb{Z}[i]/(13)\\) (|c|+|d| minimized, a\\equiv c+di mod 13), and confirm some entries are nontrivially imaginary or complex. Apply to G rowwise.\n\n###### (e) Mannheim distance and codeword metrics\n- For all nonzero codewords, compute both Mannhein and Hamming weights, list at least four, with at least one codeword showing a difference between the two metrics. Confirm and report the minimum d_M observed.\n\n###### (f) Parity-check matrix and example\n- Compute H as right kernel of G, check G H^T=0. For non-basis codeword, compute and document explicit syndrome with H.\n\n###### (g) Automorphism group and Schur square\n- Use Magma/Sage to compute automorphism group order and full Schur square dimension; if values are close to RS/BCH/tRS, compute and document canonical form/dimension sequence.\n\n###### (h) Non-equivalence\n- Compare all invariants—including canonical forms in ambiguous scenarios—to literature. Document and script as per code equivalence methodology in recent literature (arXiv:1911.13059, mdpi.com).\n\n#### Final Answer\nThe minimum Mannheim distance d_M (integer value for this code).\n",
+  "id": "gf13_cyclic_lrc_selforth_impossible",
+  "problem_text": "Work over GF(13). Let n = 12 and fix α = 2 ∈ GF(13) as a primitive 12th root of unity (so x^12 − 1 = ∏_{j=0}^{11} (x − α^j)). Let C be a cyclic code of length 12 with monic generator polynomial g(x) and parity-check polynomial h(x) = (x^12 − 1)/g(x).\n\nAssume: (i) h(x) is divisible by L(x) = 1 + x^4 + x^8; (ii) C is Euclidean self-orthogonal (C ⊆ C^⊥) over GF(13).\n\nQuestion. How many cyclic codes C (equivalently, monic divisors g(x) of x^12 − 1) satisfy (i) and (ii)? Give the exact integer N.",
+  "solution_text": "Let Z ⊆ {0,…,11} be the defining set of C: g(x) = ∏_{j∈Z} (x − α^j). Since 12 | (13 − 1), all cyclotomic cosets are singletons.\n\n1) Locality divisibility L | h: the zeros of L are exactly indices S = {j : j ≡ 1,2 (mod 3)}. If L | h, then S ⊆ zeros(h), hence S ∩ Z = ∅ and thus Z ⊆ {0,3,6,9}.\n\n2) Euclidean self-orthogonality is equivalent to Z ⊇ Z_n \\ (−Z), i.e., Z ∪ (−Z) = Z_n; in particular 0 and 6 must lie in Z and for each pair {i, −i} at least one element must be in Z. But since Z ⊆ {0,3,6,9}, neither 1 nor 11 can lie in Z, so 1 ∉ Z ∪ (−Z), contradicting self-orthogonality.\n\nTherefore no such C exists, and the number of admissible codes is N = 0.",
   "tags": [
-    "coding theory",
-    "algebraic geometry codes",
-    "genus-3 curves",
-    "explicit matrix construction",
-    "Gaussian integer embeddings",
-    "mixed norms",
-    "coding invariants",
-    "non-equivalence",
-    "parity check",
-    "LLM-resistant"
+    "cyclic codes",
+    "GF(13)",
+    "dual defining set",
+    "Mattson–Solomon transform",
+    "locally repairable codes",
+    "self-orthogonal codes"
   ],
   "prerequisites": [
-    "finite field arithmetic",
-    "basic algebraic geometry (plane curves, genus, divisors)",
-    "Riemann–Roch theorem",
-    "Goppa AG code construction",
-    "Gaussian integers and residue classes",
-    "matrix rank and kernel",
-    "code automorphism and Schur square computation",
-    "code canonical/form equivalence tests"
+    "Finite fields and roots of unity",
+    "Cyclic codes: generator/defining sets",
+    "Euclidean duals of cyclic codes",
+    "Discrete Fourier transform over finite fields"
   ],
   "theorem_refs": [
     {
-      "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
-      "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
-      "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054"
+      "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
+      "statement": "Z(C^⊥) = Z_n \\ (−Z(C)) for gcd(n, q) = 1; C ⊆ C^⊥ iff Z ∪ (−Z) = Z_n.",
+      "source": "Entropy 25(1):37 (2023); MacWilliams–Sloane, Ch. 7–8",
+      "notes": "Singleton cosets here."
     },
     {
-      "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
-      "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
-      "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136"
-    },
-    {
-      "name": "Automorphism group and Schur square invariants for AG codes",
-      "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
-      "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004."
-    },
-    {
-      "name": "Minimum distance theorem for AG codes",
-      "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
-      "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition"
-    },
-    {
-      "name": "Canonical forms and dimension sequences for code equivalence",
-      "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
-      "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059"
+      "name": "Mattson–Solomon Transform",
+      "statement": "Cyclic convolution diagonalizes; factor/zero-set constraints transport to spectral positions.",
+      "source": "Algebraic Codes for Data Transmission",
+      "notes": "Applicable since x^12 − 1 splits and gcd(12,13) = 1."
     }
-  ],
-  "difficulty_estimate_author": 9
+  ]
 }

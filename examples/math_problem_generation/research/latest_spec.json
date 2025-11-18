@@ -1,45 +1,33 @@
 {
-  "topic": "Fusion of Algebraic Geometry Codes and Lattice Embedding over Non-Hyperelliptic Curves with Explicit Invariant Checks",
+  "topic": "Coding Theory (non-binary, structural fusion)",
   "subtopics": [
-    "Construction of AG codes from non-hyperelliptic genus-3 plane quartics over finite fields",
-    "Explicit rational point enumeration on algebraic curves",
-    "Explicit Riemann–Roch basis and local parameter expansions",
-    "Embedding finite fields into residue rings of Z[i] or Eisenstein integers modulo prime ideals",
-    "Mixed metrics (Mannheim/Gaussian norm + Hamming) for codeword comparison",
-    "Computation of automorphism groups and Schur square dimensions as code invariants",
-    "Proof of non-equivalence to Reed-Solomon, BCH, or twisted RS codes",
-    "Explicit generator and parity-check matrix construction, syndrome testing"
+    "Cyclic codes over finite fields",
+    "Euclidean duals of cyclic codes",
+    "Locally Repairable Codes (LRC) via cyclic locality checks",
+    "Mattson–Solomon transform (DFT) viewpoint",
+    "BCH-style designed distance",
+    "Idempotents in Fq[x]/(x^n−1)"
   ],
   "objectives": [
-    "Block all LLM short-cuts and templates by constructing a code that is: (a) not a member of the standard RS/BCH families; (b) fully explicit in all algebraic, metric, and invariant-theoretic details; (c) verifiable at each stage by symbolic/numeric scripts.",
-    "Force the use of multiple mathematical theories in concert: algebraic geometry (complexity in high-genus, non-hyperelliptic case), number theory (explicit lattice quotient embeddings), combinatorics (code matrices and enumerations), group theory (automorphism checks).",
-    "Require all the following verifiable outputs: explicit rational point set, explicit and justified Riemann–Roch basis with local expansions, generator and parity-check matrices over finite field and mapped ring, codeword minimum distance under the specified metric (not degenerate to Hamming), automorphism group order and Schur square dimension, explicit demonstration of non-equivalence to reference code families through these invariants."
+    "Fuse locality and self-orthogonality constraints over GF(13), n = 12, to derive a definitive, verifiable conclusion.",
+    "Use defining-set and factor/zero-set interplay to prove a contradiction.",
+    "Provide an exact, single-integer answer (the count of admissible codes)."
   ],
-  "difficulty_target": "beyond PhD qualifying exam (LLM-resistant, requiring multi-field synthesis and machine-verifiable output)",
+  "difficulty_target": "advanced graduate / researcher",
   "required_theorems": [
-    "Explicit Riemann–Roch theorem for genus-3 non-hyperelliptic curves (with basis construction and local expansion proofs)",
-    "Explicit rational point enumeration algorithms for plane quartics",
-    "Goppa's theorem for AG code minimum distance",
-    "Norm, residue, and minimality algorithms in Z[i]/(p) and Z[ω]/(p), especially for small primes",
-    "Automorphism group and Schur square dimension for AG codes (see Beelen 2017, Joyner-Ksir 2004, Couvreur et al., and Magma/Sage routines)",
-    "Singleton, Plotkin, MacWilliams bounds—extended to nonstandard metrics as necessary",
-    "Non-equivalence criteria for AG codes (cf. [Chen 2022], [Beelen 2017]): automorphism order, Schur dimension, etc. (including canonical forms/dimension sequences if needed)"
+    "Duals of cyclic codes: defining-set relation Z(C^⊥) = Z_n \\ (−Z(C))",
+    "Mattson–Solomon transform diagonalization for cyclic codes",
+    "Locality via ν-term parity-check factors in the dual"
   ],
   "pitfalls": [
-    "Metric degeneration: mapping and basis must be selected so that mixed metric (Gaussian + Hamming) is nontrivial (must exhibit codewords with both real and imaginary parts nonzero and different metrics).",
-    "Failure to provide explicit pole order expansions and local basis justifications (must be scripted, tabled, or algorithmically referenced at Q).",
-    "Neglecting explicit enumeration and smoothness checks for the rational point set (must check for singular/infinity points, document projective vs. affine count).",
-    "Non-computation of automorphism group and Schur square (or using only standard templates); for close invariants, neglecting canonical form/dimension sequence.",
-    "Allowing code to reduce (by invariants or explicit comparison) to RS/BCH/twisted RS without rigorously checking canonical equivalence.",
-    "Omitting explicit mapping algorithms and lookup tables for residue ring embeddings.",
-    "Not checking or documenting metric non-degeneracy (i.e., showing Mannheim ≠ Hamming on some codewords)."
+    "Equating zeros of g and h; mixing up roles of generator vs parity-check polynomials",
+    "Incorrect handling of negation in Z/12Z; must use Z ∪ (−Z) = Z_n for self-orthogonality (0 and 6 included)",
+    "Assuming L | h ⇒ L ∈ C^⊥; correct condition is h | L (since C^⊥ is generated by h^*)",
+    "Assuming characteristic 3 identities in GF(13)"
   ],
   "constraints": [
-    "Code parameters (n, k, d) must be explicitly computed and justified with exhibited matrices and codeword lists.",
-    "All mappings and bases must be justified step-by-step, including documentation of expansion at a distinguished point (Q), with citations or code listing.",
-    "Metric computations must explicitly check and document that weights are not always equal to Hamming weight; four codeword outputs with different weights (including differing ones) should be present.",
-    "Require at least one syndrome/parity-check computation with non-obvious test vector.",
-    "All invariants (automorphism, Schur square) must be referenced to literature or exhibited via software output; in close cases, canonical-form/dimension sequence check must be performed and documented.",
-    "Proof of non-equivalence to RS/BCH/tRS must be by reference to invariant tables, canonical forms, or explicit Magma/Sage computation logs."
+    "Field GF(13), length n = 12, α = 2 as the fixed primitive 12th root",
+    "h(x) divisible by L(x) = 1 + x^4 + x^8",
+    "Euclidean self-orthogonality C ⊆ C^⊥"
   ]
 }

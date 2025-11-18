@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import os
+import logging
 
 from utils.datatypes import ProblemPair, ProblemMetadata
 from utils.code import ensure_problem_id
@@ -121,6 +122,52 @@ class MathProblemGenerator:
         return normalized
 
     def _frontier_math_entries(self) -> list[dict]:
+        # Prefer user-provided seeds from seed.json
+        seed_path = Path(__file__).resolve().parent / "seed.json"
+        if seed_path.exists():
+            logger = logging.getLogger(__name__)
+            try:
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and "seeds" in data:
+                    seeds = data["seeds"]
+                elif isinstance(data, list):
+                    seeds = data
+                else:
+                    seeds = []
+
+                entries: list[dict] = []
+                for i, raw in enumerate(seeds):
+                    if not isinstance(raw, dict):
+                        continue
+                    ptxt = raw.get("problem_text") or raw.get("problem") or raw.get("statement")
+                    stxt = raw.get("solution_text") or raw.get("solution") or raw.get("answer")
+                    if not ptxt or not stxt:
+                        continue
+                    prefix = raw.get("prefix") or raw.get("title") or f"seed_{i:04d}"
+                    entry = {
+                        "prefix": str(prefix),
+                        "problem_text": str(ptxt),
+                        "solution_text": str(stxt),
+                        "tags": raw.get("tags", []),
+                        "prerequisites": raw.get("prerequisites", []),
+                        "theorem_refs": raw.get("theorem_refs", []),
+                    }
+                    if "difficulty_message" in raw:
+                        entry["difficulty_message"] = raw.get("difficulty_message")
+                    if "difficulty_suggestions" in raw:
+                        entry["difficulty_suggestions"] = raw.get("difficulty_suggestions", [])
+                    entries.append(entry)
+
+                if entries:
+                    logger.info(f"Loaded {len(entries)} seed problem(s) from {seed_path}")
+                    return entries
+                else:
+                    logger.warning(f"seed.json loaded but no valid seeds parsed: {seed_path}")
+            except Exception as exc:
+                logging.getLogger(__name__).warning(
+                    f"Failed to load seed.json ({seed_path}): {exc}; falling back to built-in seeds"
+                )
         return [
             {
                 "prefix": "frontier_seed_gaussian_bmo",

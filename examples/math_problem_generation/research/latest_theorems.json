@@ -1,32 +1,20 @@
 [
   {
-    "name": "Explicit Riemann–Roch theorem for non-hyperelliptic genus-3 curves",
-    "statement": "For a smooth, non-hyperelliptic, genus-3 plane quartic curve C and divisor G=7Q, L(G) has dimension 5, with explicit basis constructible via local parameter expansion at Q.",
-    "source": "Boehm, Gärtner, and Steel, 'Computing integral bases via localization and Hensel lifting', arXiv:1505.05054",
-    "notes": "Algorithmic basis construction and pole order justification via Newton–Puiseux/Hensel."
+    "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
+    "statement": "Let C be a cyclic code of length n over GF(q) with gcd(n, q) = 1 and defining set Z ⊆ Z/nZ. Then C^⊥ is cyclic with Z(C^⊥) = Z/nZ \\ (−Z), where −Z = {−i mod n : i ∈ Z}. In particular, C ⊆ C^⊥ iff Z ⊇ Z/nZ \\ (−Z), i.e., Z ∪ (−Z) = Z/nZ; fixed points of inversion must be in Z.",
+    "source": "Entropy 25(1):37 (2023), MacWilliams–Sloane, Ch. 7–8",
+    "notes": "Singleton cosets because n | (q − 1)."
   },
   {
-    "name": "Division Algorithm for Minimal-Norm Residues in Z[i]/(p)",
-    "statement": "For a prime p ≡ 1 (mod 4), the residue ring Z[i]/(p) is a field of order p^2, with each F_p element mapping to a unique minimal-norm representative in Z[i]/(p) via the minimal Euclidean function.",
-    "source": "Hester Graves, 'A Division Algorithm for the Gaussian Integers' Minimal Euclidean Function', arXiv:2502.21136",
-    "notes": "Provides explicit table lookup or algorithm for minimal-norm representatives."
+    "name": "Mattson–Solomon Transform for Cyclic Codes",
+    "statement": "Evaluation at the n-th roots of unity α^i diagonalizes cyclic convolution: a cyclic code corresponds to sequences whose spectra vanish on a fixed index set T (the defining set). Factor/zero-set relations can be tracked via these spectra.",
+    "source": "Algebraic Codes for Data Transmission, Ch. on DFT-based codes",
+    "notes": "In the semisimple case (gcd(n, q) = 1), each cyclotomic coset is a singleton."
   },
   {
-    "name": "Automorphism group and Schur square invariants for AG codes",
-    "statement": "For AG codes from higher-genus curves, the automorphism group and Schur square dimension serve as distinguishing invariants and can block equivalence to RS/BCH/twisted RS codes.",
-    "source": "Beelen, S. 'Algebraic geometry codes: automorphisms and Schur square dimension', 2017. See also Joyner & Ksir 2004.",
-    "notes": "Tabulated invariants show AG codes are inequivalent to RS/BCH/tRS for genus > 1; canonical-form/dimension sequence techniques are available for close-invariant cases."
-  },
-  {
-    "name": "Minimum distance theorem for AG codes",
-    "statement": "For an AG code C_L(D,G), d ≥ n - deg(G), where D is the sum of n rational points and G is a divisor.",
-    "source": "Stichtenoth, 'Algebraic Function Fields and Codes', 2nd Edition, Theorem 2.2.3.",
-    "notes": "Equality can be checked case by case by enumerating codewords."
-  },
-  {
-    "name": "Canonical forms and dimension sequences for code equivalence",
-    "statement": "Two codes having all classical invariants close or matching can be distinguished by canonical forms or dimension sequences, especially for subtle edge cases of equivalence.",
-    "source": "MDPI Mathematics, 2024, https://www.mdpi.com/2227-7390/12/2/328, and arXiv:1911.13059",
-    "notes": "Should be referenced for subtle or close-invariant discrimination."
+    "name": "Locality via ν-term Dual Checks",
+    "statement": "If the dual contains a weight-(r+1) vector v(x) = 1 + x^s + ⋯ + x^{rs}, with s = n/(r+1), then locality r follows. In our divisibility formulation, L | h constrains zeros(h) to include zeros(L), which already suffices to derive the contradiction with self-orthogonality.",
+    "source": "Tamo–Barg–Goparaju–Calderbank (2015)",
+    "notes": "Beware: v ∈ C^⊥ iff h | v^* (for self-reciprocal v, h | v), not v dividing h."
   }
 ]

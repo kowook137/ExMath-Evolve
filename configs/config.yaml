@@ -1,12 +1,12 @@
 researcher:
-  planner: "gpt-4.1-2025-04-14"
-  searcher: "gpt-4.1-2025-04-14"
-  writer: "gpt-4.1-2025-04-14"
+  planner: 'gpt-5' #"gpt-4.1-2025-04-14"
+  searcher: "gpt-5"
+  writer: "gpt-5"
   reasoning_effort: "high"
 
 coder:
-  developer: "gpt-4.1-2025-04-14"
-  debugger: "gpt-4.1-2025-04-14"
+  developer: "gpt-5"
+  debugger: "gpt-5"
   reasoning_effort: "high"
 
 # General Settings
