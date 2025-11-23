@@ -1,0 +1,108 @@
+{
+  "id": "crt_lte_order_mix_min_n_02",
+  "problem_text": "Let P− = {3,5,7} and P+ = {11,13,17}. Consider the unique residue class a modulo M := ∏_{p∈P−∪P+} p^2 satisfying the simultaneous congruences\n- a ≡ 1 + p (mod p^2) for every p ∈ P−,\n- a ≡ −1 + p (mod p^2) for every p ∈ P+.\nThese imply v_p(a − 1) = 1 for p ∈ P− and v_p(a + 1) = 1 for p ∈ P+.\n\nFix target valuations T_p by\nT_3 = 5, T_5 = 4, T_7 = 3, T_11 = 5, T_13 = 4, T_17 = 5.\n\nDetermine the minimal positive integer n such that, simultaneously for all listed primes p,\nv_p(a^n − 1) = T_p.\nGive your answer as a single exact integer. (You may not assume any degenerate residue like a ≡ ±1 (mod p^2) beyond those specified; in particular, the equalities v_p(a − 1) = v_p(a + 1) = 1 at the designated primes must be used.)",
+  "solution_text": "For each p ∈ P−, we have a ≡ 1 + p (mod p^2), so v_p(a − 1) = 1 and p ∤ a. For each p ∈ P+, we have a ≡ −1 + p (mod p^2), so v_p(a + 1) = 1 and p ∤ a.\n\nParity constraint: For p ∈ P+, since a ≡ −1 (mod p), if n is odd then a^n ≡ −1 (mod p) and a^n − 1 ≡ −2 (mod p), so v_p(a^n − 1) = 0. As T_p ≥ 3, any valid n must be even.\n\nValuations via lifting: For odd p dividing a − 1, one has v_p(a^n − 1) = v_p(a − 1) + v_p(n) = 1 + v_p(n). For odd p dividing a + 1 and even n, one has v_p(a^n − 1) = v_p(a + 1) + v_p(n) = 1 + v_p(n). Thus in all listed cases,\n  v_p(a^n − 1) = 1 + v_p(n).\nImposing v_p(a^n − 1) = T_p forces v_p(n) = T_p − 1 for each listed p, together with evenness.\n\nOrder-lifting confirms minimality: For p ∈ P−, the order of a modulo p^k is p^{k−1} (Cohen Thm 1.4.3), so to achieve a^n ≡ 1 (mod p^{T_p}) requires p^{T_p−1} | n. For p ∈ P+, the order lifts to 2 p^{k−1}, so evenness and p^{T_p−1} | n are necessary. Conversely, with these divisibilities, the valuation equality v_p(a^n − 1) = 1 + v_p(n) guarantees exactness T_p (no overshoot to p^{T_p+1}).\n\nTherefore the minimal n is\nn = 2 · 3^{5−1} · 5^{4−1} · 7^{3−1} · 11^{5−1} · 13^{4−1} · 17^{5−1} = 2 · 3^4 · 5^3 · 7^2 · 11^4 · 13^3 · 17^4.\nNumerically, n = 2,665,738,784,251,793,250.\n\nThis n satisfies v_p(a^n − 1) = T_p for all specified p, and any reduction in the 2-factor or any prime-power factor lowers some v_p(a^n − 1) by 1 (or violates parity), so n is minimal.",
+  "tags": [
+    "number theory",
+    "p-adic valuations",
+    "CRT",
+    "multiplicative orders",
+    "cyclotomic polynomials",
+    "LTE"
+  ],
+  "prerequisites": [
+    "Modular arithmetic",
+    "p-adic valuation basics",
+    "Chinese Remainder Theorem",
+    "Finite cyclic groups and orders"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (odd primes)",
+      "statement": "If p is odd and p | (x − 1), then v_p(x^n − 1) = v_p(x − 1) + v_p(n); if p | (x + 1) and n even, v_p(x^n − 1) = v_p(x + 1) + v_p(n).",
+      "source": "https://proofwiki.org/wiki/Lifting_The_Exponent_Lemma",
+      "notes": "Used implicitly for valuations."
+    },
+    {
+      "name": "Order-lifting modulo p^k",
+      "statement": "For odd p, if v_p(a − 1) = 1 then ord_{p^k}(a) = p^{k−1}; if v_p(a + 1) = 1 then ord_{p^k}(a) = 2 p^{k−1}.",
+      "source": "Standard",
+      "notes": "Ensures minimality via necessary divisibility conditions on n."
+    },
+    {
+      "name": "CRT",
+      "statement": "Unique solution modulo product for pairwise coprime moduli.",
+      "source": "https://cp-algorithms.com/algebra/chinese_remainder_theorem.html",
+      "notes": "Constructs a."
+    },
+    {
+      "name": "Cyclicity of (Z/p^kZ)^×",
+      "statement": "For odd p, the unit group is cyclic of order φ(p^k).",
+      "source": "https://www.math.purdue.edu/~jlipman/553/units-mod-p%5En.pdf",
+      "notes": "Supports order analysis."
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.\nSummary: ran 0 substitution checks and 0 symbolic checks.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 5,
+  "metadata": {
+    "status": "proposed",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.\nSummary: ran 0 substitution checks and 0 symbolic checks.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 4, avg runtime 22.30s, total tokens 5236.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 4, avg runtime 22.30s, total tokens 5236.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 89.19826333600213,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 19.58351167300134,
+        "status": "ok",
+        "tokens_used": 1309,
+        "score": 0.26437847866419295,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 26.460884486994473,
+        "status": "ok",
+        "tokens_used": 1309,
+        "score": 0.26027397260273977,
+        "solved": false
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 22.32237212502514,
+        "status": "ok",
+        "tokens_used": 1309,
+        "score": 0.2598086124401914,
+        "solved": false
+      },
+      {
+        "attempt": 4,
+        "elapsed_seconds": 20.82927643498988,
+        "status": "ok",
+        "tokens_used": 1309,
+        "score": 0.2689357622243528,
+        "solved": false
+      }
+    ]
+  }
+}

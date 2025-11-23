@@ -1,0 +1,71 @@
+{
+  "id": "seed_ac_3_9e2e1aaf65c5",
+  "problem_text": "\\textbf{Problem.}\nFor positive integers $a,b,c$ we say that the triple $(a,b,c)$ is \\emph{cyclically divisible} if\n\\[\n\\frac{a+1}{b},\\quad \\frac{b+1}{c},\\quad \\frac{c+1}{a}\n\\]\nare all integers.\nLet $\\mathcal{T}$ be the set of all cyclically divisible ordered triples $(a,b,c)$ of positive integers.\nFor any positive integer $n$, define\n\\[\nS(a,b,c) := a+b+c,\n\\]\nand the arithmetic function $F:\\mathbb{N}\\to\\mathbb{N}$ by\n\\[\nF(n) := \\bigl|\\{(a,b,c)\\in\\mathcal{T} \\mid S(a,b,c)\\mid n\\}\\bigr|.\n\\]\nWe also define, for arithmetic functions $u,v:\\mathbb{N}\\to\\mathbb{C}$, their divisor-sum combination\n\\[\n(u * v)(n) := \\sum_{d\\mid n} u(d)\\,v\\!\\left(\\frac{n}{d}\\right)\\qquad(n\\in\\mathbb{N}),\n\\]\nand let $\\mathbf{1}$ denote the constant function $\\mathbf{1}(n)\\equiv 1$.\nFinally, for a positive integer $m$ and a prime $p$, let $v_p(m)$ denote the exponent of $p$ in the prime factorization of $m$.\n\\textbf{(A)} Prove that the set $\\mathcal{T}$ is finite and determine all its elements explicitly.\n\\textbf{(B)} For each positive integer $n$, show that there exists an arithmetic function $G:\\mathbb{N}\\to\\mathbb{Z}_{\\ge 0}$, depending only on the values of $S(a,b,c)$ for $(a,b,c)\\in\\mathcal{T}$, such that\n\\[\nF(n) = (G * \\mathbf{1})(n)\n\\]\nfor all $n\\in\\mathbb{N}$. Give an explicit formula for $G(n)$ in terms of $\\mathcal{T}$.\n\\textbf{(C)} Let\n\\[\nN := 10^7\n\\]\nand define the integer\n\\[\n\\mathcal{K} := \\prod_{n=1}^{N} \\bigl(n!\\bigr)^{F(n)}.\n\\]\nSet\n\\[\nE := v_2(\\mathcal{K}),\n\\]\nthe exponent of $2$ in the prime factorization of $\\mathcal{K}$.\nUsing your description of $\\mathcal{T}$ from part \\textnormal{(A)}, the representation of $F$ as a divisor-sum combination from part \\textnormal{(B)}, and any further lemmas you find necessary, determine the exact value of the integer $E$.\n(Your final answer must be the single explicit integer $E$.)",
+  "solution_text": "Answer: $91666486036450$\n\nWe will only write the solution for part C.\n\\begin{verbatim}\n# Part (C): compute E = v_2(K) where\n# K = ∏_{n=1}^{10^7} (n!)^{F(n)}\n# and F(n) = [3|n] + 3([4|n] + [6|n] + [12|n])\nN = 10_000_000\nE = 0\nfor n in range(1, N + 1):\n# v2(n!) via Legendre's formula in the form v2(n!) = n - s_2(n),\n# where s_2(n) is the sum of binary digits of n\nv2_fact = n - n.bit_count()\n# F(n) from the classification in part (A)/(B):\n# G(3) = 1, G(4)=G(6)=G(12)=3, others 0\n# => F(n) = [3|n] + 3([4|n] + [6|n] + [12|n])\nF_n = 0\nif n % 3 == 0:\nF_n += 1\nif n % 4 == 0:\nF_n += 3\nif n % 6 == 0:\nF_n += 3\nif n % 12 == 0:\nF_n += 3\nE += F_n * v2_fact\nprint(E)\n\\end{verbatim}",
+  "tags": [
+    "number_theory",
+    "arithmetic_functions",
+    "divisibility"
+  ],
+  "prerequisites": [
+    "Integer triples and divisibility",
+    "Dirichlet convolution basics",
+    "Legendre v_p counts"
+  ],
+  "theorem_refs": [],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "seed",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 12.92s, total tokens 4245.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 12.92s, total tokens 4245.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 38.77583369001513,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 14.05409849100397,
+        "status": "ok",
+        "tokens_used": 1415,
+        "score": 0.18602261048304214,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 12.818159741000272,
+        "status": "ok",
+        "tokens_used": 1415,
+        "score": 0.17679282868525892,
+        "solved": false
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 11.901858904981054,
+        "status": "ok",
+        "tokens_used": 1415,
+        "score": 0.1809227579056506,
+        "solved": false
+      }
+    ]
+  }
+}

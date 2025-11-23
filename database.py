@@ -188,21 +188,39 @@ class ProgramDatabase:
         """
         return self.programs.get(program_id)
 
-    def sample(self) -> Tuple[Program, List[Program]]:
+    def sample(self) -> Tuple[Program, Optional[Program], List[Program]]:
         """
-        Sample a program and inspirations for the next evolution step
+        Sample a primary parent, an optional co-parent (for crossover), and inspirations.
 
         Returns:
-            Tuple of (parent_program, inspiration_programs)
+            Tuple of (parent_program, co_parent_program, inspiration_programs)
         """
-        # Select parent program
+        # Select primary parent
         parent = self._sample_parent()
 
-        # Select inspirations
-        inspirations = self._sample_inspirations(parent, n=self.config.n_inspirations)
+        # Select a co-parent (prefer seeds if available and distinct)
+        co_parent = None
+        candidate_inspirations = self._sample_inspirations(parent, n=self.config.n_inspirations + 1)
+        # Try to pick a seed inspiration distinct from parent
+        for cand in candidate_inspirations:
+            if cand.id != parent.id and cand.metadata.get("is_seed_inspiration"):
+                co_parent = cand
+                break
+        if co_parent is None and candidate_inspirations:
+            for cand in candidate_inspirations:
+                if cand.id != parent.id:
+                    co_parent = cand
+                    break
 
-        logger.info(f"Sampled parent {parent.id} and {len(inspirations)} inspirations")
-        return parent, inspirations
+        # Remaining inspirations (excluding chosen co-parent)
+        inspirations = [p for p in candidate_inspirations if co_parent is None or p.id != co_parent.id]
+        inspirations = inspirations[: self.config.n_inspirations]
+
+        logger.info(
+            f"Sampled parent {parent.id}, co_parent {getattr(co_parent, 'id', None)}, "
+            f"and {len(inspirations)} inspirations"
+        )
+        return parent, co_parent, inspirations
 
     def get_best_program(self, metric: str = 'combined_score') -> Optional[Program]:
         """

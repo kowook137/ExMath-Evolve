@@ -242,6 +242,12 @@ class ProblemMetadata(BaseModel):
     verification_notes: Optional[str] = None
     "Latest verification notes stored alongside the problem."
 
+    semantic_valid: Optional[bool] = None
+    "Optional semantic plausibility flag (e.g., IR-level consistency checks)."
+
+    semantic_notes: Optional[str] = None
+    "Notes from semantic plausibility validation."
+
     evaluation_model: Optional[str] = None
     "LLM identifier used during evaluation."
 

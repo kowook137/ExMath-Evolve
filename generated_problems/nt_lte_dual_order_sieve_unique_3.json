@@ -1,0 +1,72 @@
+{
+  "id": "nt_lte_dual_order_sieve_unique_3",
+  "problem_text": "Let n>1 be an integer such that simultaneously:\n(i) n divides 5^{6n} − 1,\n(ii) n divides 7^{2n} − 1,\n(iii) n^4 divides 2^{18n} − 1.\nDetermine n.",
+  "solution_text": "We show n=3 is the unique solution.\n1) Parity: Since 2^{18n}−1 is odd, (iii) implies n^4 is odd, hence n is odd.\n2) Smallest prime factor: Let p be the smallest prime dividing n. From (ii), ord_p(7) | 2n. Because n is odd, ν_2(ord_p(7)) ≤ 1. Any odd prime factor r of ord_p(7) must divide n and hence be < p by ord_p(7) | p−1 < p; by minimality of p this is impossible. Thus ord_p(7) | 2. If ord_p(7)=1, then 7≡1 (mod p) so p | 6 and p∈{2,3}; since n is odd, p=3. If ord_p(7)=2, then p | 8 and p=2, impossible. Hence the least prime divisor of n is 3 and 3 | n.\n3) Eliminate primes ≥ 5: Suppose q ≥ 5 divides n, and choose q minimal among such primes. From (ii), ord_q(7) | 2n and ord_q(7) | q−1, so ν_2(ord_q(7)) ≤ 1 and any odd prime factor must be 3; thus ord_q(7) ∈ {3,6}. From (i), ord_q(5) | 6n and ord_q(5) | q−1, and similarly ord_q(5) ∈ {3,6}. Therefore d := lcm(ord_q(5), ord_q(7)) ∈ {3,6}, and q | gcd(5^d − 1, 7^d − 1). Direct computation gives gcds 2 for d=3 and 72 for d=6, whose prime divisors are only 2 and 3. This contradicts q ≥ 5. Therefore n has no prime factor ≥ 5, so n = 3^e with e ≥ 1.\n4) 3-adic bound via even-exponent LTE: Write 2^{18n} − 1 = (2^9)^{2n} − 1^{2n}. Because 3 | 2^9 + 1 and 2n is even, the even-exponent valuation formula yields v_3(2^{18n} − 1) = v_3(2^9 + 1) + v_3(2n) = v_3(513) + v_3(n) = 3 + v_3(n) (since 513=3^3·19). With n = 3^e, condition (iii) implies 4e ≤ v_3(2^{18n} − 1) = 3 + e, hence e ≤ 1. As e ≥ 1, we get e=1 and n=3.\n5) Verification: For n=3, (i) holds since 5 ≡ 2 (mod 3) and 2^2 ≡ 1 (mod 3) so 5^{18} ≡ 1 (mod 3); (ii) holds since 7 ≡ 1 (mod 3); and (iii) holds because v_3(2^{54} − 1) = 3 + 1 = 4 so 3^4 | 2^{54} − 1.\nTherefore, the unique n is 3.",
+  "tags": [
+    "number-theory",
+    "LTE",
+    "multiplicative-order",
+    "3-adic-valuation",
+    "gcd-sieve",
+    "IMO-shortlist-level"
+  ],
+  "prerequisites": [
+    "basic modular arithmetic",
+    "multiplicative orders modulo primes",
+    "LTE (even-exponent variant)",
+    "p-adic valuations"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (even a+b variant)",
+      "statement": "For odd prime p with p | a+b, v_p(a^{2n}−b^{2n}) = v_p(a+b)+v_p(n).",
+      "source": "Standard LTE lemma",
+      "notes": "Used at p=3 with a=2^9, b=1."
+    },
+    {
+      "name": "Order divisibility",
+      "statement": "For prime p ∤ a, ord_p(a) | p−1.",
+      "source": "Multiplicative order basics",
+      "notes": "Used in minimal-prime arguments."
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "Semantic check only",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 0,
+  "metadata": {
+    "status": "proved",
+    "verification_tasks": null,
+    "verification_notes": "Semantic check only",
+    "semantic_valid": true,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 6.92s, total tokens 386.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 6.92s, total tokens 386.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 6.9231782970018685,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 6.922931786997651,
+        "status": "ok",
+        "tokens_used": 386,
+        "score": 0.204093567251462,
+        "solved": false
+      }
+    ]
+  }
+}

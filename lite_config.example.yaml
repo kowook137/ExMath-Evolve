@@ -1,0 +1,19 @@
+model_list:
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: ${OPENAI_API_KEY}
+  - model_name: openrouter/sonnet
+    litellm_params:
+      model: openrouter/anthropic/claude-3-sonnet
+      api_key: ${OPENROUTER_API_KEY}
+      api_base: https://openrouter.ai/api/v1
+  - model_name: deepseek/chat
+    litellm_params:
+      model: deepseek/chat
+      api_key: ${DEEPSEEK_API_KEY}
+
+fallbacks:
+  gpt-4o-mini:
+    - openrouter/sonnet
+    - deepseek/chat

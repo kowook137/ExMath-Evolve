@@ -1,0 +1,197 @@
+{
+  "id": "nt_lte_order_3adic_tri_base_unique_3_v2",
+  "problem_text": "Find all integers n > 1 such that the following hold simultaneously:\n(1) n^4 divides 2^{18n} − 1;\n(2) n divides 5^{6n} − 1;\n(3) n divides 7^{2n} − 1.\n\nGive the exact value of n.",
+  "solution_text": "We prove n = 3 is the unique solution.\n\n1) Parity and base exclusions: Since 2^{18n} − 1 is odd, n must be odd, so 2 ∤ n. Also 5 ∤ (5^{6n} − 1) and 7 ∤ (7^{2n} − 1), hence 5,7 ∤ n.\n\n2) Smallest prime divisor is 3: Let p be the smallest prime dividing n. From n | 7^{2n} − 1 we have ord_p(7) | 2n. Because ord_p(7) | p − 1, all prime divisors of ord_p(7) are < p. Let r be its odd part. Then r | n but involves only primes < p, forcing r = 1 by minimality. Since n is odd, v_2(ord_p(7)) ≤ 1, so ord_p(7) | 2. Therefore p | 7 − 1 = 6 or p | 7^2 − 1 = 48, hence p ∈ {2,3}; with n odd, p = 3.\n\n3) No prime ≥ 5 divides n: Suppose q ≥ 5 divides n and is minimal among such primes. From n | 5^{6n} − 1 and n odd, we get ord_q(5) | 6n with v_2(ord_q(5)) ≤ 1 and odd part dividing primes < q present in n, which from Step 2 is only 3. Hence ord_q(5) ∈ {1,2,3,6}. Likewise, ord_q(7) ∈ {1,2,3,6}.\nTherefore q divides both 5^d − 1 and 7^d − 1 for some d ∈ {1,2,3,6}. A direct check shows\n- d=1: gcd(4,6)=2;\n- d=2: gcd(24,48)=24;\n- d=3: gcd(124,342)=2;\n- d=6: gcd(15624,117648)=72.\nThus any common prime divisor is 2 or 3, contradicting q ≥ 5. Hence every prime divisor of n is 3, i.e., n = 3^e with e ≥ 1.\n\n4) 3-adic valuation via even-exponent LTE: Write 2^{18n} − 1 = (2^9)^{2n} − 1 and note 3 | 2^9 + 1 = 513 = 3^3·19, while 3 ∤ 2^9 − 1. The even-exponent LTE gives\nv_3(2^{18n} − 1) = v_3(2^9 + 1) + v_3(n) = 3 + v_3(n).\nThe divisibility n^4 | 2^{18n} − 1 forces 4 v_3(n) ≤ 3 + v_3(n), so v_3(n) ≤ 1. Since n > 1, we have v_3(n) = 1 and n = 3.\n\n5) Verification for n = 3: We have v_3(2^{54} − 1) = v_3(2^9 + 1) + v_3(3) = 3 + 1 = 4, so 3^4 | 2^{54} − 1. Also 5^{18} ≡ 1 (mod 3) and 7^6 ≡ 1 (mod 3), so n = 3 satisfies all three conditions.\n\nTherefore the unique solution is n = 3.",
+  "tags": [
+    "Number Theory",
+    "LTE",
+    "p-adic valuation",
+    "Multiplicative order",
+    "3-adic",
+    "Olympiad"
+  ],
+  "prerequisites": [
+    "Basic modular arithmetic",
+    "Multiplicative orders",
+    "LTE and its even-exponent variant",
+    "p-adic valuations"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (Lifting The Exponent) — even-exponent variant",
+      "statement": "For odd p with p | a + b and p ∤ ab, v_p(a^{2m} − b^{2m}) = v_p(a + b) + v_p(m).",
+      "source": "ProofWiki",
+      "notes": null
+    },
+    {
+      "name": "Multiplicative order basics",
+      "statement": "If p ∤ a, then ord_p(a) | p−1.",
+      "source": "Standard number theory",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "Semantic check only",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 0,
+  "metadata": {
+    "status": "proposed",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "2**9 + 1",
+          "expected": 513,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Check 2^9 + 1 = 513 = 3^3*19."
+        },
+        {
+          "expression": "5**6 - 1",
+          "expected": 15624,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Check 5^6 - 1 = 15624 = 2^3*3^2*7*31."
+        },
+        {
+          "expression": "7**2 - 1",
+          "expected": 48,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Check 7^2 - 1 = 48 = 2^4*3."
+        },
+        {
+          "expression": "gcd(5 - 1, 7 - 1)",
+          "expected": 2,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Compute gcd for d=1."
+        },
+        {
+          "expression": "gcd(5**2 - 1, 7**2 - 1)",
+          "expected": 24,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Compute gcd for d=2."
+        },
+        {
+          "expression": "gcd(5**3 - 1, 7**3 - 1)",
+          "expected": 2,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Compute gcd for d=3."
+        },
+        {
+          "expression": "gcd(5**6 - 1, 7**6 - 1)",
+          "expected": 72,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Compute gcd for d=6."
+        },
+        {
+          "expression": "valuation(2**54 - 1, 3)",
+          "expected": 4,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Verify v_3(2^{54} - 1) = 4, so 3^4 | 2^{54} - 1."
+        },
+        {
+          "expression": "(5**18 - 1) % 3",
+          "expected": 0,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Verify 3 | 5^{18} - 1."
+        },
+        {
+          "expression": "(7**6 - 1) % 3",
+          "expected": 0,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Verify 3 | 7^{6} - 1."
+        },
+        {
+          "expression": "valuation(2**(18*9) - 1, 3)",
+          "expected": 5,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [],
+          "num_samples": 1,
+          "description": "Optional sanity: e=2 (n=9) fails since v_3(2^{162} - 1) = 5 < 8."
+        }
+      ],
+      "symbolic_equalities": []
+    },
+    "verification_notes": "Semantic check only",
+    "semantic_valid": true,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 9.50s, total tokens 395.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 9.50s, total tokens 395.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 9.500292413998977,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 9.499848614002985,
+        "status": "ok",
+        "tokens_used": 395,
+        "score": 0.21643059490084982,
+        "solved": false
+      }
+    ]
+  }
+}

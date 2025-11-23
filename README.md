@@ -75,8 +75,34 @@ python deepevolve.py \
 * `problem`: folder name in the `examples` directory
 * More parameters can be found in `configs/config`. Common settings include `workspace` (defaults to `"examples"`), `checkpoint` (defaults to `"ckpt"`)
 
-DeepEvolve is built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python).
-Set `OPENAI_API_KEY` in your environment. To run other models, see the [LiteLLM example](https://github.com/openai/openai-agents-python/blob/main/examples/model_providers/litellm_auto.py).
+DeepEvolve now uses LangChain chat completions. Set `OPENAI_API_KEY` and `OPENAI_BASE_URL` (or `OPENAI_API_BASE`) to any OpenAI-compatible endpoint (OpenAI, OpenRouter, proxy, etc.).
+
+### Running direct (OpenRouter 예시)
+1. `export OPENAI_API_KEY="sk-or-..."`
+2. `export OPENAI_BASE_URL="https://openrouter.ai/api/v1"`
+3. (권장) `export HTTP_REFERER="https://your-app.example.com"` and `export X_TITLE="ExMath-Evolve"`
+4. Run `python deepevolve.py ...`
+
+### Running via LiteLLM Proxy
+
+To route every agent call through a local LiteLLM proxy (so you can mix OpenAI, OpenRouter, DeepSeek, etc. using OpenAI-compatible names):
+
+1. Copy `lite_config.example.yaml` to `lite_config.yaml` and provide API keys via environment variables referenced in the file.
+2. Install LiteLLM if needed: `pip install 'litellm[proxy]'`.
+3. In `configs/config.yaml`, set the API routing block to point to the proxy, for example:
+   ```yaml
+   api:
+     key_env: "OPENROUTER_API_KEY"     # 프록시가 사용할 실제 공급자 키
+     base_url: "http://localhost:4000/v1"
+   ```
+4. Start the proxy:
+   ```bash
+   ./scripts/start_litellm_proxy.sh lite_config.yaml
+   ```
+   The helper exports `OPENAI_API_BASE=http://localhost:4000`, so DeepEvolve automatically talks to the proxy without code changes.
+5. Run `python deepevolve.py ...` from another shell. LiteLLM will fan out to whichever providers you defined, respecting the optional `fallbacks` block. 모델 ID는 실제 OpenRouter에 등록된 값을 `lite_config.yaml`에서 사용하고, OpenRouter 권장 헤더(HTTP-Referer, X-Title)도 함께 설정하세요.
+
+You can adjust the port using `LITELLM_PROXY_PORT` or pass additional LiteLLM CLI arguments with `LITELLM_PROXY_ARGS`.
 
 Results are written to
 `{workspace}/{problem}/{checkpoint}/best` (best run) and periodic checkpoints in the same `{workspace}/{problem}/{checkpoint}/checkpoint_{i}` (frequency set by `checkpoint_interval`).

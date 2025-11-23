@@ -1,0 +1,275 @@
+{
+  "id": "research_9b5ea70c3cc9",
+  "problem_text": "Title: Counting k-th power units of exact order modulo N via CRT and Sylow-by-prime enumeration\n\nObjects and assumptions:\n- Fix N = 2^10 · 3^6 · 5^5 · 7^4.\n- Consider the unit group G = (Z/NZ)^×.\n- Fix k = 2^3 · 3^4 · 5^2.\n- Let R = 2^5 · 3^1 · 5^2 · 7^2.\n\nQuestion:\nCount the number of residue classes a modulo N such that a is a k-th power modulo N (i.e., a ∈ {x^k : x ∈ G}) and ord_N(a) = R. Give a single explicit integer.\n\nConstraints and notes:\n- Use the decomposition of G into Sylow q-subgroups for q ∈ {2,3,5,7}, induced by CRT on the factors (Z/p^eZ)^×, and the structure: for odd p, (Z/p^eZ)^× is cyclic of order φ(p^e) = p^{e-1}(p-1); for 2^e with e ≥ 3, (Z/2^eZ)^× ≅ C2 × C_{2^{e-2}}.\n- The endomorphism x ↦ x^k acts on each Sylow q-subgroup by lowering invariant exponents by v_q(k). If the Sylow q-subgroup decomposes as ∏ C_{q^{α_i}}, then its image under x ↦ x^k is ∏ C_{q^{β_i}} with β_i = max(α_i − v_q(k), 0).\n- For a finite abelian q-group H ≅ ∏ C_{q^{β_i}}, the number of elements of order dividing q^t is q^{Σ_i min(β_i, t)}; thus the number of elements of exact order q^t is q^{Σ_i min(β_i, t)} − q^{Σ_i min(β_i, t−1)}.\n\nAnswer format:\n- Provide the exact integer count. Include a rigorous solution and a machine-checkable verification plan.\n",
+  "solution_text": "Solution.\n1) CRT and group structure.\n- We have N = 2^10 · 3^6 · 5^5 · 7^4, so by CRT, G ≅ (Z/2^10Z)^× × (Z/3^6Z)^× × (Z/5^5Z)^× × (Z/7^4Z)^×.\n- Orders of unit groups: φ(2^10)=2^9=512; φ(3^6)=3^5·(3−1)=486; φ(5^5)=5^4·(5−1)=2500; φ(7^4)=7^3·(7−1)=2058.\n- Structures: (Z/2^10Z)^× ≅ C2 × C_{2^8}. For odd p, (Z/p^eZ)^× is cyclic.\n\n2) Sylow-by-prime decomposition (α-exponents before applying k).\n- For q=2:\n  · From 2^10: C2 × C_{2^8} contributes α=1 and α=8.\n  · From 3^6: φ(3^6)=2·3^5 gives a C2 factor (α=1).\n  · From 5^5: φ(5^5)=2^2·5^4 gives a C_{2^2} factor (α=2).\n  · From 7^4: φ(7^4)=2·3·7^3 gives a C2 factor (α=1).\n  Hence α^(2) = [8,2,1,1,1].\n- For q=3:\n  · From 3^6: 3^5 contributes α=5.\n  · From 7^4: 7−1=6 contributes a 3 factor, α=1.\n  Hence α^(3) = [5,1].\n- For q=5: from 5^5: 5^4 contributes α=4 ⇒ α^(5) = [4].\n- For q=7: from 7^4: 7^3 contributes α=3 ⇒ α^(7) = [3].\n\n3) Apply the power map x ↦ x^k with k = 2^3 · 3^4 · 5^2.\nValuations: v_2(k)=3, v_3(k)=4, v_5(k)=2, v_7(k)=0.\nThus β_i = max(α_i − v_q(k), 0):\n- q=2: α^(2) = [8,2,1,1,1] → β^(2) = [5,0,0,0,0].\n- q=3: α^(3) = [5,1] → β^(3) = [1,0].\n- q=5: α^(5) = [4] → β^(5) = [2].\n- q=7: α^(7) = [3] → β^(7) = [3].\n\n4) Target exact order vector a = (a2,a3,a5,a7) = (5,1,2,2). Feasibility holds because:\nmax β^(2)=5 ≥ 5; max β^(3)=1 ≥ 1; max β^(5)=2 ≥ 2; max β^(7)=3 ≥ 2.\n\n5) Count exact q^{a_q}-order elements in the image for each q using\nN_q = q^{Σ_i min(β_i, a_q)} − q^{Σ_i min(β_i, a_q − 1)}.\n- q=2: β^(2)=[5,0,0,0,0], a2=5 ⇒ Σ min(β_i,5)=5, Σ min(β_i,4)=4 ⇒ N_2 = 2^5 − 2^4 = 16.\n- q=3: β^(3)=[1,0], a3=1 ⇒ Σ min(β_i,1)=1, Σ min(β_i,0)=0 ⇒ N_3 = 3^1 − 3^0 = 2.\n- q=5: β^(5)=[2], a5=2 ⇒ Σ min(β_i,2)=2, Σ min(β_i,1)=1 ⇒ N_5 = 5^2 − 5^1 = 20.\n- q=7: β^(7)=[3], a7=2 ⇒ Σ min(β_i,2)=2, Σ min(β_i,1)=1 ⇒ N_7 = 7^2 − 7^1 = 42.\n\n6) Independence across primes: Sylow components have coprime orders, so exact orders multiply. The number of elements in the image with ord_N(a)=R is N_2 · N_3 · N_5 · N_7 = 16 · 2 · 20 · 42 = 26880.\n\nFinal answer: 26880\n\nVerification plan (machine-checkable steps):\n1) Compute φ(2^10)=512, φ(3^6)=486, φ(5^5)=2500, φ(7^4)=2058; verify 3−1=2, 5−1=4, 7−1=6.\n2) Confirm k = 2^3·3^4·5^2 = 16200 and valuations v_2(k)=3, v_3(k)=4, v_5(k)=2, v_7(k)=0.\n3) Post-image β-vectors: β^(2)=[5,0,0,0,0], β^(3)=[1,0], β^(5)=[2], β^(7)=[3]. Check Σ min(β_i, t) values used below.\n4) Compute exact-order counts per prime: N_2=2^5−2^4=16; N_3=3^1−3^0=2; N_5=5^2−5^1=20; N_7=7^2−7^1=42.\n5) Multiply N_2·N_3·N_5·N_7 and verify it equals 26880.\n6) Feasibility checks: ensure a2≤5, a3≤1, a5≤2, a7≤3 using Max(0, a_q − max β^(q))=0.\n7) Optional cross-checks: verify total image sizes per q as q^{Σ β_i}: 2^5, 3^1, 5^2, 7^3 (product 823200); and φ(N)=512·486·2500·2058=1280240640000 to substantiate scales. No brute force on N.\n",
+  "tags": [
+    "number-theory",
+    "group-theory",
+    "CRT",
+    "finite-abelian-groups",
+    "power-map"
+  ],
+  "prerequisites": [
+    "Chinese Remainder Theorem (rings and unit groups)",
+    "Structure of (Z/p^eZ)^×",
+    "Finite abelian groups and Sylow p-subgroups",
+    "Counting in p-groups via min-sum formula"
+  ],
+  "theorem_refs": [
+    {
+      "name": "CRT for unit groups",
+      "statement": "",
+      "source": "Dummit & Foote, §4.6",
+      "notes": null
+    },
+    {
+      "name": "Structure of (Z/p^eZ)^×",
+      "statement": "",
+      "source": "Standard number theory",
+      "notes": null
+    },
+    {
+      "name": "Endomorphism x ↦ x^k on finite abelian groups",
+      "statement": "",
+      "source": "Rotman, Advanced Modern Algebra",
+      "notes": null
+    },
+    {
+      "name": "Counting elements in p-groups",
+      "statement": "",
+      "source": "Isaacs, Finite Group Theory",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] φ(2^10)=2^9=512: passed via direct simplification.\n[Symbolic 2] φ(3^6)=3^5*(3-1)=486: passed via direct simplification.\n[Symbolic 3] φ(5^5)=5^4*(5-1)=2500: passed via direct simplification.\n[Symbolic 4] φ(7^4)=7^3*(7-1)=2058: passed via direct simplification.\n[Symbolic 5] 3-1=2: passed via direct simplification.\n[Symbolic 6] 5-1=4: passed via direct simplification.\n[Symbolic 7] 7-1=6: passed via direct simplification.\n[Symbolic 8] Compute k numerically: passed via direct simplification.\n[Symbolic 9] Odd-prime power exponents: for 3^6, e-1=5: passed via direct simplification.\n[Symbolic 10] Odd-prime power exponents: for 5^5, e-1=4: passed via direct simplification.\n[Symbolic 11] Odd-prime power exponents: for 7^4, e-1=3: passed via direct simplification.\n[Symbolic 12] 2-primary: Σ min(β,5) equals 5: passed via direct simplification.\n[Symbolic 13] 2-primary: Σ min(β,4) equals 4: passed via direct simplification.\n[Symbolic 14] 3-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 15] 3-primary: Σ min(β,0) equals 0: passed via direct simplification.\n[Symbolic 16] 5-primary: Σ min(β,2) equals 2: passed via direct simplification.\n[Symbolic 17] 5-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 18] 7-primary: Σ min(β,2) equals 2: passed via direct simplification.\n[Symbolic 19] 7-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 20] 2-primary exact-order count N2=16: passed via direct simplification.\n[Symbolic 21] 3-primary exact-order count N3=2: passed via direct simplification.\n[Symbolic 22] 5-primary exact-order count N5=20: passed via direct simplification.\n[Symbolic 23] 7-primary exact-order count N7=42: passed via direct simplification.\n[Symbolic 24] Final exact-order count in image: passed via direct simplification.\n[Symbolic 25] 2-adic feasibility: 5 ≤ 5: passed via direct simplification.\n[Symbolic 26] 3-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 27] 5-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 28] 7-adic feasibility: 2 ≤ 3: passed via direct simplification.\n[Symbolic 29] |Image| across q equals 823200: passed via direct simplification.\n[Symbolic 30] φ(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 30 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "2**9 - 512",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(2^10)=2^9=512"
+        },
+        {
+          "lhs": "3**5 * (3-1) - 486",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(3^6)=3^5*(3-1)=486"
+        },
+        {
+          "lhs": "5**4 * (5-1) - 2500",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(5^5)=5^4*(5-1)=2500"
+        },
+        {
+          "lhs": "7**3 * (7-1) - 2058",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(7^4)=7^3*(7-1)=2058"
+        },
+        {
+          "lhs": "3-1-2",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-1=2"
+        },
+        {
+          "lhs": "5-1-4",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-1=4"
+        },
+        {
+          "lhs": "7-1-6",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-1=6"
+        },
+        {
+          "lhs": "2**3 * 3**4 * 5**2 - 16200",
+          "rhs": "0",
+          "variables": [],
+          "description": "Compute k numerically"
+        },
+        {
+          "lhs": "(10 - 1) - 9",
+          "rhs": "0",
+          "variables": [],
+          "description": "Odd-prime power exponents: for 3^6, e-1=5"
+        },
+        {
+          "lhs": "(5 - 1) - 4",
+          "rhs": "0",
+          "variables": [],
+          "description": "Odd-prime power exponents: for 5^5, e-1=4"
+        },
+        {
+          "lhs": "(4 - 1) - 3",
+          "rhs": "0",
+          "variables": [],
+          "description": "Odd-prime power exponents: for 7^4, e-1=3"
+        },
+        {
+          "lhs": "Min(5,5)+Min(0,5)+Min(0,5)+Min(0,5)+Min(0,5) - 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: Σ min(β,5) equals 5"
+        },
+        {
+          "lhs": "Min(5,4)+Min(0,4)+Min(0,4)+Min(0,4)+Min(0,4) - 4",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: Σ min(β,4) equals 4"
+        },
+        {
+          "lhs": "Min(1,1)+Min(0,1) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: Σ min(β,1) equals 1"
+        },
+        {
+          "lhs": "Min(1,0)+Min(0,0) - 0",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: Σ min(β,0) equals 0"
+        },
+        {
+          "lhs": "Min(2,2) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: Σ min(β,2) equals 2"
+        },
+        {
+          "lhs": "Min(2,1) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: Σ min(β,1) equals 1"
+        },
+        {
+          "lhs": "Min(3,2) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: Σ min(β,2) equals 2"
+        },
+        {
+          "lhs": "Min(3,1) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: Σ min(β,1) equals 1"
+        },
+        {
+          "lhs": "2**5 - 2**4 - 16",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary exact-order count N2=16"
+        },
+        {
+          "lhs": "3**1 - 3**0 - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary exact-order count N3=2"
+        },
+        {
+          "lhs": "5**2 - 5**1 - 20",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary exact-order count N5=20"
+        },
+        {
+          "lhs": "7**2 - 7**1 - 42",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary exact-order count N7=42"
+        },
+        {
+          "lhs": "16 * 2 * 20 * 42 - 26880",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count in image"
+        },
+        {
+          "lhs": "Max(0, 5-5)",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic feasibility: 5 ≤ 5"
+        },
+        {
+          "lhs": "Max(0, 1-1)",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic feasibility: 1 ≤ 1"
+        },
+        {
+          "lhs": "Max(0, 2-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic feasibility: 2 ≤ 2"
+        },
+        {
+          "lhs": "Max(0, 2-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-adic feasibility: 2 ≤ 3"
+        },
+        {
+          "lhs": "2**5 * 3**1 * 5**2 * 7**3 - 823200",
+          "rhs": "0",
+          "variables": [],
+          "description": "|Image| across q equals 823200"
+        },
+        {
+          "lhs": "512*486*2500*2058 - 1280240640000",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(N) product check"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] φ(2^10)=2^9=512: passed via direct simplification.\n[Symbolic 2] φ(3^6)=3^5*(3-1)=486: passed via direct simplification.\n[Symbolic 3] φ(5^5)=5^4*(5-1)=2500: passed via direct simplification.\n[Symbolic 4] φ(7^4)=7^3*(7-1)=2058: passed via direct simplification.\n[Symbolic 5] 3-1=2: passed via direct simplification.\n[Symbolic 6] 5-1=4: passed via direct simplification.\n[Symbolic 7] 7-1=6: passed via direct simplification.\n[Symbolic 8] Compute k numerically: passed via direct simplification.\n[Symbolic 9] Odd-prime power exponents: for 3^6, e-1=5: passed via direct simplification.\n[Symbolic 10] Odd-prime power exponents: for 5^5, e-1=4: passed via direct simplification.\n[Symbolic 11] Odd-prime power exponents: for 7^4, e-1=3: passed via direct simplification.\n[Symbolic 12] 2-primary: Σ min(β,5) equals 5: passed via direct simplification.\n[Symbolic 13] 2-primary: Σ min(β,4) equals 4: passed via direct simplification.\n[Symbolic 14] 3-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 15] 3-primary: Σ min(β,0) equals 0: passed via direct simplification.\n[Symbolic 16] 5-primary: Σ min(β,2) equals 2: passed via direct simplification.\n[Symbolic 17] 5-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 18] 7-primary: Σ min(β,2) equals 2: passed via direct simplification.\n[Symbolic 19] 7-primary: Σ min(β,1) equals 1: passed via direct simplification.\n[Symbolic 20] 2-primary exact-order count N2=16: passed via direct simplification.\n[Symbolic 21] 3-primary exact-order count N3=2: passed via direct simplification.\n[Symbolic 22] 5-primary exact-order count N5=20: passed via direct simplification.\n[Symbolic 23] 7-primary exact-order count N7=42: passed via direct simplification.\n[Symbolic 24] Final exact-order count in image: passed via direct simplification.\n[Symbolic 25] 2-adic feasibility: 5 ≤ 5: passed via direct simplification.\n[Symbolic 26] 3-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 27] 5-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 28] 7-adic feasibility: 2 ≤ 3: passed via direct simplification.\n[Symbolic 29] |Image| across q equals 823200: passed via direct simplification.\n[Symbolic 30] φ(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 30 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.17s, total tokens 1958.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.17s, total tokens 1958.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 22.333928140986245,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.564792574994499,
+        "status": "ok",
+        "tokens_used": 979,
+        "score": 0.1514059120403749,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 11.76751187199261,
+        "status": "ok",
+        "tokens_used": 979,
+        "score": 0.13150684931506848,
+        "solved": false
+      }
+    ]
+  }
+}

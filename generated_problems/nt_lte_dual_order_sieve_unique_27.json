@@ -1,0 +1,86 @@
+{
+  "id": "nt_lte_dual_order_sieve_unique_27",
+  "problem_text": "Let n > 1 be an integer satisfying all of the following:\n(i) n divides 5^{6n} − 1;\n(ii) n divides 7^{2n} − 1;\n(iii) n^2 divides 2^{18n} − 1;\n(iv) 3^6 divides 10^{3n} − 1.\nDetermine n.",
+  "solution_text": "From (iii), 2^{18n} − 1 is odd, so 2 ∤ n and n is odd. For any prime p | n, from (ii) we have ord_p(7) | 2n, and since n is odd, ν_2(ord_p(7)) ≤ 1. If q is an odd prime dividing ord_p(7), then q | n and q | (p − 1), hence q < p, contradicting minimality if p is the least prime divisor of n. Thus ord_p(7) ∈ {1,2}. From (i), ord_p(5) | 6n; any odd prime r dividing ord_p(5) divides 3n, so r is either 3 or a prime dividing n. Minimality of p together with ord_p(5) | p − 1 excludes r ≥ 5, hence the only possible odd factor is 3. Also ν_2(ord_p(5)) ≤ 1 because n is odd. Therefore ord_p(5) ∈ {1,2,3,6}. Let d = lcm(ord_p(5), ord_p(7)) ∈ {1,2,3,6}. Then p | gcd(5^d − 1, 7^d − 1). One checks explicitly: gcd(4,6) = 2; gcd(24,48) = 24; gcd(124,342) = 2; gcd(15624,117648) = 72. Therefore any prime p dividing n must belong to {2,3}. With n odd, we conclude p = 3 and n = 3^e for some e ≥ 1.\nNext compute the two crucial 3-adic valuations. Using v_3(2^{2m} − 1) = 1 + v_3(m) with m = 9n, we have v_3(2^{18n} − 1) = 1 + v_3(9n) = 3 + v_3(n) = 3 + e. Also, since 3 | 10^3 − 1 and 3 ∤ 10, we have v_3(10^{3n} − 1) = v_3(10^3 − 1) + v_3(n) = 3 + e. Condition (iii) states v_3(2^{18n} − 1) ≥ 2e, hence 3 + e ≥ 2e and e ≤ 3. Condition (iv) states v_3(10^{3n} − 1) ≥ 6, hence 3 + e ≥ 6 and e ≥ 3. Therefore e = 3 and n = 27.\nFinally, verify n = 27: v_3(5^6 − 1) = 2, so v_3(5^{6·27} − 1) = 2 + 3 = 5 ≥ 3; v_3(7^2 − 1) = 1, so v_3(7^{54} − 1) = 1 + 3 = 4 ≥ 3; v_3(2^{486} − 1) = 3 + 3 = 6 so 27^2 | 2^{486} − 1; and v_3(10^{81} − 1) = 3 + 3 = 6 so 3^6 | 10^{81} − 1. Thus all conditions hold. The unique solution is n = 27.",
+  "tags": [
+    "number theory",
+    "LTE",
+    "multiplicative order",
+    "p-adic valuation",
+    "gcd sieve"
+  ],
+  "prerequisites": [
+    "Multiplicative order modulo primes",
+    "p-adic valuations",
+    "LTE and its parity conditions",
+    "Minimal-prime arguments",
+    "Basic gcd computations"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (even-exponent a^n − b^n for odd p)",
+      "statement": "If p is odd and p | (a − b), then v_p(a^{2m} − b^{2m}) = v_p(a − b) + v_p(m), provided p ∤ ab.",
+      "source": "Standard",
+      "notes": null
+    },
+    {
+      "name": "Order divisibility",
+      "statement": "If p | a^N − 1 with p prime and p ∤ a, then ord_p(a) | N and ord_p(a) | p − 1.",
+      "source": "Standard",
+      "notes": null
+    },
+    {
+      "name": "Simple-root lemma",
+      "statement": "If t = ord_p(a) and p ∤ t, then v_p(a^t − 1) = 1.",
+      "source": "Standard",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "Semantic check only",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 8,
+  "metadata": {
+    "status": "proved",
+    "verification_tasks": null,
+    "verification_notes": "Semantic check only",
+    "semantic_valid": true,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 8.56s, total tokens 940.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 8.56s, total tokens 940.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 17.118716431003122,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 7.986292557994602,
+        "status": "ok",
+        "tokens_used": 470,
+        "score": 0.24007444168734493,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 9.132208319999336,
+        "status": "ok",
+        "tokens_used": 470,
+        "score": 0.24689826302729534,
+        "solved": false
+      }
+    ]
+  }
+}

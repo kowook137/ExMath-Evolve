@@ -1,178 +1,26 @@
 {
-  "markdown_report": "1) Objective and constraints\n- Field/length: Work over GF(13) with length n = 12. Fix the primitive element 2 ∈ GF(13)× (order 12) so the primitive 12th root of unity is α = 2, with α^j = 2^j for j = 0,…,11.\n- Locality (r = 2): Enforce that the parity-check polynomial h(x) is divisible by L(x) = 1 + x^4 + x^8. This prescribes 3-term cyclic locality checks supported on arithmetic progressions with step 4 modulo 12.\n- Dual/orthogonality: Require Euclidean self-orthogonality C ⊆ C^⊥. In defining-set language (gcd(n, q) = 1, singleton q-cyclotomic cosets), this is equivalent to Z(C) ⊇ Z_n \\ (−Z(C)), or equivalently Z(C) ∪ (−Z(C)) = Z_n; in particular the fixed points 0 and, because n is even, 6 must lie in Z(C).\n- Distance: A BCH-style designed-distance constraint may be invoked, but will be shown irrelevant given the two structural constraints above.\n- Uniqueness/verifiability: The task culminates in an exact integer count. We show the constraints are inconsistent and the exact number of admissible codes is N = 0.\n- Prohibited shortcuts: Do not place the locality factor into g(x); the locality factor must divide h(x) (dual side). Do not confuse Euclidean with Hermitian duality.\n\n2) Problem statement\nLet C be a cyclic code of length n = 12 over GF(13). Fix α = 2 ∈ GF(13) as a primitive 12th root of unity and represent exponents modulo 12. Let g(x) be the monic generator polynomial of C and h(x) = (x^12 − 1)/g(x) the monic parity-check polynomial.\n\nConstraints:\n(i) Locality: h(x) is divisible by L(x) = 1 + x^4 + x^8.\n(ii) Euclidean self-orthogonality: C ⊆ C^⊥ over GF(13).\n(iii) Designed-distance clause (BCH-type) may be used if needed but is not required to be explicitly stated in terms of consecutive exponents.\n\nQuestion. Determine the exact number N of cyclic codes C (equivalently, of monic generator polynomials g(x) | x^12 − 1) satisfying (i)–(ii). Give N as a single integer.\n\n3) Solution\nStep 0. Preliminaries.\n- Since 12 | (13 − 1), x^12 − 1 splits completely over GF(13) as ∏_{j=0}^{11} (x − α^j) with α = 2. Cyclotomic cosets modulo 12 under q = 13 are singletons, so defining sets Z ⊆ {0,…,11} correspond bijectively to cyclic codes via g(x) = ∏_{j∈Z} (x − α^j) and h(x) = ∏_{j∉Z} (x − α^j).\n- Euclidean dual defining-set rule (semisimple case): Z(C^⊥) = Z_n \\ (−Z(C)). Hence C ⊆ C^⊥ iff Z(C^⊥) ⊆ Z(C), i.e., Z ⊇ Z_n \\ (−Z). Equivalently, Z ∪ (−Z) = Z_n and thus the fixed points 0 and 6 (since 6 ≡ −6) must belong to Z.\n\nStep 1. Consequence of the locality divisibility L | h.\nFactor x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1), so L(x) = 1 + x^4 + x^8 has as zeros exactly those 12th roots whose exponents are j ≡ 1,2 (mod 3). If L | h, then every zero of L is a zero of h; equivalently, those exponents cannot be zeros of g. In defining-set language, this forces\nZ ⊆ {0,3,6,9}.\nIndeed, Z is disjoint from S := {1,2,4,5,7,8,10,11}, so Z ⊆ S^c = {0,3,6,9}.\n\nStep 2. Self-orthogonality contradicts the locality-imposed restriction.\nSelf-orthogonality requires Z ∪ (−Z) = Z_n. But if Z ⊆ {0,3,6,9}, then for the pair {1,11} neither 1 nor 11 can lie in Z, so 1 ∉ Z ∪ (−Z), violating Z ∪ (−Z) = Z_n. Therefore no defining set Z can simultaneously satisfy L | h and C ⊆ C^⊥.\n\nStep 3. Role of BCH clause.\nAny additional BCH-style distance requirement only further restricts admissible codes, so it cannot resolve the inconsistency. Therefore the feasible set is empty regardless of the designed-distance target.\n\nConclusion. The exact count of such codes is\nN = 0.\n\n4) Verification guidance\n- Exhaustive algebraic check:\n  1) Enumerate all subsets Z ⊆ {0,…,11}. Compute h implicitly via complements (zeros(h) = Z^c) or form g(x) = ∏_{j∈Z} (x − α^j) and h(x) = (x^12 − 1)/g(x).\n  2) Locality test: L | h is equivalent here to Z ∩ S = ∅ with S = {1,2,4,5,7,8,10,11} (since zeros(h) must contain the zeros of L). An equivalent computational test is h mod L = 0 in GF(13)[x].\n  3) Euclidean self-orthogonality test: verify Z ∪ (−Z) = Z_n (negation map i ↦ (12 − i) mod 12), and check that 0,6 ∈ Z.\n  4) No subset will satisfy both tests; the count must be 0.\n- Optional spectral cross-check: Compute the spectrum of L to confirm its zero set indices are S (j ≡ 1,2 mod 3). The condition L | h forces S ⊆ zeros(h), i.e., S ∩ Z = ∅; this immediately implies Z ⊆ {0,3,6,9} and contradicts self-orthogonality as above.\n- Edge checks: confirm α = 2 has order 12 in GF(13); verify factorization x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1); check that 0 and 6 are self-inverse indices and thus mandatory for self-orthogonality.\n\nFinal answer: N = 0.",
+  "markdown_report": "{\n  \"markdown_report\": \"We synthesize an LLM-resistant number theory problem that fuses p-adic valuations, multiplicative orders modulo prime powers, the subtle 2-adic LTE case, and a constructive CRT viewpoint. The task specifies exact valuation constraints across primes p ∈ {2,3,5,7} and a non-Wieferich order condition at p=11, forcing v_p(n) for several primes and coupling with evenness and unit-group structure modulo 2^k. The final answer is a single explicit integer (least n) with a deterministic verification plan relying on modular exponentiation and valuation checks rather than brute force. The solution deploys LTE (including the p=2 case), order-lifting modulo prime powers, the non-Wieferich status of 11 for base 2, and a CRT stitching of local conditions. Edge cases (n odd in the 2-adic identity, mistaken cyclicity of (Z/2^kZ)^×, and Wieferich pitfalls) are addressed explicitly.\",\n  \"idea\": {\n    \"description\": \"Constrain n by synchronized p-adic valuations v_p(a^n − 1) for p ∈ {2,3,5,7} using different LTE branches (including a ≡ 1 (mod p) and a ≡ −1 (mod p) with n even), and impose an exact divisibility condition for 11 on 2^n − 1 excluding p^2. Deduce exact v_p(n) for p ∈ {2,3,5,7}, enforce evenness via the 7-adic constraint, and ensure 10|n but 110∤n via the order of 2 mod 11 and non-Wieferich behavior. Combine constraints via CRT to obtain the least n. The final answer is a single large integer.\",\n    \"motivation\": \"Blending LTE with multiplicative orders, the 2-adic unit-group structure, and CRT yields nontrivial interdependencies that block rote templates. Exact valuation targets for multiple distinct primes, plus a non-Wieferich order constraint, eliminate degenerate shortcuts.\",\n    \"implementation_notes\": \"Choose bases: 10 for p=3 (a≡1), 6 for p=5 (a≡1), 20 for p=7 (a≡−1) forcing n even, and 3 for p=2 to tie v2(n). Use ord_11(2)=10 and 11 non-Wieferich to force 10|n and 11∤(n/10). Solve for v_p(n) exactly and take the least n with those prime-power factors; verify that this n satisfies the 11-condition.\",\n    \"pseudocode\": \"Given constraints:\\n- For p=3, a=10: v3(10^n-1)=v3(9)+v3(n)=2+v3(n)=4 => v3(n)=2.\\n- For p=5, a=6: v5(6^n-1)=v5(5)+v5(n)=1+v5(n)=3 => v5(n)=2.\\n- For p=7, a=20≡−1 (mod 7): require n even; v7(20^n-1)=v7(21)+v7(n)=1+v7(n)=3 => v7(n)=2.\\n- For p=2, a=3 odd: if n even, v2(3^n-1)=v2(3−1)+v2(3+1)+v2(n)−1=1+2+v2(n)−1=2+v2(n)=7 => v2(n)=5.\\n- For p=11: ord_11(2)=10 and 11 not Wieferich => v11(2^{10k}−1)=1+v11(k). So 11|2^n−1 and 11^2∤2^n−1 iff 10|n and 11∤(n/10).\\nConstruct least n with v2=5, v3=2, v5=2, v7=2, and 11∤n: n=2^5*3^2*5^2*7^2.\\nVerify modular conditions directly.\",\n    \"originality\": {\n      \"score\": 8,\n      \"positive\": \"Valuation constraints across distinct primes using different LTE branches, plus an exact order condition tied to non-Wieferich behavior, create a tightly coupled, nonstandard synthesis. The 2-adic case leverages both LTE and unit-group structure.\",\n      \"negative\": \"Core tools (LTE, order, CRT) are classical; novelty derives from their orchestrated combination and parameter choices rather than new theory.\"\n    },\n    \"future_potential\": {\n      \"score\": 9,\n      \"positive\": \"Template scales by swapping bases and primes, adding more order-lifting conditions, and integrating further prime-power moduli. Can generate a family of hard, verifiable instances.\",\n      \"negative\": \"Careful parameter tuning is required to avoid degeneracies (e.g., accidental p^2 divisibility, Wieferich exceptions).\"\n    },\n    \"code_difficulty\": {\n      \"score\": 6,\n      \"positive\": \"Verification relies on modular exponentiation and valuation checks at bounded prime powers, which are efficient and robust.\",\n      \"negative\": \"Edge-case management (e.g., confirming non-Wieferich, ensuring evenness) must be explicit; large moduli combinations may require careful CRT consistency checks.\"\n    },\n    \"target_difficulty\": \"IMO shortlist to advanced undergraduate number theory.\"\n  },\n  \"related_work\": [\n    \"LeVeque, Topics in Number Theory, Vol. I, §6.3 (p-adic valuation for a ≡ 1 mod p)\",\n    \"Nathanson, Elementary Methods in Number Theory, Thm 6.2 (LTE a ≡ 1 mod p)\",\n    \"Ireland & Rosen, A Classical Introduction to Modern Number Theory, §2.5.3 (units mod 2^k), §4.7 (orders), Lemma 4.14 (order lifting)\",\n    \"Evan Chen, Orders of 2 in Differences of Odd Powers (2-adic LTE)\",\n    \"McIntosh & Roettger (Wieferich primes search); OEIS A001220 (Wieferich base 2 list)\"\n  ],\n  \"problem_spec\": {\n    \"title\": \"Synchronized p-adic valuations with an order constraint and 2-adic coupling\",\n    \"objects\": [\n      \"For primes p, v_p denotes the p-adic valuation.\",\n      \"All bases a are integers > 1; modular arithmetic is standard.\",\n      \"n is a positive integer to be determined (least such n).\"\n    ],\n    \"assumptions\": [\n      \"Use LTE for odd primes p with a ≡ 1 (mod p).\",\n      \"Use LTE for odd p with a ≡ −1 (mod p) requiring n even.\",\n      \"Use the 2-adic LTE for odd a.\",\n      \"Use multiplicative orders modulo prime powers and the non-Wieferich status of 11 for base 2.\"\n    ],\n    \"tasks\": [\n      \"Determine the least positive integer n satisfying the five simultaneous conditions in the statement.\"\n    ],\n    \"prohibited_shortcuts\": [\n      \"Do not assume (Z/2^kZ)^× is cyclic for k ≥ 3.\",\n      \"Do not use probabilistic guessing or brute-force search over n; reasoning must pass via valuations/orders.\",\n      \"Do not assert p^2 ∣ a^{ord_p(a)} − 1 without verification (avoid Wieferich pitfalls).\"\n    ]\n  },\n  \"theorem_refs\": [\n    {\n      \"name\": \"Lifting The Exponent (LTE) for odd primes\",\n      \"statement\": \"If p is odd, p | (a − 1), and n ≥ 1, then v_p(a^n − 1) = v_p(a − 1) + v_p(n).\",\n      \"source\": \"LeVeque, Topics in Number Theory, Vol. I, §6.3; Nathanson, GTM 195, Thm 6.2\"\n    },\n    {\n      \"name\": \"LTE for a ≡ −1 (mod p), n even\",\n      \"statement\": \"If p is odd, p ∤ a, a ≡ −1 (mod p), and n is even, then v_p(a^n − 1) = v_p(a + 1) + v_p(n).\",\n      \"source\": \"Common LTE variants; see Andreescu–Andrica; AoPS LTE compendium\"\n    },\n    {\n      \"name\": \"2-adic LTE\",\n      \"statement\": \"For odd a and n ≥ 1: if n is odd, v_2(a^n − 1) = v_2(a − 1); if n is even, v_2(a^n − 1) = v_2(a − 1) + v_2(a + 1) + v_2(n) − 1.\",\n      \"source\": \"Evan Chen, Orders of 2 in Differences of Odd Powers; Zaĭtsev, Mathematical Notes (1995)\"\n    },\n    {\n      \"name\": \"Multiplicative order lifting modulo prime powers\",\n      \"statement\": \"If p ∤ a and t = ord_p(a) with p^2 ∤ a^t − 1, then ord_{p^k}(a) = t for all k ≥ 1; moreover v_p(a^{tn} − 1) = v_p(a^t − 1) + v_p(n) for odd p.\",\n      \"source\": \"Ireland & Rosen, §4.7 (Lemma 4.14)\"\n    },\n    {\n      \"name\": \"Structure of units modulo 2^k\",\n      \"statement\": \"(Z/2^kZ)^× ≅ C_2 × C_{2^{k−2}} for k ≥ 3; ord_{2^k}(3) = ord_{2^k}(5) = 2^{k−2}.\",\n      \"source\": \"Ireland & Rosen, Thm 2.5.3; Niven–Zuckerman–Montgomery, Ch. 5.3\"\n    },\n    {\n      \"name\": \"Chinese Remainder Theorem (constructive)\",\n      \"statement\": \"For pairwise coprime moduli, simultaneous congruences have a unique solution modulo the product; explicit inverses construct solutions.\",\n      \"source\": \"Rosen, Elementary Number Theory, §4.3\"\n    },\n    {\n      \"name\": \"Non-Wieferich status of 11 for base 2\",\n      \"statement\": \"11 is not Wieferich to base 2: 2^{10} ≢ 1 (mod 11^2). Consequently, v_11(2^{10k} − 1) = 1 + v_11(k).\",\n      \"source\": \"McIntosh–Roettger (2007); OEIS A001220; elementary computation 2^{10} ≡ 56 (mod 121) ≠ 1\"\n    }\n  ],\n  \"problem_pair\": {\n    \"problem_text\": \"Let v_p denote the p-adic valuation. Find the least positive integer n satisfying simultaneously the following five conditions:\\n(1) v_3(10^n − 1) = 4.\\n(2) v_5(6^n − 1) = 3.\\n(3) v_7(20^n − 1) = 3.\\n(4) v_2(3^n − 1) = 7.\\n(5) 11 divides 2^n − 1 but 11^2 does not divide 2^n − 1.\\nYour answer should be a single explicit integer n.\",\n    \"solution_text\": \"We solve each condition using LTE and order considerations, then combine them.\\n\\n(1) For p = 3 with a = 10, 3 | (10 − 1) and 3 ∤ 10. By LTE (odd p, a ≡ 1 mod p): v_3(10^n − 1) = v_3(10 − 1) + v_3(n) = v_3(9) + v_3(n) = 2 + v_3(n). The requirement v_3(10^n − 1) = 4 gives v_3(n) = 2, i.e., 9 | n and 27 ∤ n.\\n\\n(2) For p = 5 with a = 6, 5 | (6 − 1) and 5 ∤ 6. LTE yields v_5(6^n − 1) = v_5(6 − 1) + v_5(n) = 1 + v_5(n) = 3, so v_5(n) = 2, i.e., 25 | n and 125 ∤ n.\\n\\n(3) For p = 7 with a = 20 ≡ −1 (mod 7). If n were odd then 20^n ≡ −1 (mod 7) and 7 ∤ (20^n − 1), contradicting the required positive valuation. So n is even. By LTE for odd p with a ≡ −1 (mod p) and even n: v_7(20^n − 1) = v_7(20 + 1) + v_7(n) = v_7(21) + v_7(n) = 1 + v_7(n). The target v_7(20^n − 1) = 3 implies v_7(n) = 2, i.e., 49 | n and 343 ∤ n.\\n\\n(4) For p = 2 with a = 3 odd. If n were odd then v_2(3^n − 1) = v_2(3 − 1) = 1, which is incompatible with v_2 = 7. Hence n is even. The 2-adic LTE gives v_2(3^n − 1) = v_2(3 − 1) + v_2(3 + 1) + v_2(n) − 1 = 1 + 2 + v_2(n) − 1 = 2 + v_2(n). Setting 2 + v_2(n) = 7 yields v_2(n) = 5, i.e., 32 | n and 64 ∤ n. Equivalent group-theoretic check: ord_{2^7}(3) = 32 and ord_{2^8}(3) = 64; thus 3^n ≡ 1 (mod 2^7) iff 32 | n, while 3^n ≡ 1 (mod 2^8) iff 64 | n, matching v_2(n) = 5.\\n\\n(5) For p = 11 and base 2, ord_{11}(2) = 10. Moreover, 11 is not a Wieferich prime to base 2, since 2^{10} ≡ 56 ≠ 1 (mod 121), so by order-lifting (odd p) we have v_{11}(2^{10k} − 1) = 1 + v_{11}(k). Therefore, 11 | 2^n − 1 iff 10 | n, and 11^2 ∤ 2^n − 1 iff v_{11}(n/10) = 0, i.e., 11 ∤ (n/10). Our conditions thus impose 10 | n and 11 ∤ (n/10). In particular, it suffices that 11 ∤ n.\\n\\nCombining (1)–(4), we obtain the exact prime-power content of n at 2,3,5,7:\\n- v_2(n) = 5,\\n- v_3(n) = 2,\\n- v_5(n) = 2,\\n- v_7(n) = 2.\\nSo n = 2^5 · 3^2 · 5^2 · 7^2 · t with t coprime to 2·3·5·7. Condition (5) requires 10 | n (satisfied already) and 11 ∤ (n/10); taking t = 1 ensures 11 ∤ n and hence 11 ∤ (n/10). The least such n is attained at t = 1.\\n\\nThus the least positive integer satisfying all five conditions is\\nn = 2^5 · 3^2 · 5^2 · 7^2 = 32 · 9 · 25 · 49 = 352800.\\n\\nFinal answer: 352800.\",\n    \"final_answer\": 352800\n  },\n  \"verification_notes\": \"Deterministic plan to verify n = 352800.\\n1) Prime-power content of n:\\n   - Compute v2(352800) = 5, v3(352800) = 2, v5(352800) = 2, v7(352800) = 2, and confirm 11 ∤ 352800.\\n2) Condition (1): v3(10^n − 1) = 4.\\n   - Compute r4 = pow(10, n, 3**4) and check r4 == 1.\\n   - Compute r5 = pow(10, n, 3**5) and check r5 != 1.\\n   - This confirms 3^4 | (10^n − 1) but 3^5 ∤ (10^n − 1).\\n3) Condition (2): v5(6^n − 1) = 3.\\n   - Compute s3 = pow(6, n, 5**3) and check s3 == 1.\\n   - Compute s4 = pow(6, n, 5**4) and check s4 != 1.\\n4) Condition (3): v7(20^n − 1) = 3.\\n   - Compute t3 = pow(20, n, 7**3) and check t3 == 1.\\n   - Compute t4 = pow(20, n, 7**4) and check t4 != 1.\\n   - Also optionally confirm n is even.\\n5) Condition (4): v2(3^n − 1) = 7.\\n   - Compute u7 = pow(3, n, 2**7) and check u7 == 1.\\n   - Compute u8 = pow(3, n, 2**8) and check u8 != 1.\\n6) Condition (5): exact divisibility by 11.\\n   - Compute a1 = pow(2, n, 11) and check a1 == 1.\\n   - Compute a2 = pow(2, n, 121) and check a2 != 1.\\n7) Edge checks:\\n   - Ensure the minimality: any proper divisor n' of n fails at least one valuation condition due to reduced v_p(n') for p ∈ {2,3,5,7}. A quick programmatic check can test divisors of the form n / p for p ∈ {2,3,5,7} that still keep divisibility by 10; at least one of the five constraints must fail.\\nAll pow computations are fast (mod small prime powers) and scale as O(log n).\",\n  \"feedback\": {\n    \"design_strengths\": [\n      \"Interlocks LTE for multiple primes with distinct branches (a ≡ 1 and a ≡ −1) and the delicate 2-adic case.\",\n      \"Uses multiplicative order and non-Wieferich behavior to specify an exact divisibility at p=11.\",\n      \"Single final integer answer with strong, modular verification steps.\"\n    ],\n    \"improvements\": [\n      \"Could integrate Zsigmondy’s theorem more centrally (e.g., an additional primitive divisor constraint) to raise conceptual load.\",\n      \"Add a secondary CRT construction step with explicit residues to emphasize synthesis even more.\"\n    ],\n    \"anticipated_llm_pitfalls\": [\n      \"Mishandling the 2-adic LTE and forgetting the −1 adjustment.\",\n      \"Assuming (Z/2^kZ)^× is cyclic and imposing impossible congruences (e.g., 5^n ≡ −1 mod 2^k).\",\n      \"Ignoring the non-Wieferich check at 11 and erroneously concluding that 11^2 divides 2^n − 1 for all multiples of 10.\"\n    ]\n  }\n}",
   "idea": {
-    "description": "Fuse a dual-side locality constraint L | h with Euclidean self-orthogonality via defining-set duality in the fully split regime n | (q−1). Over GF(13), n=12, L(x)=1+x^4+x^8 forces Z ⊆ {0,3,6,9}, while self-orthogonality requires Z ∪ (−Z) = Z_n (hence 0 and 6 in Z and every pair {i,−i} represented). These are incompatible, yielding a precise impossibility (count N=0).",
-    "motivation": "Combining locality through a specific dual factor and orthogonality through the exact defining-set relation creates a tight, nontrivial constraint system. The contradiction is not from rote BCH/RS patterns but from careful use of duality and factor/zero bookkeeping, resisting shortcut methods.",
-    "implementation_notes": "Fix α = 2 as the primitive 12th root in GF(13). Compute S = {j≡1,2 (mod 3)} as the zero-index set of L. Enforcing L | h is equivalent to Z ∩ S = ∅, hence Z ⊆ {0,3,6,9}. Euclidean self-orthogonality is tested by Z ∪ (−Z) = Z_n (so fixed points 0 and 6 must be in Z). Since Z ⊆ {0,3,6,9}, indices {1,11} violate the union condition, so no solution exists. Optional brute-force enumeration over all subsets Z ⊆ Z/12Z confirms zero solutions.",
-    "pseudocode": "alpha = 2 mod 13\nN = set(range(12))\nS = {1,2,4,5,7,8,10,11}         # zeros of L(x) = 1 + x^4 + x^8\nneg = lambda T: {(-i) % 12 for i in T}\ncount = 0\nfor Z in all_subsets(N):\n    # locality test L | h  <=>  Z ∩ S = ∅\n    if not Z.isdisjoint(S):\n        continue\n    # Euclidean self-orthogonality: Z ∪ (−Z) = N (in particular 0,6 ∈ Z)\n    if (Z | neg(Z)) != N:\n        continue\n    count += 1\nreturn count  # should be 0",
+    "description": "{",
+    "motivation": "\"markdown_report\": \"We synthesize an LLM-resistant number theory problem that fuses p-adic valuations, multiplicative orders modulo prime powers, the subtle 2-adic LTE case, and a constructive CRT viewpoint. The task specifies exact valuation constraints across primes p ∈ {2,3,5,7} and a non-Wieferi",
+    "implementation_notes": "\"idea\": {",
+    "pseudocode": "\"idea\": {",
     "originality": {
-      "score": 8,
-      "positive": "Non-binary small-length cyclic setting with explicit primitive element and a specific dual-side locality factor; contradiction emerges only via precise dual-defining-set reasoning.",
-      "negative": "Relies on standard cyclic-code duality; novelty comes from the constraint fusion and exact impossibility statement."
+      "score": 5,
+      "positive": "Derived from report",
+      "negative": "Not explicitly scored"
     },
     "future_potential": {
-      "score": 9,
-      "positive": "Generalizes to other n | (q−1) and r+1-term dual checks, or to Hermitian duality/constacyclic variants to toggle feasibility; can generate satisfiable/unsatisfiable families with exact counts.",
-      "negative": "Requires careful parameter choices to avoid trivial contradictions or trivial satisfiable cases."
+      "score": 5,
+      "positive": "Derived from report",
+      "negative": "Not explicitly scored"
     },
     "code_difficulty": {
-      "score": 6,
-      "positive": "Enumeration over 2^12 subsets with simple set operations is straightforward; divisibility can be checked either via sets or polynomial arithmetic.",
-      "negative": "Precision is required to apply the correct self-orthogonality condition (Z ∪ (−Z) = Z_n). Mixing up reciprocal/negation or using the wrong orthogonality test can invalidate results."
-    },
-    "target_difficulty": "advanced graduate / researcher",
-    "required_theorems": [
-      "Duals of cyclic codes: defining-set relation for Euclidean dual C^⊥",
-      "Mattson–Solomon transform diagonalization of cyclic convolution; spectral/zero-set bookkeeping",
-      "Locality via ν-term dual checks 1 + x^s + ⋯ + x^{rs} (r = 2, s = n/3)"
-    ],
-    "pitfalls": [
-      "Confusing zeros of g with zeros of h; the locality factor lies on the dual side (h), and L | h means Z ∩ zeros(L) = ∅.",
-      "Misapplying Euclidean vs Hermitian dual relations; here Euclidean gives Z(C^⊥) = Z_n \\ (−Z(C)) and self-orthogonality requires Z ∪ (−Z) = Z_n (so 0 and 6 must be in Z).",
-      "Assuming L | h implies the coefficient vector of L itself lies in C^⊥; in general v ∈ C^⊥ iff h | v^* (for L self-reciprocal, h | L), not L | h.",
-      "Using characteristic 3 (q=3^m), where 1 + x^4 + x^8 degenerates; must keep q=13."
-    ]
-  },
-  "related_work": [
-    {
-      "title": "Theory of Error-Correcting Codes",
-      "link": "https://link.springer.com/book/10.1007/978-1-4757-2050-4",
-      "contributions": [
-        "Cyclic codes, generator/Parity-check polynomials",
-        "Euclidean duals and reciprocal relations",
-        "BCH bound generalities"
-      ],
-      "limitations": [
-        "Does not center LRC locality via explicit ν-term dual checks"
-      ]
-    },
-    {
-      "title": "On Optimal Cyclic (r, δ)-LRC Codes",
-      "link": "https://ar5iv.org/pdf/1502.01414",
-      "contributions": [
-        "Locality via inclusion of ν-term checks in the dual (cosets of subgroup)",
-        "Spectral/DFT viewpoint for enforcing r = 2 with 1 + x^{n/3} + x^{2n/3}"
-      ],
-      "limitations": [
-        "Focuses on optimal distance trade-offs rather than dual self-orthogonality constraints"
-      ]
-    },
-    {
-      "title": "Cyclic Codes: The Defining-Set Duality and Hulls",
-      "link": "https://www.mdpi.com/1099-4300/25/1/37",
-      "contributions": [
-        "Clear statement: Z(C^⊥) = Z_n \\ (−Z(C)) in the semisimple case",
-        "Criteria for self-orthogonality in terms of defining sets (Z ∪ (−Z) = Z_n)"
-      ],
-      "limitations": [
-        "Does not address LRC locality factors explicitly"
-      ]
-    },
-    {
-      "title": "Algebraic Codes for Data Transmission",
-      "link": "https://www.cambridge.org/core/books/algebraic-codes-for-data-transmission/codes-based-on-the-fourier-transform/693971E8F5543BC4DD90E12C865877EF",
-      "contributions": [
-        "Mattson–Solomon transform formalism and cyclic convolution diagonalization",
-        "Spectral interpretation of factor/zero-set constraints"
-      ],
-      "limitations": [
-        "No LRC-specific constructions"
-      ]
+      "score": 5,
+      "positive": "Derived from report",
+      "negative": "Not explicitly scored"
     }
-  ],
-  "problem_spec": {
-    "topic": "Coding Theory (non-binary, structural fusion)",
-    "subtopics": [
-      "Cyclic codes over finite fields",
-      "Euclidean duals of cyclic codes",
-      "Locally Repairable Codes (LRC) via cyclic locality checks",
-      "Mattson–Solomon transform (DFT) viewpoint",
-      "BCH-style designed distance",
-      "Idempotents in Fq[x]/(x^n−1)"
-    ],
-    "objectives": [
-      "Fuse locality and self-orthogonality constraints over GF(13), n = 12, to derive a definitive, verifiable conclusion.",
-      "Use defining-set and factor/zero-set interplay to prove a contradiction.",
-      "Provide an exact, single-integer answer (the count of admissible codes)."
-    ],
-    "difficulty_target": "advanced graduate / researcher",
-    "required_theorems": [
-      "Duals of cyclic codes: defining-set relation Z(C^⊥) = Z_n \\ (−Z(C))",
-      "Mattson–Solomon transform diagonalization for cyclic codes",
-      "Locality via ν-term parity-check factors in the dual"
-    ],
-    "pitfalls": [
-      "Equating zeros of g and h; mixing up roles of generator vs parity-check polynomials",
-      "Incorrect handling of negation in Z/12Z; must use Z ∪ (−Z) = Z_n for self-orthogonality (0 and 6 included)",
-      "Assuming L | h ⇒ L ∈ C^⊥; correct condition is h | L (since C^⊥ is generated by h^*)",
-      "Assuming characteristic 3 identities in GF(13)"
-    ],
-    "constraints": [
-      "Field GF(13), length n = 12, α = 2 as the fixed primitive 12th root",
-      "h(x) divisible by L(x) = 1 + x^4 + x^8",
-      "Euclidean self-orthogonality C ⊆ C^⊥"
-    ]
   },
-  "theorem_refs": [
-    {
-      "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
-      "statement": "Let C be a cyclic code of length n over GF(q) with gcd(n, q) = 1 and defining set Z ⊆ Z/nZ. Then C^⊥ is cyclic with Z(C^⊥) = Z/nZ \\ (−Z), where −Z = {−i mod n : i ∈ Z}. In particular, C ⊆ C^⊥ iff Z ⊇ Z/nZ \\ (−Z), i.e., Z ∪ (−Z) = Z/nZ; fixed points of inversion must be in Z.",
-      "source": "Entropy 25(1):37 (2023), MacWilliams–Sloane, Ch. 7–8",
-      "notes": "Singleton cosets because n | (q − 1)."
-    },
-    {
-      "name": "Mattson–Solomon Transform for Cyclic Codes",
-      "statement": "Evaluation at the n-th roots of unity α^i diagonalizes cyclic convolution: a cyclic code corresponds to sequences whose spectra vanish on a fixed index set T (the defining set). Factor/zero-set relations can be tracked via these spectra.",
-      "source": "Algebraic Codes for Data Transmission, Ch. on DFT-based codes",
-      "notes": "In the semisimple case (gcd(n, q) = 1), each cyclotomic coset is a singleton."
-    },
-    {
-      "name": "Locality via ν-term Dual Checks",
-      "statement": "If the dual contains a weight-(r+1) vector v(x) = 1 + x^s + ⋯ + x^{rs}, with s = n/(r+1), then locality r follows. In our divisibility formulation, L | h constrains zeros(h) to include zeros(L), which already suffices to derive the contradiction with self-orthogonality.",
-      "source": "Tamo–Barg–Goparaju–Calderbank (2015)",
-      "notes": "Beware: v ∈ C^⊥ iff h | v^* (for self-reciprocal v, h | v), not v dividing h."
-    }
-  ],
-  "problem_pair": {
-    "id": "gf13_cyclic_lrc_selforth_impossible",
-    "problem_text": "Work over GF(13). Let n = 12 and fix α = 2 ∈ GF(13) as a primitive 12th root of unity (so x^12 − 1 = ∏_{j=0}^{11} (x − α^j)). Let C be a cyclic code of length 12 with monic generator polynomial g(x) and parity-check polynomial h(x) = (x^12 − 1)/g(x).\n\nAssume: (i) h(x) is divisible by L(x) = 1 + x^4 + x^8; (ii) C is Euclidean self-orthogonal (C ⊆ C^⊥) over GF(13).\n\nQuestion. How many cyclic codes C (equivalently, monic divisors g(x) of x^12 − 1) satisfy (i) and (ii)? Give the exact integer N.",
-    "solution_text": "Let Z ⊆ {0,…,11} be the defining set of C: g(x) = ∏_{j∈Z} (x − α^j). Since 12 | (13 − 1), all cyclotomic cosets are singletons.\n\n1) Locality divisibility L | h: the zeros of L are exactly indices S = {j : j ≡ 1,2 (mod 3)}. If L | h, then S ⊆ zeros(h), hence S ∩ Z = ∅ and thus Z ⊆ {0,3,6,9}.\n\n2) Euclidean self-orthogonality is equivalent to Z ⊇ Z_n \\ (−Z), i.e., Z ∪ (−Z) = Z_n; in particular 0 and 6 must lie in Z and for each pair {i, −i} at least one element must be in Z. But since Z ⊆ {0,3,6,9}, neither 1 nor 11 can lie in Z, so 1 ∉ Z ∪ (−Z), contradicting self-orthogonality.\n\nTherefore no such C exists, and the number of admissible codes is N = 0.",
-    "tags": [
-      "cyclic codes",
-      "GF(13)",
-      "dual defining set",
-      "Mattson–Solomon transform",
-      "locally repairable codes",
-      "self-orthogonal codes"
-    ],
-    "prerequisites": [
-      "Finite fields and roots of unity",
-      "Cyclic codes: generator/defining sets",
-      "Euclidean duals of cyclic codes",
-      "Discrete Fourier transform over finite fields"
-    ],
-    "theorem_refs": [
-      {
-        "name": "Defining-Set Duality for Cyclic Codes (Euclidean)",
-        "statement": "Z(C^⊥) = Z_n \\ (−Z(C)) for gcd(n, q) = 1; C ⊆ C^⊥ iff Z ∪ (−Z) = Z_n.",
-        "source": "Entropy 25(1):37 (2023); MacWilliams–Sloane, Ch. 7–8",
-        "notes": "Singleton cosets here."
-      },
-      {
-        "name": "Mattson–Solomon Transform",
-        "statement": "Cyclic convolution diagonalizes; factor/zero-set constraints transport to spectral positions.",
-        "source": "Algebraic Codes for Data Transmission",
-        "notes": "Applicable since x^12 − 1 splits and gcd(12,13) = 1."
-      }
-    ]
-  },
-  "verification_notes": "Two independent routes:\n1) Brute-force enumeration: Iterate all subsets Z ⊆ {0,…,11}. Test locality via set avoidance (Z ∩ S = ∅ with S = {1,2,4,5,7,8,10,11}); test Euclidean self-orthogonality via Z ∪ (−Z) = Z_n (negation i ↦ (12 − i) mod 12) and confirm 0,6 ∈ Z. Count of hits must be 0. As a cross-check, construct g(x) = ∏_{j∈Z}(x − 2^j) and verify h mod L = 0.\n2) Spectral/zero-set short-circuit: zeros(L) = S forces Z ⊆ {0,3,6,9}, which immediately violates Z ∪ (−Z) = Z_n because indices 1 and 11 are excluded from Z. Boundary checks: confirm 2 has order 12 in GF(13); verify x^12 − 1 = (x^4 − 1)(x^8 + x^4 + 1); check that 0 and 6 are self-inverse in Z/12Z.\n",
-  "feedback": {
-    "message": "The corrected dual-defining-set condition (self-orthogonality ⇔ Z ∪ (−Z) = Z_n) paired with the zero-set implication of L | h yields a clean contradiction, so the exact answer remains N = 0. The report now avoids the common pitfall that L | h would imply L’s vector lies in C^⊥ (the right criterion is h | L for that).",
-    "suggestions": [
-      "If a non-empty family is desired, replace Euclidean self-orthogonality with LCD (C ∩ C^⊥ = {0}) or switch to Hermitian self-orthogonality over GF(13^2).",
-      "Alternatively, replace L by a weighted check 1 + a x^4 + a^2 x^8 with a a primitive cube root of unity to shift the forbidden zero set and recover feasibility.",
-      "For constructive instances, drop self-orthogonality and ask for the unique g(x) maximizing k subject to L | h and an explicit BCH designed distance."
-    ]
-  }
+  "related_work": [],
+  "theorem_refs": []
 }

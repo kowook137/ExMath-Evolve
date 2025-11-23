@@ -1,6 +1,0 @@
-opencv-python
-albumentations
-timm
-pandas
-numpy
-tqdm

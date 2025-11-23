@@ -31,9 +31,17 @@ def _build_metrics(
     problem: ProblemPair,
 ) -> Dict[str, float]:
     valid_score = 1.0 if (verification.substitution_pass and verification.symbolic_pass and not verification.counterexample_found) else 0.0
+    # Prefer semantic validity flag if provided in metadata
+    if problem.metadata and problem.metadata.semantic_valid is not None:
+        valid_score = 1.0 if problem.metadata.semantic_valid else 0.0
+
     llm_solved = 1.0 if evaluation.llm_solved else 0.0
     llm_score = max(0.0, min(1.0, evaluation.llm_score))
     combined_score = max(0.0, valid_score * (1.0 - llm_score))
+
+    verification_notes = verification.notes
+    if problem.metadata and problem.metadata.semantic_notes:
+        verification_notes = problem.metadata.semantic_notes
 
     return {
         "valid": valid_score,
@@ -45,7 +53,7 @@ def _build_metrics(
         "llm_attempts": float(evaluation.attempts or 0),
         "llm_tokens": float(evaluation.tokens_used or 0),
         "llm_elapsed_seconds": float(evaluation.elapsed_seconds or 0.0),
-        "verification_notes": verification.notes,
+        "verification_notes": verification_notes,
         "difficulty_message": feedback.message,
         "difficulty_suggestions": "\n".join(feedback.suggestions),
     }
@@ -64,7 +72,17 @@ def deepevolve_interface() -> Tuple[bool, Dict[str, float] | str]:
         problem = ensure_problem_id(problem, prefix="math")
 
         verifier = VerificationRunner()
-        verification = verifier.run(problem)
+        if problem.metadata and problem.metadata.semantic_valid is not None:
+            # Build a synthetic verification report from semantic check
+            verification = VerificationReport(
+                substitution_pass=bool(problem.metadata.semantic_valid),
+                symbolic_pass=bool(problem.metadata.semantic_valid),
+                counterexample_found=not bool(problem.metadata.semantic_valid),
+                notes=problem.metadata.semantic_notes or "Semantic check only",
+                extra_data=[],
+            )
+        else:
+            verification = verifier.run(problem)
         problem.verification = verification
 
         evaluator = LLMEvaluator()

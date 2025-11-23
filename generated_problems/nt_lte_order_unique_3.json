@@ -1,0 +1,58 @@
+{
+  "id": "nt_lte_order_unique_3",
+  "problem_text": "Determine all integers n > 1 such that both divisibilities hold: (i) n^3 divides 2^{12n} − 1, and (ii) n divides 5^{10n} − 1. Provide the single integer n that satisfies both conditions.",
+  "solution_text": "Answer: 3.\nLet n > 1. First, 2^{12n} − 1 is odd, so 2 ∤ n. Let p be an odd prime dividing n, and write e = v_p(n) ≥ 1. If p ≠ 3, set t = ord_p(2). Since ord_p(2) | p − 1, we have p ∤ t. By the simple-root lemma for x = 2 and t, v_p(2^t − 1) = 1. Because p | 2^{12n} − 1, t | 12n, and LTE yields v_p(2^{12n} − 1) = v_p(2^{(12n/t) t} − 1) = v_p(2^t − 1) + v_p(12n/t) = 1 + e (as p ∤ 12 and p ∤ t). But n^3 | 2^{12n} − 1 requires v_p(2^{12n} − 1) ≥ 3e, yielding 1 + e ≥ 3e, impossible for e ≥ 1. Hence no p ≠ 3 divides n; therefore n = 3^e with e ≥ 1.\nNow compute v_3(2^{12n} − 1). Using ord_3(2) = 2 and LTE, v_3(2^{12n} − 1) = 1 + v_3(6n) = 2 + e. Equivalently, since 2^{12} − 1 = 4095 has v_3 = 2, we get v_3(2^{12n} − 1) = 2 + v_3(n) = 2 + e. The condition n^3 | 2^{12n} − 1 is 3e ≤ 2 + e, so e ≤ 1. Because n > 1, e = 1 and n = 3.\nFinally, verify (ii): for any m, v_3(5^{2m} − 1) = v_3(5^2 − 1) + v_3(m) = 1 + v_3(m) ≥ 1, hence 3 | 5^{2m} − 1. Taking m = 5n shows 3 | 5^{10n} − 1. In particular, 3 | 5^{30} − 1, so n = 3 satisfies (ii). Also v_3(2^{36} − 1) = 2 + 1 = 3, so 27 | 2^{36} − 1, satisfying (i). Thus the unique n > 1 is n = 3.",
+  "tags": [
+    "number theory",
+    "LTE",
+    "multiplicative order",
+    "p-adic valuation",
+    "Hensel lemma"
+  ],
+  "prerequisites": [
+    "p-adic valuations",
+    "multiplicative orders modulo primes",
+    "basic LTE",
+    "simple-root/Hensel lemma basics"
+  ],
+  "theorem_refs": [],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "Divisibility conditions force n = 3 uniquely for n > 1.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 5,
+  "metadata": {
+    "status": "ready",
+    "verification_tasks": null,
+    "verification_notes": "Divisibility conditions force n = 3 uniquely for n > 1.",
+    "semantic_valid": true,
+    "semantic_notes": "Divisibility conditions force n = 3 uniquely for n > 1.",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.62s, total tokens 448.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.62s, total tokens 448.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 8.623408360996109,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 8.623269951000111,
+        "status": "ok",
+        "tokens_used": 448,
+        "score": 0.2605263157894737,
+        "solved": false
+      }
+    ]
+  }
+}

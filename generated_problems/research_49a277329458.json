@@ -1,0 +1,460 @@
+{
+  "id": "research_49a277329458",
+  "problem_text": "Hard Number Theory – Coupled p-adic Valuations, Orders, and Cyclotomic Structure\n\nLet v_p(·) denote the p-adic valuation. Determine the minimal positive integer n satisfying simultaneously:\n- v_3(2^n − 1) = 5,\n- v_5(3^n − 1) = 3,\n- v_7(5^n − 1) = 2,\n- v_2(3^n − 1) = 8,\n- v_11(2^n − 1) = 1.\n\nYou must give the exact integer n and justify uniqueness/minimality by combining:\n(i) lifting-the-exponent (LTE) in both odd and 2-adic regimes;\n(ii) multiplicative orders modulo prime powers (Hensel lifting where needed);\n(iii) cyclotomic factorization and order splitting; and\n(iv) primitive prime divisor logic (Zsigmondy) to preclude spurious smaller exponents.\n\nFinal answer must be explicit. Provide a rigorous solution and finish with a verification plan.\nAnswer format: give n in closed form and its decimal value.",
+  "solution_text": "Solution.\nWe solve each valuation with precise LTE/order analysis and then fuse constraints.\n\n1) 3-adic constraint v_3(2^n − 1) = 5.\n   Since n must be even (otherwise 2^n − 1 ≡ 1 mod 3 gives valuation 0), write n = 2m.\n   Then 2^n − 1 = (4)^m − 1 and 3 | (4 − 1). By LTE for odd p:\n      v_3(4^m − 1) = v_3(4 − 1) + v_3(m) = 1 + v_3(m).\n   Setting this to 5 yields v_3(m) = 4, i.e., v_3(n) = 4 and n is even.\n\n2) 2-adic constraint v_2(3^n − 1) = 8.\n   For odd a = 3 and even n, the 2-adic LTE gives\n      v_2(3^n − 1) = v_2(3 − 1) + v_2(3 + 1) + v_2(n) − 1 = 1 + 2 + v_2(n) − 1 = 2 + v_2(n).\n   Thus 2 + v_2(n) = 8 ⇒ v_2(n) = 6.\n\n3) 5-adic constraint v_5(3^n − 1) = 3.\n   Compute ord_5(3) = 4 since 3^4 ≡ 1 (mod 5) and no smaller positive power works.\n   For n divisible by 4, write n = 4t. Then for odd p and a with p ∤ a:\n      v_5(3^{4t} − 1) = v_5(3^4 − 1) + v_5(t).\n   Since 3^4 − 1 = 80 has v_5 = 1, we need 1 + v_5(t) = 3 ⇒ v_5(t) = 2. Hence v_5(n) = 2 and 4 | n.\n\n4) 7-adic constraint v_7(5^n − 1) = 2.\n   Compute ord_7(5) = 6. For n = 6u, LTE/order lifting yields\n      v_7(5^{6u} − 1) = v_7(5^6 − 1) + v_7(u).\n   As 5^6 − 1 is divisible by 7 exactly once, v_7(5^6 − 1) = 1. Thus 1 + v_7(u) = 2 ⇒ v_7(u) = 1, so v_7(n) = 1 and 6 | n.\n\n5) 11-adic constraint v_11(2^n − 1) = 1.\n   Since ord_11(2) = 10 (by Fermat's little theorem and checking smaller exponents), for n = 10w we have\n      v_11(2^{10w} − 1) = v_11(2^{10} − 1) + v_11(w).\n   As 2^{10} − 1 = 1023 has v_11 = 1, we need v_11(w) = 0, i.e., 11 ∤ n and 10 | n.\n\nCombining constraints:\n- v_2(n) = 6 forces 64 | n.\n- v_3(n) = 4 forces 81 | n, and with 6 | n already needed for the 7-adic condition, consistency holds.\n- v_5(n) = 2 and 4 | n imply 25 | n and n ≡ 0 mod 4, consistent with v_2(n) = 6.\n- v_7(n) = 1 forces a single factor 7 in n (not 49), and 6 | n holds automatically since 2 | n and 3 | n.\n- 10 | n and 11 ∤ n are already satisfied since n contains 2 and 5 but no 11.\n\nHence the minimal n satisfying all five exact valuations is the product of the required prime powers:\n   n = 2^6 · 3^4 · 5^2 · 7 = 64 · 81 · 25 · 7 = 907200.\nMinimality is justified since decreasing any prime-power component reduces at least one valuation by 1, violating the exact requirement;\nmoreover, cyclotomic partitioning shows no other prime-power factor can compensate across Φ_d(a) factors, and Zsigmondy ensures primitive divisors occur at the dictated levels so that no smaller exponent simultaneously matches all exact equalities.\n\nFinal Answer: n = 2^6 · 3^4 · 5^2 · 7 = 907200.\n\nVerification plan (machine-checkable):\n1) Confirm orders:\n   - ord_5(3) = 4: check powmod(3,4,5)=1 and powmod(3,k,5)≠1 for k∈{1,2,3}.\n   - ord_7(5) = 6: check powmod(5,6,7)=1 and powmod(5,k,7)≠1 for k∈{1,2,3}.\n   - ord_11(2) = 10: check powmod(2,10,11)=1 and powmod(2,k,11)≠1 for k∈{1,2,5}.\n2) Exact valuations at n = 907200 via modular residues:\n   - vp_eq(2, n, 3, 5), vp_eq(3, n, 5, 3), vp_eq(5, n, 7, 2), vp_eq(3, n, 2, 8), vp_eq(2, n, 11, 1).\n3) Minimality checks by dividing out one prime factor at a time:\n   - Not(vp_eq(3, n/2, 2, 8)), Not(vp_eq(2, n/3, 3, 5)), Not(vp_eq(3, n/5, 5, 3)), Not(vp_eq(5, n/7, 7, 2)).\n4) Confirm 11 ∤ n and 10 | n via remainders: Mod(n,11)≠0 and Mod(n,10)=0.\n5) Symbolic identity check: n = 2^6·3^4·5^2·7.\n\nFinal Answer: n = 2^6 · 3^4 · 5^2 · 7 = 907200.",
+  "tags": [
+    "number_theory",
+    "valuations",
+    "LTE",
+    "orders",
+    "cyclotomic",
+    "CRT"
+  ],
+  "prerequisites": [
+    "Lifting the exponent lemma (odd and 2-adic forms)",
+    "Multiplicative orders modulo prime powers; Hensel lifting",
+    "Cyclotomic factorization a^n - 1 = Π Φ_d(a)",
+    "Zsigmondy theorem (primitive prime divisors)"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (odd p and 2-adic variants)",
+      "statement": "",
+      "source": "Andreescu & Andrica; Niven–Zuckerman–Montgomery",
+      "notes": "Used to compute exact valuations for 3, 5, 7, 2"
+    },
+    {
+      "name": "Multiplicative orders modulo p^k",
+      "statement": "",
+      "source": "Ireland & Rosen, Ch. 2",
+      "notes": "Used for ord_5(3)=4, ord_7(5)=6, ord_11(2)=10"
+    },
+    {
+      "name": "Cyclotomic factorization",
+      "statement": "",
+      "source": "Standard",
+      "notes": "Explains valuation partitioning and uniqueness"
+    },
+    {
+      "name": "Zsigmondy’s theorem (primitive prime divisors)",
+      "statement": "",
+      "source": "Classical; BHV refinements",
+      "notes": "Supports minimality/uniqueness arguments"
+    }
+  ],
+  "verification": {
+    "substitution_pass": false,
+    "symbolic_pass": false,
+    "counterexample_found": true,
+    "notes": "[Substitution 1] Order check: ord_5(3) = 4: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 2] Order check: ord_7(5) = 6: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 3] Order check: ord_11(2) = 10: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 4] Exact v3(2^n - 1) = 5 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(2, n, 3, 5)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 5] Exact v5(3^n - 1) = 3 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(3, n, 5, 3)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 6] Exact v7(5^n - 1) = 2 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(5, n, 7, 2)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 7] Exact v2(3^n - 1) = 8 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(3, n, 2, 8)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 8] Exact v11(2^n - 1) = 1 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(2, n, 11, 1)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 9] Minimality: n/2 fails the 2-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/2, 2, 8))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 10] Minimality: n/3 fails the 3-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(2, n/3, 3, 5))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 11] Minimality: n/5 fails the 5-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/5, 5, 3))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 12] Minimality: n/7 fails the 7-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(5, n/7, 7, 2))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 13] Stronger minimality: n/64 fails the 2-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/64, 2, 8))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 14] Stronger minimality: n/81 fails the 3-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(2, n/81, 3, 5))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 15] Stronger minimality: n/25 fails the 5-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/25, 5, 3))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 16] Exact prime-power structure of n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 17] Divisibility sanity: 10 | n and 11 ∤ n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 18] Global bound on n (anti-bruteforce sanity): 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Symbolic 1] Exact n identity (prime-power form): failed. Counterexamples: [{'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}, {'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}]\n[Symbolic 2] Exact n identity (decimal value): failed. Counterexamples: [{'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}, {'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}]",
+    "extra_data": [
+      {
+        "key": "counterexamples",
+        "value": "[{'expression': '0', 'value': '0', 'assignment': '{n: 907200}'}, {'expression': '0', 'value': '0', 'assignment': '{n: 907200}'}, {'expression': '0', 'value': '0', 'assignment': '{n: 907200}'}, {'expression': '0', 'value': '0', 'assignment': '{n: 907200}'}, {'expression': '0', 'value': '0', 'assignment': '{n: 907200}'}]"
+      }
+    ]
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(powmod(3,4,5) == 1, powmod(3,1,5) != 1, powmod(3,2,5) != 1, powmod(3,3,5) != 1)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Order check: ord_5(3) = 4"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(powmod(5,6,7) == 1, powmod(5,1,7) != 1, powmod(5,2,7) != 1, powmod(5,3,7) != 1)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Order check: ord_7(5) = 6"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(powmod(2,10,11) == 1, powmod(2,1,11) != 1, powmod(2,2,11) != 1, powmod(2,5,11) != 1)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Order check: ord_11(2) = 10"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "vp_eq(2, n, 3, 5)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact v3(2^n - 1) = 5 at n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "vp_eq(3, n, 5, 3)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact v5(3^n - 1) = 3 at n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "vp_eq(5, n, 7, 2)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact v7(5^n - 1) = 2 at n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "vp_eq(3, n, 2, 8)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact v2(3^n - 1) = 8 at n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "vp_eq(2, n, 11, 1)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact v11(2^n - 1) = 1 at n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(3, n/2, 2, 8))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Minimality: n/2 fails the 2-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(2, n/3, 3, 5))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Minimality: n/3 fails the 3-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(3, n/5, 5, 3))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Minimality: n/5 fails the 5-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(5, n/7, 7, 2))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Minimality: n/7 fails the 7-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(3, n/64, 2, 8))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Stronger minimality: n/64 fails the 2-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(2, n/81, 3, 5))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Stronger minimality: n/81 fails the 3-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "Not(vp_eq(3, n/25, 5, 3))",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Stronger minimality: n/25 fails the 5-adic condition"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(Mod(n,64)==0, Mod(n,128)!=0, Mod(n,81)==0, Mod(n,243)!=0, Mod(n,25)==0, Mod(n,125)!=0, Mod(n,7)==0, Mod(n,49)!=0)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Exact prime-power structure of n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(Mod(n,10) == 0, Mod(n,11) != 0)",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Divisibility sanity: 10 | n and 11 ∤ n"
+        },
+        {
+          "expression": "0",
+          "expected": null,
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "n < 10**9",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "num_samples": 1,
+          "description": "Global bound on n (anti-bruteforce sanity)"
+        }
+      ],
+      "symbolic_equalities": [
+        {
+          "lhs": "n",
+          "rhs": "2**6 * 3**4 * 5**2 * 7",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "description": "Exact n identity (prime-power form)"
+        },
+        {
+          "lhs": "n",
+          "rhs": "907200",
+          "variables": [
+            {
+              "name": "n",
+              "kind": "positive_integer",
+              "minimum": 907200,
+              "maximum": 907200
+            }
+          ],
+          "description": "Exact n identity (decimal value)"
+        }
+      ]
+    },
+    "verification_notes": "[Substitution 1] Order check: ord_5(3) = 4: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 2] Order check: ord_7(5) = 6: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 3] Order check: ord_11(2) = 10: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 4] Exact v3(2^n - 1) = 5 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(2, n, 3, 5)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 5] Exact v5(3^n - 1) = 3 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(3, n, 5, 3)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 6] Exact v7(5^n - 1) = 2 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(5, n, 7, 2)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 7] Exact v2(3^n - 1) = 8 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(3, n, 2, 8)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 8] Exact v11(2^n - 1) = 1 at n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'vp_eq(2, n, 11, 1)': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 9] Minimality: n/2 fails the 2-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/2, 2, 8))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 10] Minimality: n/3 fails the 3-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(2, n/3, 3, 5))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 11] Minimality: n/5 fails the 5-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/5, 5, 3))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 12] Minimality: n/7 fails the 7-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(5, n/7, 7, 2))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 13] Stronger minimality: n/64 fails the 2-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/64, 2, 8))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 14] Stronger minimality: n/81 fails the 3-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(2, n/81, 3, 5))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 15] Stronger minimality: n/25 fails the 5-adic condition: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: Could not parse expression 'Not(vp_eq(3, n/25, 5, 3))': Cannot convert symbols to int\", 'assignment': '{n: 907200}'}]\n[Substitution 16] Exact prime-power structure of n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 17] Divisibility sanity: 10 | n and 11 ∤ n: 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Substitution 18] Global bound on n (anti-bruteforce sanity): 1 failure(s) out of 1 samples. Examples: [{'reason': \"predicate evaluation error: module 'sympy' has no attribute 'BooleanTrue'\", 'assignment': '{n: 907200}'}]\n[Symbolic 1] Exact n identity (prime-power form): failed. Counterexamples: [{'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}, {'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}]\n[Symbolic 2] Exact n identity (decimal value): failed. Counterexamples: [{'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}, {'reason': 'value n - 907200 != 0', 'assignment': '{n: 907200}'}]",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 17.51s, total tokens 3042.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 17.51s, total tokens 3042.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 52.52178179897601,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 17.015073068003403,
+        "status": "ok",
+        "tokens_used": 1014,
+        "score": 0.23449552607219992,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 17.236504392989445,
+        "status": "ok",
+        "tokens_used": 1014,
+        "score": 0.23727244677568649,
+        "solved": false
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 18.267667815991445,
+        "status": "ok",
+        "tokens_used": 1014,
+        "score": 0.23788954026535025,
+        "solved": false
+      }
+    ]
+  }
+}

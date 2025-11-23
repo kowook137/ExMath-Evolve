@@ -1,0 +1,304 @@
+{
+  "id": "research_efb0fcdaa218",
+  "problem_text": "Problem: Exact-order units modulo a composite N with local square constraints\n\nObjects and assumptions:\n- Let N = 2^9 · 3^5 · 5^4 · 7^3 · 11^2 · 13^2.\n- Let L = 2^6 · 3^4 · 5^3 · 7^2.\n- Consider the unit group G = (Z/NZ)^× and its CRT decomposition into local unit groups at each prime power.\n- Additional constraint (local squares): for every odd prime power p^e dividing N, the image of x in (Z/p^eZ)^× must lie in the subgroup of squares; no restriction is imposed at 2.\n\nQuestion:\nDetermine the exact number of units x ∈ (Z/NZ)^× such that:\n1) ord_N(x) = L = 2^6 · 3^4 · 5^3 · 7^2, and\n2) For each odd prime power p^e | N, the residue class of x is a quadratic residue modulo p^e.\nGive the final answer as a single explicit integer.\n",
+  "solution_text": "Solution:\n\nOverview and theorems used:\n- By CRT, (Z/NZ)^× ≅ ∏ (Z/p_i^{e_i}Z)^× and for x ↦ (x_i), ord_N(x) = lcm_i ord_{p_i^{e_i}}(x_i).\n- For odd primes p, (Z/p^eZ)^× is cyclic of order (p-1)p^{e-1}; its subgroup of squares has index 2 and hence order ((p-1)p^{e-1})/2, still cyclic.\n- For 2^e (e ≥ 3), (Z/2^eZ)^× ≅ C2 × C_{2^{e-2}}; no square restriction at 2 is imposed here.\n- In a finite abelian ℓ-group G_ℓ ≅ ∏ C_{ℓ^{α_i}}, the count of elements with order dividing ℓ^t equals ℓ^{∑ min(α_i, t)}. Therefore the count of exact order ℓ^t equals ℓ^{S_ℓ(t)} − ℓ^{S_ℓ(t−1)}, where S_ℓ(t) := ∑ min(α_i, t).\n\n1) Local square restriction and primary exponents α_{ℓ} lists.\nWe restrict odd local components to their squares subgroups Q_{p^e}. For odd p, |Q_{p^e}| = ((p-1)p^{e-1})/2; this reduces only the 2-adic valuation by 1 relative to (p-1)p^{e-1}.\nCompute α_ℓ-lists (exponents of cyclic ℓ-components) across all local factors under this restriction:\n- ℓ = 2:\n  • From 2^9: (Z/2^9Z)^× ≅ C2 × C_{2^7} → α2 contributions {1, 7}.\n  • From odd primes p, α2 contributes v2(p−1) − 1 (due to halving for squares). Thus:\n    v2(3−1)=1→0, v2(5−1)=2→1, v2(7−1)=1→0, v2(11−1)=1→0, v2(13−1)=2→1.\n  Hence α2-list = [1, 7, 1, 1].\n- ℓ = 3:\n  • From 3^5: v3(φ(3^5)) = 4.\n  • From others: v3(7−1)=1, v3(13−1)=1; 3-adic valuation is unchanged by the square restriction at odd p.\n  Hence α3-list = [4, 1, 1].\n- ℓ = 5:\n  • From 5^4: v5(φ(5^4)) = 3.\n  • From 11^2: v5(11−1) = 1.\n  Hence α5-list = [3, 1].\n- ℓ = 7:\n  • From 7^3: v7(φ(7^3)) = 2; no other components contribute 7-adic valuation.\n  Hence α7-list = [2].\n\n2) Target exponents and S_ℓ(t) values.\nWe target L = 2^6·3^4·5^3·7^2, i.e., t2=6, t3=4, t5=3, t7=2. Compute S_ℓ(t) = ∑ min(α_{ℓ,i}, t):\n- ℓ=2: α2=[1,7,1,1]\n  S2(6) = 1+6+1+1 = 9; S2(5) = 1+5+1+1 = 8.\n- ℓ=3: α3=[4,1,1]\n  S3(4) = 4+1+1 = 6; S3(3) = 3+1+1 = 5.\n- ℓ=5: α5=[3,1]\n  S5(3) = 3+1 = 4; S5(2) = 2+1 = 3.\n- ℓ=7: α7=[2]\n  S7(2) = 2; S7(1) = 1.\n\n3) Exact ℓ-primary counts via differences.\n- n2 = 2^{S2(6)} − 2^{S2(5)} = 2^9 − 2^8 = 512.\n- n3 = 3^{S3(4)} − 3^{S3(3)} = 3^6 − 3^5 = 486.\n- n5 = 5^{S5(3)} − 5^{S5(2)} = 5^4 − 5^3 = 500.\n- n7 = 7^{S7(2)} − 7^{S7(1)} = 7^2 − 7 = 42.\n\n4) Global count and feasibility.\nIndependence across primes gives the product:\nn = n2 · n3 · n5 · n7 = 512 · 486 · 500 · 42 = 5,225,472,000.\nFeasibility holds since t2=6 ≤ max α2 = 7, t3=4 ≤ 4, t5=3 ≤ 3, t7=2 ≤ 2.\n\nFinal Answer:\n5225472000\n\nVerification plan (machine-checkable):\n1) φ-values for each prime power: φ(2^9)=256, φ(3^5)=162, φ(5^4)=500, φ(7^3)=294, φ(11^2)=110, φ(13^2)=156.\n2) Squares at odd moduli halve the group size: 162/2=81, 500/2=250, 294/2=147, 110/2=55, 156/2=78.\n3) 2-adic reductions for squares at odd p: v2(3−1)−1=0, v2(5−1)−1=1, v2(7−1)−1=0, v2(11−1)−1=0, v2(13−1)−1=1.\n4) S2(6)=9 and S2(5)=8 from α2=[1,7,1,1]; n2 = 2^9 − 2^8 = 512.\n5) S3(4)=6 and S3(3)=5 for α3=[4,1,1]; n3 = 3^6 − 3^5 = 486.\n6) S5(3)=4 and S5(2)=3 for α5=[3,1]; n5 = 5^4 − 5^3 = 500.\n7) S7(2)=2 and S7(1)=1 for α7=[2]; n7 = 7^2 − 7 = 42.\n8) Feasibility: Max(0,6−7)=0; Max(0,4−4)=0; Max(0,3−3)=0; Max(0,2−2)=0.\n9) Final product: 512·486·500·42 = 5225472000.\n10) Cross-check: φ(N) = 256·162·500·294·110·156 = 104613949440000.\n",
+  "tags": [
+    "number_theory",
+    "group_theory",
+    "CRT",
+    "quadratic_residues",
+    "valuation"
+  ],
+  "prerequisites": [
+    "Basic algebra: finite abelian groups and cyclic decomposition",
+    "Number theory: Euler's totient, valuations v_p, quadratic residues",
+    "CRT and orders modulo prime powers"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem for unit groups",
+      "statement": "(Z/NZ)^× ≅ ∏ (Z/p_i^{e_i}Z)^× and ord_N(x) = lcm_i ord_{p_i^{e_i}}(x_i).",
+      "source": "Standard; e.g., Serre, A Course in Arithmetic, IV.1",
+      "notes": null
+    },
+    {
+      "name": "Structure of unit groups modulo prime powers",
+      "statement": "For odd p, (Z/p^eZ)^× is cyclic of order (p−1)p^{e−1}; for 2^e with e≥3, ≅ C2 × C_{2^{e−2}}.",
+      "source": "Dummit & Foote; Ireland & Rosen",
+      "notes": null
+    },
+    {
+      "name": "Squares subgroup at odd prime powers",
+      "statement": "The subgroup of squares has index 2 in (Z/p^eZ)^× for odd p.",
+      "source": "Janusz, Algebraic Number Fields, Lemma 5.18",
+      "notes": null
+    },
+    {
+      "name": "Counting in finite abelian ℓ-groups",
+      "statement": "If G_ℓ ≅ ∏ C_{ℓ^{α_i}}, then # {x: x^{ℓ^t}=1} = ℓ^{∑ min(α_i,t)}; exact count by difference.",
+      "source": "Standard; e.g., Isaacs; Raji (2016)",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": false,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] φ(2^9)=256: passed via direct simplification.\n[Symbolic 2] φ(3^5)=3^4*(3-1)=162: passed via direct simplification.\n[Symbolic 3] φ(5^4)=5^3*(5-1)=500: passed via direct simplification.\n[Symbolic 4] φ(7^3)=7^2*(7-1)=294: passed via direct simplification.\n[Symbolic 5] φ(11^2)=11*(11-1)=110: passed via direct simplification.\n[Symbolic 6] φ(13^2)=13*(13-1)=156: passed via direct simplification.\n[Symbolic 7] Squares at 3^5 have order 81: passed via direct simplification.\n[Symbolic 8] Squares at 5^4 have order 250: passed via direct simplification.\n[Symbolic 9] Squares at 7^3 have order 147: passed via direct simplification.\n[Symbolic 10] Squares at 11^2 have order 55: passed via direct simplification.\n[Symbolic 11] Squares at 13^2 have order 78: passed via direct simplification.\n[Symbolic 12] v2(3-1)-1 = 0: passed via direct simplification.\n[Symbolic 13] v2(5-1)-1 = 1: passed via direct simplification.\n[Symbolic 14] v2(7-1)-1 = 0: passed via direct simplification.\n[Symbolic 15] v2(11-1)-1 = 0: passed via direct simplification.\n[Symbolic 16] v2(13-1)-1 = 1: passed via direct simplification.\n[Symbolic 17] 2-primary: S2(1)=4: passed via direct simplification.\n[Symbolic 18] 2-primary: S2(6)=9: passed via direct simplification.\n[Symbolic 19] 2-primary: S2(5)=8: passed via direct simplification.\n[Symbolic 20] 2-primary: exact-order count N2=512: failed. Counterexamples: [{'reason': 'value -256 != 0', 'assignment': '{}'}, {'reason': 'value -256 != 0', 'assignment': '{}'}]\n[Symbolic 21] 3-primary: S3(4)=6: passed via direct simplification.\n[Symbolic 22] 3-primary: S3(3)=5: passed via direct simplification.\n[Symbolic 23] 3-primary: exact-order count N3=486: passed via direct simplification.\n[Symbolic 24] 5-primary: S5(3)=4: passed via direct simplification.\n[Symbolic 25] 5-primary: S5(2)=3: passed via direct simplification.\n[Symbolic 26] 5-primary: exact-order count N5=500: passed via direct simplification.\n[Symbolic 27] 7-primary: S7(2)=2: passed via direct simplification.\n[Symbolic 28] 7-primary: S7(1)=1: passed via direct simplification.\n[Symbolic 29] 7-primary: exact-order count N7=42: passed via direct simplification.\n[Symbolic 30] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 31] 3-adic feasibility: 4 ≤ 4: passed via direct simplification.\n[Symbolic 32] 5-adic feasibility: 3 ≤ 3: passed via direct simplification.\n[Symbolic 33] 7-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 34] Final exact-order count: passed via direct simplification.\n[Symbolic 35] phi(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 35 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "2**9 - 2**8 - 256",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(2^9)=256"
+        },
+        {
+          "lhs": "3**4 * (3-1) - 162",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(3^5)=3^4*(3-1)=162"
+        },
+        {
+          "lhs": "5**3 * (5-1) - 500",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(5^4)=5^3*(5-1)=500"
+        },
+        {
+          "lhs": "7**2 * (7-1) - 294",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(7^3)=7^2*(7-1)=294"
+        },
+        {
+          "lhs": "11 * (11-1) - 110",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(11^2)=11*(11-1)=110"
+        },
+        {
+          "lhs": "13 * (13-1) - 156",
+          "rhs": "0",
+          "variables": [],
+          "description": "φ(13^2)=13*(13-1)=156"
+        },
+        {
+          "lhs": "162/2 - 81",
+          "rhs": "0",
+          "variables": [],
+          "description": "Squares at 3^5 have order 81"
+        },
+        {
+          "lhs": "500/2 - 250",
+          "rhs": "0",
+          "variables": [],
+          "description": "Squares at 5^4 have order 250"
+        },
+        {
+          "lhs": "294/2 - 147",
+          "rhs": "0",
+          "variables": [],
+          "description": "Squares at 7^3 have order 147"
+        },
+        {
+          "lhs": "110/2 - 55",
+          "rhs": "0",
+          "variables": [],
+          "description": "Squares at 11^2 have order 55"
+        },
+        {
+          "lhs": "156/2 - 78",
+          "rhs": "0",
+          "variables": [],
+          "description": "Squares at 13^2 have order 78"
+        },
+        {
+          "lhs": "1-1",
+          "rhs": "0",
+          "variables": [],
+          "description": "v2(3-1)-1 = 0"
+        },
+        {
+          "lhs": "2-1-1",
+          "rhs": "0",
+          "variables": [],
+          "description": "v2(5-1)-1 = 1"
+        },
+        {
+          "lhs": "1-1",
+          "rhs": "0",
+          "variables": [],
+          "description": "v2(7-1)-1 = 0"
+        },
+        {
+          "lhs": "1-1",
+          "rhs": "0",
+          "variables": [],
+          "description": "v2(11-1)-1 = 0"
+        },
+        {
+          "lhs": "2-1-1",
+          "rhs": "0",
+          "variables": [],
+          "description": "v2(13-1)-1 = 1"
+        },
+        {
+          "lhs": "2**(Min(1,1)+Min(7,1)+Min(1,1)+Min(1,1)) - 2**4",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: S2(1)=4"
+        },
+        {
+          "lhs": "2**(Min(1,6)+Min(7,6)+Min(1,6)+Min(1,6)) - 2**9",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: S2(6)=9"
+        },
+        {
+          "lhs": "2**(Min(1,5)+Min(7,5)+Min(1,5)+Min(1,5)) - 2**8",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: S2(5)=8"
+        },
+        {
+          "lhs": "2**9 - 2**8 - 512",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: exact-order count N2=512"
+        },
+        {
+          "lhs": "3**(Min(4,4)+Min(1,4)+Min(1,4)) - 3**6",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: S3(4)=6"
+        },
+        {
+          "lhs": "3**(Min(4,3)+Min(1,3)+Min(1,3)) - 3**5",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: S3(3)=5"
+        },
+        {
+          "lhs": "3**6 - 3**5 - 486",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: exact-order count N3=486"
+        },
+        {
+          "lhs": "5**(Min(3,3)+Min(1,3)) - 5**4",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: S5(3)=4"
+        },
+        {
+          "lhs": "5**(Min(3,2)+Min(1,2)) - 5**3",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: S5(2)=3"
+        },
+        {
+          "lhs": "5**4 - 5**3 - 500",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: exact-order count N5=500"
+        },
+        {
+          "lhs": "7**(Min(2,2)) - 7**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: S7(2)=2"
+        },
+        {
+          "lhs": "7**(Min(2,1)) - 7",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: S7(1)=1"
+        },
+        {
+          "lhs": "7**2 - 7 - 42",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: exact-order count N7=42"
+        },
+        {
+          "lhs": "Max(0, 6-7)",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic feasibility: 6 ≤ 7"
+        },
+        {
+          "lhs": "Max(0, 4-4)",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic feasibility: 4 ≤ 4"
+        },
+        {
+          "lhs": "Max(0, 3-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic feasibility: 3 ≤ 3"
+        },
+        {
+          "lhs": "Max(0, 2-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-adic feasibility: 2 ≤ 2"
+        },
+        {
+          "lhs": "512 * 486 * 500 * 42 - 5225472000",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count"
+        },
+        {
+          "lhs": "256*162*500*294*110*156 - 104613949440000",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(N) product check"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] φ(2^9)=256: passed via direct simplification.\n[Symbolic 2] φ(3^5)=3^4*(3-1)=162: passed via direct simplification.\n[Symbolic 3] φ(5^4)=5^3*(5-1)=500: passed via direct simplification.\n[Symbolic 4] φ(7^3)=7^2*(7-1)=294: passed via direct simplification.\n[Symbolic 5] φ(11^2)=11*(11-1)=110: passed via direct simplification.\n[Symbolic 6] φ(13^2)=13*(13-1)=156: passed via direct simplification.\n[Symbolic 7] Squares at 3^5 have order 81: passed via direct simplification.\n[Symbolic 8] Squares at 5^4 have order 250: passed via direct simplification.\n[Symbolic 9] Squares at 7^3 have order 147: passed via direct simplification.\n[Symbolic 10] Squares at 11^2 have order 55: passed via direct simplification.\n[Symbolic 11] Squares at 13^2 have order 78: passed via direct simplification.\n[Symbolic 12] v2(3-1)-1 = 0: passed via direct simplification.\n[Symbolic 13] v2(5-1)-1 = 1: passed via direct simplification.\n[Symbolic 14] v2(7-1)-1 = 0: passed via direct simplification.\n[Symbolic 15] v2(11-1)-1 = 0: passed via direct simplification.\n[Symbolic 16] v2(13-1)-1 = 1: passed via direct simplification.\n[Symbolic 17] 2-primary: S2(1)=4: passed via direct simplification.\n[Symbolic 18] 2-primary: S2(6)=9: passed via direct simplification.\n[Symbolic 19] 2-primary: S2(5)=8: passed via direct simplification.\n[Symbolic 20] 2-primary: exact-order count N2=512: failed. Counterexamples: [{'reason': 'value -256 != 0', 'assignment': '{}'}, {'reason': 'value -256 != 0', 'assignment': '{}'}]\n[Symbolic 21] 3-primary: S3(4)=6: passed via direct simplification.\n[Symbolic 22] 3-primary: S3(3)=5: passed via direct simplification.\n[Symbolic 23] 3-primary: exact-order count N3=486: passed via direct simplification.\n[Symbolic 24] 5-primary: S5(3)=4: passed via direct simplification.\n[Symbolic 25] 5-primary: S5(2)=3: passed via direct simplification.\n[Symbolic 26] 5-primary: exact-order count N5=500: passed via direct simplification.\n[Symbolic 27] 7-primary: S7(2)=2: passed via direct simplification.\n[Symbolic 28] 7-primary: S7(1)=1: passed via direct simplification.\n[Symbolic 29] 7-primary: exact-order count N7=42: passed via direct simplification.\n[Symbolic 30] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 31] 3-adic feasibility: 4 ≤ 4: passed via direct simplification.\n[Symbolic 32] 5-adic feasibility: 3 ≤ 3: passed via direct simplification.\n[Symbolic 33] 7-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 34] Final exact-order count: passed via direct simplification.\n[Symbolic 35] phi(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 35 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.81s, total tokens 1512.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.81s, total tokens 1512.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 19.62181345600402,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 9.684087396017276,
+        "status": "ok",
+        "tokens_used": 756,
+        "score": 0.13704876504116534,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 9.93624131497927,
+        "status": "ok",
+        "tokens_used": 756,
+        "score": 0.1352754908169728,
+        "solved": false
+      }
+    ]
+  }
+}

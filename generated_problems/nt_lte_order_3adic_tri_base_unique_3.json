@@ -1,0 +1,84 @@
+{
+  "id": "nt_lte_order_3adic_tri_base_unique_3",
+  "problem_text": "Find all integers n>1 such that the following hold simultaneously:\n(i) n^4 divides 2^{18n}−1,\n(ii) n^2 divides 5^{6n}−1,\n(iii) n divides 7^{2n}−1.\nGive a complete proof and the exact value of n.",
+  "solution_text": "Let n=∏ p^{e_p} with e_p≥1 for primes p|n. Since 2^{18n}−1 is odd, 2∤n.\nFix an odd prime p|n with e=e_p. Set t=ord_p(2). Then t|p−1, hence p∤t, and p|2^t−1. Condition (i) implies p|2^{18n}−1, so t|18n. Writing 18n=t·s yields 2^{18n}−1=(2^t)^s−1. By the simple-root lemma, v_p(2^t−1)=1. Lifting valuations for A^s−1 with p|A−1 and v_p(A−1)=1 gives v_p(2^{18n}−1)=1+v_p(s)=1+v_p(18n/t). Because p∤t and p≠3, we have v_p(18)=0, thus v_p(2^{18n}−1)=1+e. But (i) requires v_p(2^{18n}−1)≥4e, impossible for e≥1 since 1+e<4e. Therefore no odd prime p≥5 divides n.\nHence n=3^e with e≥1. For p=3, compute v_3(2^{18n}−1) using the even-exponent a+b variant by writing 2^{18n}−1=(2^9)^{2n}−1: since 3|(2^9+1) and 2n is even, v_3(2^{18n}−1)=v_3(2^9+1)+v_3(2n)=v_3(513)+v_3(n)=3+e. Condition (i) enforces 4e≤3+e, i.e., e≤1. With n>1, we obtain n=3.\nNow verify (ii) and (iii) for n=3. For (ii), 5^{6n}−1=5^{18}−1 has even exponent and 3|5+1, so v_3(5^{18}−1)=v_3(5+1)+v_3(18)=v_3(6)+v_3(18)=1+2=3≥2, hence 3^2|5^{18}−1. For (iii), 7≡1 (mod 3) implies 3|7^{6}−1. Therefore n=3 satisfies all three conditions, and by the above exclusions, it is unique.",
+  "tags": [
+    "number theory",
+    "LTE",
+    "p-adic valuation",
+    "multiplicative order",
+    "3-adic analysis",
+    "olympiad"
+  ],
+  "prerequisites": [
+    "Modular arithmetic",
+    "Multiplicative orders",
+    "p-adic valuations and LTE basics",
+    "Hensel/simple-root criterion"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (a−b variant)",
+      "statement": "For odd prime p with p|a−b and p∤ab, v_p(a^n−b^n)=v_p(a−b)+v_p(n).",
+      "source": "Standard LTE; e.g., Wikipedia or olympiad compendia",
+      "notes": "Applied implicitly via lifting from A−1 to A^s−1."
+    },
+    {
+      "name": "LTE (even-exponent a+b variant)",
+      "statement": "For odd prime p with p|a+b, p∤ab, and even n, v_p(a^n−b^n)=v_p(a+b)+v_p(n).",
+      "source": "Standard LTE extension",
+      "notes": "Used for p=3 on 2^{18n}−1 and 5^{6n}−1."
+    },
+    {
+      "name": "Simple-root/Hensel lemma corollary",
+      "statement": "If t=ord_p(a) with p∤t, then v_p(a^t−1)=1.",
+      "source": "Hensel’s lemma for f(x)=x^t−1 and f'(a)≢0 mod p",
+      "notes": "Ensures the base valuation at the minimal period is exactly 1."
+    },
+    {
+      "name": "Multiplicative order fact",
+      "statement": "For prime p∤a, ord_p(a) divides p−1.",
+      "source": "Cyclic nature of (Z/pZ)^×",
+      "notes": "Guarantees p∤ord_p(a)."
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": 8,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 6.45s, total tokens 395.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 6.45s, total tokens 395.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 6.448022491000302,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 6.447912960000394,
+        "status": "ok",
+        "tokens_used": 395,
+        "score": 0.2359154929577465,
+        "solved": false
+      }
+    ]
+  }
+}

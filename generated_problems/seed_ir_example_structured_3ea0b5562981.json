@@ -1,0 +1,63 @@
+{
+  "id": "seed_ir_example_structured_3ea0b5562981",
+  "problem_text": "Objects:\n- F: FiniteField (q=13)\n- C: LinearCode (n=15, k=7, field=F)\n- C_dual: DualCode (base=C)\nAssumptions:\n- d_min(C) >= 5\n- d_min(C_dual) >= 4\nQuestion: Compute and compare key parameters of C and its dual.\n  Targets:\n  - d_min(C): compute d_min(C)\n  - d_min(C_dual): compute d_min(C_dual)\n  Comparisons:\n  - check d_min(C) <= Singleton(C)\n  - check d_min(C_dual) >= 4",
+  "solution_text": "d_min(C) = 9 by BCH-type construction over GF(13); d_min(C_dual) = 4; both satisfy Singleton with room to spare.",
+  "tags": [
+    "coding_theory",
+    "linear_codes",
+    "ir_seed"
+  ],
+  "prerequisites": [
+    "Linear codes",
+    "Singleton bound",
+    "Dual codes"
+  ],
+  "theorem_refs": [],
+  "verification": {
+    "substitution_pass": false,
+    "symbolic_pass": false,
+    "counterexample_found": true,
+    "notes": "Comparison rhs '4' does not reference any defined object id (if intended).",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "seed",
+    "verification_tasks": null,
+    "verification_notes": "Comparison rhs '4' does not reference any defined object id (if intended).",
+    "semantic_valid": false,
+    "semantic_notes": "Comparison rhs '4' does not reference any defined object id (if intended).",
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.30s, total tokens 1308.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.30s, total tokens 1308.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 18.59318084199913,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 9.556714587990427,
+        "status": "ok",
+        "tokens_used": 654,
+        "score": 0.06868537666174301,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 9.034969483007444,
+        "status": "ok",
+        "tokens_used": 654,
+        "score": 0.0625,
+        "solved": false
+      }
+    ]
+  }
+}

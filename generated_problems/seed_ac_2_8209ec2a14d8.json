@@ -1,0 +1,70 @@
+{
+  "id": "seed_ac_2_8209ec2a14d8",
+  "problem_text": "Let $N = 2015$.\nLet $S$ be the set of all distinct integer values produced by the function $f(i) = \\left\\lfloor\\frac{i^2}{N} \\right\\rfloor$ for $i = 1, 2, \\dots, N$.\nA positive integer $v$ is called \"constructible\" if there exist two integers, $a$ and $b$, such that $v = a^2 + b^2$.\nFind the total number of elements in $S$ that are constructible.",
+  "solution_text": "Answer: $469$\n\n\\begin{verbatim}\ndef constructible_values_in_S(N: int):\n# 1. Build S = { floor(i^2 / N) : i = 1..N }\nS = { (i * i) // N for i in range(1, N + 1) }\n# 2. Precompute all numbers ≤ max(S) that are of the form a^2 + b^2\nmax_S = max(S)\nlimit = int(math.isqrt(max_S))\nsums_of_two_squares = set()\nfor a in range(limit + 1):\na2 = a * a\nfor b in range(limit + 1):\nv = a2 + b * b\nif v > max_S:\nbreak\nsums_of_two_squares.add(v)\n# 3. Intersect with S.\nconstructible_in_S = (S & sums_of_two_squares) - {0}\nreturn S, constructible_in_S\nif __name__ == \"__main__\":\nN = 2015\nS, constructible_in_S = constructible_values_in_S(N)\nprint(\"N =\", N)\nprint(\"|S| =\", len(S))\nprint(\"Number of constructible elements in S (v = a^2 + b^2, v > 0):\",\nlen(constructible_in_S))\n# If you want to see them:\nprint(sorted(constructible_in_S))\n\\end{verbatim}",
+  "tags": [
+    "number_theory",
+    "combinatorics",
+    "sum_of_two_squares"
+  ],
+  "prerequisites": [
+    "Floor/ceiling manipulations",
+    "Sum of two squares characterization"
+  ],
+  "theorem_refs": [],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "seed",
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 16.40s, total tokens 2682.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 3, avg runtime 16.40s, total tokens 2682.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 49.2022992830025,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 14.904990548995556,
+        "status": "ok",
+        "tokens_used": 894,
+        "score": 0.19999999999999996,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 16.857845468999585,
+        "status": "ok",
+        "tokens_used": 894,
+        "score": 0.20132743362831862,
+        "solved": false
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 17.43810965999728,
+        "status": "ok",
+        "tokens_used": 894,
+        "score": 0.19762641898864808,
+        "solved": false
+      }
+    ]
+  }
+}

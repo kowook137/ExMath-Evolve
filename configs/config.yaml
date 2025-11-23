@@ -1,18 +1,28 @@
 researcher:
-  planner: 'gpt-5' #"gpt-4.1-2025-04-14"
-  searcher: "gpt-5"
-  writer: "gpt-5"
+  # OpenRouter model ids (provider/model)
+  planner: "openai/gpt-5"
+  searcher: "openai/gpt-4.1"
+  writer: "openai/gpt-5"
   reasoning_effort: "high"
 
 coder:
-  developer: "gpt-5"
-  debugger: "gpt-5"
+  developer: "openai/gpt-5"
+  debugger: "openai/gpt-4.1"
   reasoning_effort: "high"
+
+# API / Provider routing
+api:
+  # Leave these null to respect environment variables (OPENAI_API_KEY, OPENAI_BASE_URL)
+  key_env: null
+  key: null
+  base_url: null
 
 # General Settings
 query: null
-max_iterations: 30
-checkpoint_interval: 10
+max_iterations: 6
+# Number of children generated per generation (iteration)
+children_per_generation: 10
+checkpoint_interval: 5
 checkpoint: "ckpt"
 log_level: "INFO"
 log_dir: null
@@ -28,8 +38,8 @@ database:
   random_seed: null
   db_path: null
   in_memory: true
-  population_size: 25 # total maintained for random
-  archive_size: 10 # elite for exploitation
+  population_size: 60 # total maintained for random (>= number of seeds to avoid automatic removals)
+  archive_size: 20 # elite for exploitation
   num_islands: 5
   migration_interval: 25
   migration_rate: 0.1

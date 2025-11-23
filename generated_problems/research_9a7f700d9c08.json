@@ -1,0 +1,236 @@
+{
+  "id": "research_9a7f700d9c08",
+  "problem_text": "Problem: Exact threshold for k-distinct zero-sums in Z_p via Dias da Silva–Hamidoune\n\nObjects and assumptions:\n- Work in the cyclic group Z_p with p = 1009 (prime).\n- Fix k = 11. For A ⊆ Z_p and 1 ≤ k ≤ |A|, define the restricted k-sumset\n  k ∧ A := {a_1 + ··· + a_k : a_i ∈ A are pairwise distinct}.\n\nQuestion (single exact integer):\nDetermine the exact minimal m such that every subset A ⊆ Z_p with |A| = m contains k distinct elements whose sum is 0 modulo p.\nGive the final numeric value of m in closed form.\n\nRequired tools and sharpness target:\n- Use the Dias da Silva–Hamidoune theorem (Erdős–Heilbronn): |k ∧ A| ≥ min(p, k(|A| − k) + 1).\n- Use the structure of restricted k-sumsets for intervals in Z (and in Z_p when no wrap-around): for an interval A of length m, |k ∧ A| = k(m − k) + 1 and k ∧ A is an interval in Z.\n- Avoid generic EGZ or pigeonhole templates; the tight bound and extremal construction must match exactly.\n\nAnswer format:\n- State m as a single integer. Provide a rigorous proof of sufficiency via DS–H and necessity via an explicit extremal construction (an arithmetic progression in Z_p positioned to avoid wrap-around so that 0 ∉ k ∧ A).\n",
+  "solution_text": "Solution:\n\nWe claim the exact threshold is m* = k + ceil((p − 1)/k). For p = 1009 and k = 11, we compute ceil((1009 − 1)/11) = ceil(1008/11) = 92, so m* = 11 + 92 = 103.\n\nSufficiency (m ≥ 103):\nBy the Dias da Silva–Hamidoune theorem (restricted Erdős–Heilbronn), for any A ⊆ Z_p with |A| = m we have\n  |k ∧ A| ≥ min(p, k(m − k) + 1).\nFor m = 103, k(m − k) + 1 = 11·(103 − 11) + 1 = 11·92 + 1 = 1013. Since p = 1009, min(p, 1013) = p.\nHence |k ∧ A| = p, so k ∧ A = Z_p and in particular 0 ∈ k ∧ A. Thus every A of size at least 103 contains k distinct elements summing to 0 mod p.\n\nNecessity (m = 102 fails in general):\nLet m = 102. Consider the interval (arithmetic progression) A = {a, a+1, …, a+101} ⊆ Z with 0 ≤ a ≤ p − 1 − 101 so there is no wrap-around when viewing A inside Z_p. For such A, the restricted k-sumset in Z is the interval\n  k ∧ A = [S_min, S_min + k(m − k)] with S_min = a + (a+1) + ··· + (a + k − 1) = k a + k(k − 1)/2,\nand |k ∧ A| = k(m − k) + 1 = 11·(102 − 11) + 1 = 1002 < p. Reducing modulo p is injective on this interval, so k ∧ A in Z_p is a set of 1002 consecutive residues. We can choose a so that 0 ∉ k ∧ A.\n\nExplicit choice avoiding 0:\nFor k = 11 we have S_min ≡ 11 a + 55 (mod p). Choose a ≡ (1 − 55) · 11^{−1} (mod 1009). Since 11^{−1} ≡ 367 (mod 1009), we may take a = 362 (indeed 11·362 + 55 = 4037 ≡ 1 mod 1009). Then\n  k ∧ A = {4037, 4038, …, 4037 + 1001} = {4037, …, 5038} in Z.\nBecause 1009·4 = 4036 and 1009·5 = 5045, the interval [4037, 5038] contains no multiple of 1009; hence 0 ∉ k ∧ A in Z_p. Therefore m = 102 does not force a k-term zero-sum, proving minimality.\n\nConclusion:\nThe exact minimal m is m* = 103.\n\nFinal Answer:\n103\n\nVerification plan (machine-checkable):\n1) Prime check for p = 1009: verify remainders upon division by all primes ≤ 31 (2,3,5,7,11,13,17,19,23,29,31) are nonzero.\n2) Compute ceil((p − 1)/k) by confirming 11·92 − 1008 = 4 > 0 and 1008 − 11·91 = 7 > 0; hence ceil(1008/11) = 92.\n3) Evaluate m* = 11 + 92 = 103 and check k(m* − k) + 1 = 11·92 + 1 = 1013, so min(p, ·) = 1009.\n4) For m = 102, compute k(m − k) + 1 = 11·91 + 1 = 1002 < p by confirming 1009 − 1002 = 7.\n5) Verify 11^{−1} ≡ 367 (mod 1009): 11·367 − 1009·4 = 1.\n6) Verify a = 362 satisfies a ≡ (1 − 55)·11^{−1} (mod 1009) via 362 + 54·367 − 1009·20 = 0.\n7) Compute S_min = 11·362 + 55 = 4037 and check 4037 − 1009·4 = 1.\n8) Confirm the k-sum interval length is 1002: 11·(102 − 11) + 1 = 1002.\n9) Confirm [4037, 5038] avoids multiples of 1009: 4037 − 1009·4 = 1 and 1009·5 − 5038 = 7.\n",
+  "tags": [
+    "additive combinatorics",
+    "polynomial method",
+    "Dias da Silva–Hamidoune",
+    "Cauchy–Davenport",
+    "Z_p"
+  ],
+  "prerequisites": [
+    "Combinatorial Nullstellensatz",
+    "Additive number theory basics",
+    "Modular arithmetic"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Dias da Silva–Hamidoune (Erdős–Heilbronn)",
+      "statement": "|k ∧ A| ≥ min(p, k(|A| − k) + 1) for A ⊆ Z_p",
+      "source": "Bull. Lond. Math. Soc. 26 (1994), 140–146",
+      "notes": null
+    },
+    {
+      "name": "Combinatorial Nullstellensatz (Alon)",
+      "statement": "",
+      "source": "Combin. Probab. Comput. 8 (1999), 7–29",
+      "notes": null
+    },
+    {
+      "name": "Cauchy–Davenport theorem",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Structure of restricted k-sumsets of intervals",
+      "statement": "For intervals in Z (no wrap in Z_p), k ∧ A is an interval of length k(m−k)+1",
+      "source": "Tao–Vu, Additive Combinatorics, Ch. 5",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] 1009 mod 2 = 1: passed via direct simplification.\n[Symbolic 2] 1009 mod 3 = 1: passed via direct simplification.\n[Symbolic 3] 1009 mod 5 = 4: passed via direct simplification.\n[Symbolic 4] 1009 mod 7 = 1: passed via direct simplification.\n[Symbolic 5] 1009 mod 11 = 8: passed via direct simplification.\n[Symbolic 6] 1009 mod 13 = 8: passed via direct simplification.\n[Symbolic 7] 1009 mod 17 = 6: passed via direct simplification.\n[Symbolic 8] 1009 mod 19 = 2: passed via direct simplification.\n[Symbolic 9] 1009 mod 23 = 20: passed via direct simplification.\n[Symbolic 10] 1009 mod 29 = 23: passed via direct simplification.\n[Symbolic 11] 1009 mod 31 = 17: passed via direct simplification.\n[Symbolic 12] upper bound certifies ceil=92: passed via direct simplification.\n[Symbolic 13] lower bound certifies ceil=92: passed via direct simplification.\n[Symbolic 14] m* = k + ceil((p-1)/k): passed via direct simplification.\n[Symbolic 15] k(m*-k)+1: passed via direct simplification.\n[Symbolic 16] DS–H saturates at p: passed via direct simplification.\n[Symbolic 17] k(m-k)+1 for m=102: passed via direct simplification.\n[Symbolic 18] 1002 < p: passed via direct simplification.\n[Symbolic 19] 11^{-1} ≡ 367 (mod 1009): passed via direct simplification.\n[Symbolic 20] a ≡ (1-55)*11^{-1} (mod 1009): passed via direct simplification.\n[Symbolic 21] S_min exact value: passed via direct simplification.\n[Symbolic 22] S_min ≡ 1 (mod 1009): passed via direct simplification.\n[Symbolic 23] Interval end S_min + 1001: passed via direct simplification.\n[Symbolic 24] Lower bound above 4p: passed via direct simplification.\n[Symbolic 25] Upper bound below 5p: passed via direct simplification.\nSummary: 0 substitution checks, 25 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "1009 - 2*504 - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 2 = 1"
+        },
+        {
+          "lhs": "1009 - 3*336 - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 3 = 1"
+        },
+        {
+          "lhs": "1009 - 5*201 - 4",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 5 = 4"
+        },
+        {
+          "lhs": "1009 - 7*144 - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 7 = 1"
+        },
+        {
+          "lhs": "1009 - 11*91 - 8",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 11 = 8"
+        },
+        {
+          "lhs": "1009 - 13*77 - 8",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 13 = 8"
+        },
+        {
+          "lhs": "1009 - 17*59 - 6",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 17 = 6"
+        },
+        {
+          "lhs": "1009 - 19*53 - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 19 = 2"
+        },
+        {
+          "lhs": "1009 - 23*43 - 20",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 23 = 20"
+        },
+        {
+          "lhs": "1009 - 29*34 - 23",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 29 = 23"
+        },
+        {
+          "lhs": "1009 - 31*32 - 17",
+          "rhs": "0",
+          "variables": [],
+          "description": "1009 mod 31 = 17"
+        },
+        {
+          "lhs": "11*92 - 1008",
+          "rhs": "4",
+          "variables": [],
+          "description": "upper bound certifies ceil=92"
+        },
+        {
+          "lhs": "1008 - 11*91",
+          "rhs": "7",
+          "variables": [],
+          "description": "lower bound certifies ceil=92"
+        },
+        {
+          "lhs": "103 - (11 + 92)",
+          "rhs": "0",
+          "variables": [],
+          "description": "m* = k + ceil((p-1)/k)"
+        },
+        {
+          "lhs": "11*(103-11)+1 - 1013",
+          "rhs": "0",
+          "variables": [],
+          "description": "k(m*-k)+1"
+        },
+        {
+          "lhs": "Min(1009, 1013) - 1009",
+          "rhs": "0",
+          "variables": [],
+          "description": "DS–H saturates at p"
+        },
+        {
+          "lhs": "11*(102-11)+1 - 1002",
+          "rhs": "0",
+          "variables": [],
+          "description": "k(m-k)+1 for m=102"
+        },
+        {
+          "lhs": "1009 - 1002",
+          "rhs": "7",
+          "variables": [],
+          "description": "1002 < p"
+        },
+        {
+          "lhs": "11*367 - 1009*4 - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "11^{-1} ≡ 367 (mod 1009)"
+        },
+        {
+          "lhs": "362 + 54*367 - 1009*20",
+          "rhs": "0",
+          "variables": [],
+          "description": "a ≡ (1-55)*11^{-1} (mod 1009)"
+        },
+        {
+          "lhs": "11*362 + 55 - 4037",
+          "rhs": "0",
+          "variables": [],
+          "description": "S_min exact value"
+        },
+        {
+          "lhs": "4037 - 1009*4 - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "S_min ≡ 1 (mod 1009)"
+        },
+        {
+          "lhs": "4037 + 1001 - 5038",
+          "rhs": "0",
+          "variables": [],
+          "description": "Interval end S_min + 1001"
+        },
+        {
+          "lhs": "4037 - 1009*4",
+          "rhs": "1",
+          "variables": [],
+          "description": "Lower bound above 4p"
+        },
+        {
+          "lhs": "1009*5 - 5038",
+          "rhs": "7",
+          "variables": [],
+          "description": "Upper bound below 5p"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] 1009 mod 2 = 1: passed via direct simplification.\n[Symbolic 2] 1009 mod 3 = 1: passed via direct simplification.\n[Symbolic 3] 1009 mod 5 = 4: passed via direct simplification.\n[Symbolic 4] 1009 mod 7 = 1: passed via direct simplification.\n[Symbolic 5] 1009 mod 11 = 8: passed via direct simplification.\n[Symbolic 6] 1009 mod 13 = 8: passed via direct simplification.\n[Symbolic 7] 1009 mod 17 = 6: passed via direct simplification.\n[Symbolic 8] 1009 mod 19 = 2: passed via direct simplification.\n[Symbolic 9] 1009 mod 23 = 20: passed via direct simplification.\n[Symbolic 10] 1009 mod 29 = 23: passed via direct simplification.\n[Symbolic 11] 1009 mod 31 = 17: passed via direct simplification.\n[Symbolic 12] upper bound certifies ceil=92: passed via direct simplification.\n[Symbolic 13] lower bound certifies ceil=92: passed via direct simplification.\n[Symbolic 14] m* = k + ceil((p-1)/k): passed via direct simplification.\n[Symbolic 15] k(m*-k)+1: passed via direct simplification.\n[Symbolic 16] DS–H saturates at p: passed via direct simplification.\n[Symbolic 17] k(m-k)+1 for m=102: passed via direct simplification.\n[Symbolic 18] 1002 < p: passed via direct simplification.\n[Symbolic 19] 11^{-1} ≡ 367 (mod 1009): passed via direct simplification.\n[Symbolic 20] a ≡ (1-55)*11^{-1} (mod 1009): passed via direct simplification.\n[Symbolic 21] S_min exact value: passed via direct simplification.\n[Symbolic 22] S_min ≡ 1 (mod 1009): passed via direct simplification.\n[Symbolic 23] Interval end S_min + 1001: passed via direct simplification.\n[Symbolic 24] Lower bound above 4p: passed via direct simplification.\n[Symbolic 25] Upper bound below 5p: passed via direct simplification.\nSummary: 0 substitution checks, 25 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.20s, total tokens 854.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.20s, total tokens 854.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 8.199748908024048,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 8.19852544600144,
+        "status": "ok",
+        "tokens_used": 854,
+        "score": 0.17178770949720673,
+        "solved": false
+      }
+    ]
+  }
+}

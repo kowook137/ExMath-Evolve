@@ -116,6 +116,17 @@ class Problem:
                     with open(file_path, "w", encoding="utf-8") as f:
                         f.write(content)
 
+                # Ensure seed.json is available for generators that load seeds at runtime.
+                # This mirrors the original workspace layout: <workspace>/initial_code/seed.json.
+                seed_src = Path(self.workspace) / "initial_code" / "seed.json"
+                seed_dst = Path(tmpdir) / "seed.json"
+                if seed_src.exists() and not seed_dst.exists():
+                    try:
+                        seed_dst.write_bytes(seed_src.read_bytes())
+                        logger.info(f"Copied seed.json from {seed_src} into temp dir for evaluation.")
+                    except Exception as copy_err:
+                        logger.warning(f"Failed to copy seed.json into temp dir: {copy_err}")
+
                 # Insert tmpdir at front of sys.path so imports resolve to these files
                 sys.path.insert(0, tmpdir)
 

@@ -1,0 +1,291 @@
+{
+  "id": "research_027c91d60a7a",
+  "problem_text": "Problem: Counting exact-order k-th power units modulo N under a 2-adic congruence\n\nObjects and assumptions:\n- Fix N = 2^9 · 3^5 · 5^4 · 7^3 and k = 90 = 2 · 3^2 · 5.\n- Work in the unit group G = (Z/NZ)^× and its prime-power components via CRT.\n- Let Φ_k: G → G be the endomorphism g ↦ g^k.\n- Impose the 2-adic congruence constraint on outputs: in the 2-adic component modulo 2^9, we require x ≡ 1 (mod 8).\n\nQuestion (single exact integer):\nHow many units x modulo N satisfy simultaneously: (i) x is a k-th power (x ∈ Im Φ_k), (ii) x ≡ 1 (mod 8) in the 2-adic component, and (iii) ord(x) = T where\n  T = 2^6 · 3^2 · 5^2 · 7^2?\nGive your final answer as an explicit integer.\n\nRequired tools and structure lemmas:\n- CRT: (Z/NZ)^× ≅ ∏ (Z/p_i^{e_i}Z)^× and the order of an element is the lcm of coprime prime-power orders, i.e., the product of p-power orders when decomposed into Sylow q-subgroups.\n- For p odd, (Z/p^eZ)^× is cyclic of order p^{e−1}(p−1). For 2^e with e ≥ 3, (Z/2^eZ)^× ≅ C2 × C_{2^{e−2}}.\n- For a finite abelian p-group ⊕_i C_{p^{λ_i}}, the image of the multiplication-by-k map on its p-primary part has invariants λ'_i = max(λ_i − v_p(k), 0) (valuation truncation).\n- Counting lemma: in ⊕_i C_{p^{λ'_i}}, the number of elements with order dividing p^a is p^{Σ_i min(a, λ'_i)}. The number with exact order p^a is the difference between a and a−1 levels.\n- Subtlety: The 2-adic congruence x ≡ 1 (mod 8) kills the C2 factor in (Z/2^eZ)^× and imposes an index-2 cut inside the large cyclic factor; here it aligns with the image of the even power map on the 2-adic component.\n\nAnswer format:\n- Provide a closed-form integer and a rigorous derivation using the above structural decomposition and exact-order counting. Avoid brute-force enumeration of residues.\n",
+  "solution_text": "Solution:\n\nWe decompose G = (Z/NZ)^× via CRT into prime-power unit groups and then into Sylow q-subgroups for q ∈ {2,3,5,7}. We analyze the image H = Im Φ_k and intersect it with the 2-adic congruence constraint.\n\nStep 1: Component orders and 2-adic structure.\n- For odd primes, (Z/p^eZ)^× is cyclic of order φ(p^e) = p^{e−1}(p−1):\n  |(Z/3^5Z)^×| = 3^4·2 = 162, |(Z/5^4Z)^×| = 5^3·4 = 500, |(Z/7^3Z)^×| = 7^2·6 = 294.\n- For 2^9, (Z/2^9Z)^× ≅ C2 × C_{2^7}. The subgroup of elements ≡ 1 (mod 8) has order 2^{9−3} = 64 and is cyclic; it is the unique index-2 subgroup of the large cyclic factor.\n\nStep 2: Power-map truncation by valuations v_q(k).\nWrite k = 2·3^2·5, so (v_2, v_3, v_5, v_7)(k) = (1, 2, 1, 0). The effect on each Sylow q-subgroup is to subtract v_q(k) from its invariant exponents, clamped at 0.\n- q = 2:\n  • From 2^9: C2 × C_{2^7} → C_{2^6} under k (the C2 factor dies; 2^7 reduces by 1). This image equals the congruence subgroup {x ≡ 1 (mod 8)} of size 64, so the congruence imposes no further loss after Φ_k.\n  • From 3^5: the 2-part is C_2 (since 3−1 = 2); subtract v_2(k)=1 → trivial.\n  • From 5^4: the 2-part is C_{2^2} (since 5−1 = 4); subtract 1 → C_2.\n  • From 7^3: the 2-part is C_2 (since 7−1 = 6); subtract 1 → trivial.\n  Hence the global 2-primary part of H is C_{2^6} × C_2 with invariants [6,1].\n- q = 3:\n  • From 3^5: 3-primary is C_{3^4}; subtract v_3(k)=2 → C_{3^2}.\n  • From 7^3: 3-primary is C_3; subtract 2 → trivial. Others contribute none. So H_3 ≅ C_{3^2}.\n- q = 5:\n  • From 5^4: 5-primary is C_{5^3}; subtract v_5(k)=1 → C_{5^2}. Others contribute none. So H_5 ≅ C_{5^2}.\n- q = 7:\n  • From 7^3: 7-primary is C_{7^2}; v_7(k)=0 so unchanged. So H_7 ≅ C_{7^2}.\n\nStep 3: Exact-order counting in each Sylow and product assembly.\nLet T = 2^6·3^2·5^2·7^2. Orders across distinct primes multiply. We count exact p^a orders in each H_q and multiply the results.\n- q = 2: H_2 ≅ C_{2^6} ⊕ C_2 has invariants λ = [6,1]. The number with exact order 2^6 equals\n  2^{min(6,6)+min(6,1)} − 2^{min(5,6)+min(5,1)} = 2^{7} − 2^{6} = 64.\n- q = 3: H_3 ≅ C_{3^2} gives φ(3^2) = 3^2 − 3 = 6 elements of exact order 3^2.\n- q = 5: H_5 ≅ C_{5^2} gives φ(5^2) = 25 − 5 = 20 elements of exact order 5^2.\n- q = 7: H_7 ≅ C_{7^2} gives φ(7^2) = 49 − 7 = 42 elements of exact order 7^2.\nMultiplying, the number of x with ord(x) = T inside H is\n  64 · 6 · 20 · 42 = 322560.\n\nFinal Answer:\n322560\n\nVerification plan (machine-checkable):\n1) Factor k and verify valuations: check 90 = 2·3^2·5.\n2) Confirm group orders: φ(2^9)=256, φ(3^5)=3^4·2=162, φ(5^4)=5^3·4=500, φ(7^3)=7^2·6=294.\n3) 2-adic structure: verify (Z/2^9Z)^× has order 2^8 and splits as C2 × C_{2^7}; the subgroup ≡ 1 (mod 8) has size 2^{6}=64.\n4) Image size of Φ_k on the 2-adic large cyclic: gcd(2^7, 90) = 2, so image has size 2^7/2 = 64, matching the ≡ 1 (mod 8) subgroup.\n5) Post-truncation invariants by prime q:\n   - q=2: from components (2^9,5^4) get λ' = [6,1]; others trivial.\n   - q=3: from 3^5 get λ'=2; from 7^3 becomes trivial.\n   - q=5: from 5^4 get λ'=2.\n   - q=7: from 7^3 get λ'=2.\n6) Exact-order counts via the lemma:\n   - q=2: 2^{min(6,6)+min(6,1)} − 2^{min(5,6)+min(5,1)} = 128 − 64 = 64.\n   - q=3: 3^{min(2,2)} − 3^{min(1,2)} = 9 − 3 = 6.\n   - q=5: 5^{min(2,2)} − 5^{min(1,2)} = 25 − 5 = 20.\n   - q=7: 7^{min(2,2)} − 7^{min(1,2)} = 49 − 7 = 42.\n7) Multiply to get the final count: 64·6·20·42 = 322560.\n",
+  "tags": [
+    "unit groups",
+    "CRT",
+    "finite abelian groups",
+    "p-adic valuation",
+    "exact order counting"
+  ],
+  "prerequisites": [
+    "Structure theorem for finite abelian groups",
+    "Multiplicative groups modulo prime powers",
+    "Chinese Remainder Theorem",
+    "Valuations and Sylow subgroups"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem",
+      "statement": "(Z/NZ)^× ≅ ∏ (Z/p_i^{e_i}Z)^× and orders decompose into coprime parts",
+      "source": "Ireland & Rosen, Ch. 2",
+      "notes": null
+    },
+    {
+      "name": "Odd prime-power units are cyclic",
+      "statement": "|(Z/p^eZ)^×| = p^{e−1}(p−1) and group is cyclic for p odd",
+      "source": "Ireland & Rosen, Ch. 4",
+      "notes": null
+    },
+    {
+      "name": "2-adic unit structure",
+      "statement": "(Z/2^eZ)^× ≅ C2 × C_{2^{e−2}} for e ≥ 3; {x ≡ 1 (mod 8)} is cyclic of order 2^{e−3}",
+      "source": "Serre, A Course in Arithmetic, II.2",
+      "notes": null
+    },
+    {
+      "name": "Multiplication-by-k on p-groups",
+      "statement": "Invariants λ'_i = max(λ_i − v_p(k), 0)",
+      "source": "Herstein, Topics in Algebra; Ireland & Rosen, §4.3",
+      "notes": null
+    },
+    {
+      "name": "Exact p-power order counting",
+      "statement": "N_{≤}(a) = p^{Σ min(a, λ_i)}, N_{=}(a) = N_{≤}(a) − N_{≤}(a−1)",
+      "source": "Rotman, Introduction to the Theory of Groups, Ch. 4",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": false,
+    "symbolic_pass": true,
+    "counterexample_found": true,
+    "notes": "[Substitution 1] Even-power map forces 2-adic congruence: (2t+1)^90 ≡ 1 (mod 8): 4 failure(s) out of 25 samples. Examples: [{'reason': 'value Mod((2*t + 1)**90, 8) != expected 1', 'assignment': '{t: 20}'}, {'reason': 'value Mod((2*t + 1)**90, 8) != expected 1', 'assignment': '{t: -13}'}]\n[Substitution 2] Base identity: (2t+1)^2 - 1 = 4t(t+1) divisible by 8: 4 failure(s) out of 25 samples. Examples: [{'reason': 'value 4*(Mod(t*(t + 1), 2)) != expected 0', 'assignment': '{t: -5}'}, {'reason': 'value 4*(Mod(t*(t + 1), 2)) != expected 0', 'assignment': '{t: -6}'}]\n[Symbolic 1] Check k factorization k=2·3^2·5: passed via direct simplification.\n[Symbolic 2] phi(2^9) = 256: passed via direct simplification.\n[Symbolic 3] phi(3^5) = 162: passed via direct simplification.\n[Symbolic 4] phi(5^4) = 500: passed via direct simplification.\n[Symbolic 5] phi(7^3) = 294: passed via direct simplification.\n[Symbolic 6] (Z/2^9Z)^× ≅ C2 × C_{2^7}: passed via direct simplification.\n[Symbolic 7] |{x ≡ 1 (mod 8)}| = 2^{6}: passed via direct simplification.\n[Symbolic 8] gcd(2^7, k) = 2: passed via direct simplification.\n[Symbolic 9] 2^7 / gcd(2^7,k) = 64: passed via direct simplification.\n[Symbolic 10] 2-part of 3^5 killed by v2(k)=1: passed via direct simplification.\n[Symbolic 11] 2-part of 5^4 drops from 2^2 to 2^1: passed via direct simplification.\n[Symbolic 12] 2-part of 7^3 killed by v2(k)=1: passed via direct simplification.\n[Symbolic 13] 3-primary: 3^5 gives 3^2 after v3=2: passed via direct simplification.\n[Symbolic 14] 3-primary: 7^3 3-part killed by v3=2: passed via direct simplification.\n[Symbolic 15] 5-primary: 5^4 drops from 5^3 to 5^2: passed via direct simplification.\n[Symbolic 16] 7-primary: 7^3 stays at 7^2 (v7=0): passed via direct simplification.\n[Symbolic 17] N2 exact in C_{2^6} × C_2: passed via direct simplification.\n[Symbolic 18] N3 exact in C_{3^2}: passed via direct simplification.\n[Symbolic 19] N5 exact in C_{5^2}: passed via direct simplification.\n[Symbolic 20] N7 exact in C_{7^2}: passed via direct simplification.\n[Symbolic 21] a2=6 feasible vs max λ'2 = 6: passed via direct simplification.\n[Symbolic 22] a3=2 feasible vs max λ'3 = 2: passed via direct simplification.\n[Symbolic 23] a5=2 feasible vs max λ'5 = 2: passed via direct simplification.\n[Symbolic 24] a7=2 feasible vs max λ'7 = 2: passed via direct simplification.\n[Symbolic 25] Numeric T = 2^6·3^2·5^2·7^2: passed via direct simplification.\n[Symbolic 26] Final exact-order count under constraints: passed via direct simplification.\nSummary: 2 substitution checks, 26 symbolic checks executed.",
+    "extra_data": [
+      {
+        "key": "counterexamples",
+        "value": "[{'expression': 'Mod((2*t+1)**90, 8)', 'value': 'Mod((2*t + 1)**90, 8)', 'assignment': '{t: 20}'}, {'expression': 'Mod((2*t+1)**90, 8)', 'value': 'Mod((2*t + 1)**90, 8)', 'assignment': '{t: -13}'}, {'expression': 'Mod((2*t+1)**90, 8)', 'value': 'Mod((2*t + 1)**90, 8)', 'assignment': '{t: -19}'}, {'expression': 'Mod((2*t+1)**90, 8)', 'value': 'Mod((2*t + 1)**90, 8)', 'assignment': '{t: -3}'}, {'expression': 'Mod((2*t+1)**2 - 1, 8)', 'value': '4*(Mod(t*(t + 1), 2))', 'assignment': '{t: -5}'}]"
+      }
+    ]
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "Mod((2*t+1)**90, 8)",
+          "expected": "1",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [
+            {
+              "name": "t",
+              "kind": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          ],
+          "num_samples": 25,
+          "description": "Even-power map forces 2-adic congruence: (2t+1)^90 ≡ 1 (mod 8)"
+        },
+        {
+          "expression": "Mod((2*t+1)**2 - 1, 8)",
+          "expected": "0",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": null,
+          "variables": [
+            {
+              "name": "t",
+              "kind": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          ],
+          "num_samples": 25,
+          "description": "Base identity: (2t+1)^2 - 1 = 4t(t+1) divisible by 8"
+        }
+      ],
+      "symbolic_equalities": [
+        {
+          "lhs": "90 - 2*3**2*5",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check k factorization k=2·3^2·5"
+        },
+        {
+          "lhs": "2**8 - 256",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(2^9) = 256"
+        },
+        {
+          "lhs": "3**4 * 2 - 162",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(3^5) = 162"
+        },
+        {
+          "lhs": "5**3 * 4 - 500",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(5^4) = 500"
+        },
+        {
+          "lhs": "7**2 * 6 - 294",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(7^3) = 294"
+        },
+        {
+          "lhs": "2*2**7 - 2**8",
+          "rhs": "0",
+          "variables": [],
+          "description": "(Z/2^9Z)^× ≅ C2 × C_{2^7}"
+        },
+        {
+          "lhs": "2**6 - 64",
+          "rhs": "0",
+          "variables": [],
+          "description": "|{x ≡ 1 (mod 8)}| = 2^{6}"
+        },
+        {
+          "lhs": "gcd(2**7, 90) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "gcd(2^7, k) = 2"
+        },
+        {
+          "lhs": "2**7 - 2*64",
+          "rhs": "0",
+          "variables": [],
+          "description": "2^7 / gcd(2^7,k) = 64"
+        },
+        {
+          "lhs": "Max(0, 1-1) - 0",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-part of 3^5 killed by v2(k)=1"
+        },
+        {
+          "lhs": "Max(0, 2-1) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-part of 5^4 drops from 2^2 to 2^1"
+        },
+        {
+          "lhs": "Max(0, 1-1) - 0",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-part of 7^3 killed by v2(k)=1"
+        },
+        {
+          "lhs": "Max(0, 4-2) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: 3^5 gives 3^2 after v3=2"
+        },
+        {
+          "lhs": "Max(0, 1-2) - 0",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: 7^3 3-part killed by v3=2"
+        },
+        {
+          "lhs": "Max(0, 3-1) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: 5^4 drops from 5^3 to 5^2"
+        },
+        {
+          "lhs": "Max(0, 2-0) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: 7^3 stays at 7^2 (v7=0)"
+        },
+        {
+          "lhs": "2**(Min(6,6)+Min(6,1)) - 2**(Min(5,6)+Min(5,1)) - 64",
+          "rhs": "0",
+          "variables": [],
+          "description": "N2 exact in C_{2^6} × C_2"
+        },
+        {
+          "lhs": "3**Min(2,2) - 3**Min(1,2) - 6",
+          "rhs": "0",
+          "variables": [],
+          "description": "N3 exact in C_{3^2}"
+        },
+        {
+          "lhs": "5**Min(2,2) - 5**Min(1,2) - 20",
+          "rhs": "0",
+          "variables": [],
+          "description": "N5 exact in C_{5^2}"
+        },
+        {
+          "lhs": "7**Min(2,2) - 7**Min(1,2) - 42",
+          "rhs": "0",
+          "variables": [],
+          "description": "N7 exact in C_{7^2}"
+        },
+        {
+          "lhs": "Max(6, 1) - 6",
+          "rhs": "0",
+          "variables": [],
+          "description": "a2=6 feasible vs max λ'2 = 6"
+        },
+        {
+          "lhs": "Max(2, 0) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "a3=2 feasible vs max λ'3 = 2"
+        },
+        {
+          "lhs": "Max(2, 0) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "a5=2 feasible vs max λ'5 = 2"
+        },
+        {
+          "lhs": "2 - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "a7=2 feasible vs max λ'7 = 2"
+        },
+        {
+          "lhs": "64*9*25*49 - 705600",
+          "rhs": "0",
+          "variables": [],
+          "description": "Numeric T = 2^6·3^2·5^2·7^2"
+        },
+        {
+          "lhs": "64*6*20*42 - 322560",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count under constraints"
+        }
+      ]
+    },
+    "verification_notes": "[Substitution 1] Even-power map forces 2-adic congruence: (2t+1)^90 ≡ 1 (mod 8): 4 failure(s) out of 25 samples. Examples: [{'reason': 'value Mod((2*t + 1)**90, 8) != expected 1', 'assignment': '{t: 20}'}, {'reason': 'value Mod((2*t + 1)**90, 8) != expected 1', 'assignment': '{t: -13}'}]\n[Substitution 2] Base identity: (2t+1)^2 - 1 = 4t(t+1) divisible by 8: 4 failure(s) out of 25 samples. Examples: [{'reason': 'value 4*(Mod(t*(t + 1), 2)) != expected 0', 'assignment': '{t: -5}'}, {'reason': 'value 4*(Mod(t*(t + 1), 2)) != expected 0', 'assignment': '{t: -6}'}]\n[Symbolic 1] Check k factorization k=2·3^2·5: passed via direct simplification.\n[Symbolic 2] phi(2^9) = 256: passed via direct simplification.\n[Symbolic 3] phi(3^5) = 162: passed via direct simplification.\n[Symbolic 4] phi(5^4) = 500: passed via direct simplification.\n[Symbolic 5] phi(7^3) = 294: passed via direct simplification.\n[Symbolic 6] (Z/2^9Z)^× ≅ C2 × C_{2^7}: passed via direct simplification.\n[Symbolic 7] |{x ≡ 1 (mod 8)}| = 2^{6}: passed via direct simplification.\n[Symbolic 8] gcd(2^7, k) = 2: passed via direct simplification.\n[Symbolic 9] 2^7 / gcd(2^7,k) = 64: passed via direct simplification.\n[Symbolic 10] 2-part of 3^5 killed by v2(k)=1: passed via direct simplification.\n[Symbolic 11] 2-part of 5^4 drops from 2^2 to 2^1: passed via direct simplification.\n[Symbolic 12] 2-part of 7^3 killed by v2(k)=1: passed via direct simplification.\n[Symbolic 13] 3-primary: 3^5 gives 3^2 after v3=2: passed via direct simplification.\n[Symbolic 14] 3-primary: 7^3 3-part killed by v3=2: passed via direct simplification.\n[Symbolic 15] 5-primary: 5^4 drops from 5^3 to 5^2: passed via direct simplification.\n[Symbolic 16] 7-primary: 7^3 stays at 7^2 (v7=0): passed via direct simplification.\n[Symbolic 17] N2 exact in C_{2^6} × C_2: passed via direct simplification.\n[Symbolic 18] N3 exact in C_{3^2}: passed via direct simplification.\n[Symbolic 19] N5 exact in C_{5^2}: passed via direct simplification.\n[Symbolic 20] N7 exact in C_{7^2}: passed via direct simplification.\n[Symbolic 21] a2=6 feasible vs max λ'2 = 6: passed via direct simplification.\n[Symbolic 22] a3=2 feasible vs max λ'3 = 2: passed via direct simplification.\n[Symbolic 23] a5=2 feasible vs max λ'5 = 2: passed via direct simplification.\n[Symbolic 24] a7=2 feasible vs max λ'7 = 2: passed via direct simplification.\n[Symbolic 25] Numeric T = 2^6·3^2·5^2·7^2: passed via direct simplification.\n[Symbolic 26] Final exact-order count under constraints: passed via direct simplification.\nSummary: 2 substitution checks, 26 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 12.76s, total tokens 1110.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 12.76s, total tokens 1110.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 12.763360924989684,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 12.76224847600679,
+        "status": "ok",
+        "tokens_used": 1110,
+        "score": 0.1335431654676259,
+        "solved": false
+      }
+    ]
+  }
+}

@@ -2,18 +2,28 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import json
 from rich.console import Console
 from datetime import datetime
 
-from agents import Agent, WebSearchTool, Runner
-from agents.agent_output import AgentOutputSchema
-from agents.tracing import gen_trace_id, trace, custom_span
-from agents.model_settings import ModelSettings
+from langchain_llm import LCAgent, LCRunner
+from tracing_compat import gen_trace_id, trace, custom_span
 
 from database import Program
+from prompts import (
+    PLANNER_INSTRUCTIONS,
+    REFLECTION_INSTRUCTIONS,
+    SEARCH_INSTRUCTIONS,
+    WRITER_INSTRUCTIONS,
+    USER_TEMPLATE,
+    PAPER_READER_INSTRUCTIONS,
+    REFLECTION_CONTENT_RESEARCH,
+    INSPIRATION_TEMPLATE,
+)
 from utils.datatypes import (
     ReportData,
     IdeaData,
+    EvaluationData,
     WebSearchPlan,
     WebSearchItem,
     ReflectionPlan,
@@ -27,168 +37,6 @@ logger = logging.getLogger(__name__)
 
 console = Console()
 
-INSPIRATION_TEMPLATE = """### Inspiration {inspiration_number}
-- Research Idea : {idea}
-- Performance: {performance}
-- Difficulty feedback: {difficulty_feedback}
-"""
-
-PLANNER_INSTRUCTIONS = """You are the lead architect of a math-problem generation pipeline.
-
-You will receive:
- - A target topic and history of previous problem-generation attempts
- - Inspirations from earlier problems (with metrics indicating whether LLMs solved them)
- - Feedback about which tricks are overused or too easy
-
-Your job is to design how the next hard problem should be constructed. Decide:
- - Which mathematical areas, subtopics, or theorems should be fused
- - Whether to remix existing problems or engineer a new scaffold from scratch
- - What pitfalls, invariants, or constraints must be embedded so rote templates fail
- - Any explicit conditions on the final statement or solution (proof style, integer-only, bounds, etc.)
-
-Output 5–10 search queries for the Searcher. For each query, add a short note stating:
- - Which theorem, lemma, or exemplar problem it should retrieve (graduate/advanced undergraduate level)
- - How the result will validate or stress-test the proposed construction
- - What parameters or edge cases must be checked before committing to the design
-
-Return valid JSON with the following structure:
-{
-  "problem_spec": {
-    "topic": "...",
-    "subtopics": [...],
-    "objectives": [...],
-    "difficulty_target": "...",
-    "required_theorems": [...],
-    "pitfalls": [...],
-    "constraints": [...]
-  },
-  "search_plan": {
-    "searches": [
-      {"reason": "...", "query": "..."},
-      ...
-    ]
-  }
-}
-"""
-
-REFLECTION_INSTRUCTIONS = """
-You are an expert research assistant. You will receive a research report (in Markdown) and a newly proposed idea for that report's research problem. Your job is to identify any gaps or issues—such as missing details, logical flaws, or questionable evaluations of novelty, impact, or implementation difficulty.  
-
-- If the report and idea contain all necessary information, do not generate any follow-up questions.  
-- If you detect a knowledge gap or something that needs deeper exploration, generate one or more self-contained follow-up queries. Each query must include enough context so that a web search could answer it, For each query, give a short note explaining why you use the query and what you hope it will reveal.
-- Focus on technical details, implementation specifics, and any emerging methods or references that were overlooked.  
-- Use clear, direct language and avoid unnecessary jargon.  
-
-"""
-
-SEARCH_INSTRUCTIONS = (
-    "You are an expert mathematical librarian. Given a search term from the planner, locate graduate- "
-    "or research-level references (textbook chapters, competition archives, arXiv papers) describing "
-    "advanced problems or theorems that match the request. Summarise in 2-3 concise paragraphs (<=300 "
-    "words) the key statements, hypotheses, typical proof strategies, tricky parameter regimes, and known "
-    "variants. Emphasise subtle constraints or edge cases that could be woven into a new problem. "
-    "Avoid narrative fluff—deliver dense, technically precise summaries the writer can rely on."
-)
-
-WRITER_INSTRUCTIONS = """You are the lead author crafting a rigorous mathematics problem and its official solution. You will receive:
-- The planner’s blueprint describing required topics, theorems, and pitfalls
-- Searcher summaries of advanced references and exemplar problems
-- Inspirations from prior iterations plus any feedback about LLM difficulty
-
-Deliver a complete Problem–Solution pair suitable for an LLM-resistance benchmark.
-
-1. **Frame the objective**
-   - Summarise the targeted theorems, invariants, and constraints that must appear.
-   - Note prohibited shortcuts or degenerate parameter choices the solver must not exploit.
-
-2. **Draft the problem statement**
-   - Use precise mathematical language with explicit assumptions.
-   - Incorporate the mandated twists so the task resists rote template application.
-   - Ensure the question culminates in a verifiable answer (numeric, algebraic, proof statement).
-
-3. **Write the solution**
-   - Give a step-by-step derivation referencing the required theorems.
-   - Justify each inference and explain why alternate naive approaches fail.
-   - Present the final answer in canonical form and restate the key conclusion.
-
-4. **Verification guidance**
-   - Describe how to confirm correctness (symbolic substitution, boundary checks, counterexample search).
-   - Highlight edge cases the automated verifier must test.
-
-Keep the exposition concise but rigorous. The downstream developer will convert your description into executable validation code, so favour clear structure and explicit reasoning over prose flourishes.
-
-Return valid JSON with fields:
-{
-  "markdown_report": "...",
-  "idea": {...},
-  "related_work": [...],
-  "problem_spec": {...},
-  "theorem_refs": [...],
-  "problem_pair": {...},
-  "verification_notes": "...",
-  "feedback": {...}
-}
-"""
-
-# Olympiad-style transformation constraints (non-breaking extension):
-# We keep the JSON output schema (ReportData) unchanged, but strengthen how the
-# problem is constructed. These constraints should be applied when drafting
-# problem_pair.problem_text / solution_text. Do NOT change the return format.
-WRITER_INSTRUCTIONS += """
-
-Additional Olympiad-style transformation constraints (apply when suitable):
-- Target difficulty: challenging Olympiad (IMO shortlist level) while remaining machine-verifiable and bounded in runtime.
-- Deep synthesis: the solution must critically depend on the interplay between a central theorem and a supporting concept/tool, in a way that feels integral to the problem (no superficial use).
-- Disguised theorem: do not name the central theorem explicitly in the problem text; instead, implicitly require the idea. You may record the theorem name and source in `theorem_refs` for metadata.
-- Multi-step reasoning: require at least 2–3 non-trivial intermediate steps/lemmas that logically connect setup → key lemmas → theorem application → final conclusion.
-- Generalization/abstraction when appropriate: consider parameters (instead of fixed small numbers) to avoid rote patterns and increase conceptual challenge, but ensure verification remains deterministic.
-- Single final answer: design the task so the final answer is a single integer. If the natural product is a construction, add a final integer quantity to compute (e.g., count, index, minimal value, unique parameter).
-- Verification: include a concrete, deterministic verification plan and, where possible, machine-checkable tests in `verification_notes` (e.g., substitution ranges, equivalence checks, boundary cases). Do not leak the full solution in the problem text.
-"""
-
-
-USER_TEMPLATE = """
-## User Query
-{query}
-
-## Research Problem
-{problem}
-
-## Starting Research Idea
-{starting_point}
-
-## Idea Evolution History
-{idea_evolution}
-
-## Research Progress
-{evolution_progress}
-
-## Previous Inspirations
-{inspirations}
-
-## Latest Evaluation Feedback
-{evaluation_feedback}
-"""
-
-PAPER_READER_INSTRUCTIONS = """
-You are a paper reader. You will be provided with a title of the idea with the content.
-
-If the content is an online link, your task is to search the paper online and summarize the core ideas of the paper.
-
-If the content is the description of the idea, your task is to read the description and summarize the core ideas of the idea.
-
-You may be provided supplmentary information about the idea, such as the code, the implementation notes, the pseudocode, etc.
-"""
-
-REFLECTION_CONTENT = """
-- Should we consider other ideas in the report or a totally new idea?
-- Are the ratings for originality, future potential, and code difficulty accurate?
-- Are there any logical inconsistencies or gaps in the methodology?
-- Are any implementation steps or references missing?
-- Is every step described clearly enough to reproduce results?
-- Does the idea suffer from overfitting or shortcut learning?
-- Are there any other issues you think are important about the new idea?
-"""
 
 
 class ResearcherAgent:
@@ -199,41 +47,35 @@ class ResearcherAgent:
         writer: str = "o3-mini",
         reasoning_effort: str = 'medium',
     ):
-        self.planner_agent = Agent(
+        self.planner_agent = LCAgent(
             name="Planner Agent",
             instructions=PLANNER_INSTRUCTIONS,
             model=planner,
-            output_type=AgentOutputSchema(PlanningOutput, strict_json_schema=False),
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if planner in reasoning_models else ModelSettings(),
+            output_type=PlanningOutput,
         )
-        self.reflection_agent = Agent(
+        self.reflection_agent = LCAgent(
             name="Reflection Agent",
             instructions=REFLECTION_INSTRUCTIONS,
             model=planner,
-            output_type=AgentOutputSchema(ReflectionPlan, strict_json_schema=False),
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if planner in reasoning_models else ModelSettings(),
+            output_type=ReflectionPlan,
         )
-        self.search_agent = Agent(
+        self.search_agent = LCAgent(
             name="Search Agent",
             instructions=SEARCH_INSTRUCTIONS,
-            tools=[WebSearchTool()],
             model=searcher,
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}, tool_choice="required") if searcher in reasoning_models else ModelSettings(tool_choice="required"),
+            output_type=str,
         )
-        self.writer_agent = Agent(
+        self.writer_agent = LCAgent(
             name="Writing Agent",
             instructions=WRITER_INSTRUCTIONS,
             model=writer,
-            output_type=AgentOutputSchema(ReportData, strict_json_schema=False),
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if writer in reasoning_models else ModelSettings(),
+            output_type=ReportData,
         )
-        self.reader_agent = Agent(
+        self.reader_agent = LCAgent(
             name="Paper Reader Agent",
             instructions=PAPER_READER_INSTRUCTIONS,
-            tools=[WebSearchTool()],
             model=searcher,
-            output_type=AgentOutputSchema(IdeaData, strict_json_schema=False),
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if searcher in reasoning_models else ModelSettings(),
+            output_type=IdeaData,
         )
         self.search_time_bias = False
         self.problem_name = 'NA'
@@ -250,7 +92,7 @@ class ResearcherAgent:
         query = f"title: {title} \ncontent: {content}"
         if supplementary_info is not None:
             query += f"\n supplementary_info: {supplementary_info}"
-        result = await Runner.run(
+        result = await LCRunner.run(
             self.reader_agent,
             query,
         )
@@ -303,11 +145,18 @@ class ResearcherAgent:
                 verdict = validation_meta.get("is_valid")
                 validation_line = f"Validation: summary={summary}, verdict={verdict}, confidence={conf}"
                 difficulty_feedback = f"{difficulty_feedback}\n{validation_line}"
+            seed_flag = metadata.get("is_seed_inspiration")
+            meta_tag = f"is_seed_inspiration={seed_flag}" if seed_flag is not None else ""
+            idea_line = inspirations[idx].idea
+            if meta_tag:
+                idea_line = f"{idea_line} ({meta_tag})"
+            code_changes = metadata.get("code_changes") or "N/A"
             inspiration_str += INSPIRATION_TEMPLATE.format(
                 inspiration_number=idx,
-                idea=inspirations[idx].idea,
+                idea=idea_line,
                 performance=performance_str,
                 difficulty_feedback=difficulty_feedback,
+                code_changes=code_changes,
             )
         if inspiration_str == "":
             inspiration_str = "No prior inspirations."
@@ -380,6 +229,12 @@ class ResearcherAgent:
                     search_plan = planning_output.search_plan
                 else:
                     reflection_result = await self._reflection(user_input, last_input)
+                    if not isinstance(reflection_result, ReflectionPlan):
+                        reflection_result = ReflectionPlan(
+                            is_sufficient=True,
+                            knowledge_gaps=[],
+                            follow_up_queries=[],
+                        )
                     if reflection_result.is_sufficient:
                         break
                     else:
@@ -411,12 +266,29 @@ class ResearcherAgent:
             today = datetime.now().strftime("%Y-%m-%d")
             user_input += f"\n*Important: Today's date is {today}. Prioritize recent search results.*\n"
 
-        result = await Runner.run(
+        result = await LCRunner.run(
             self.planner_agent,
             user_input,
         )
 
         planning_output = result.final_output_as(PlanningOutput)
+        if not isinstance(planning_output, PlanningOutput):
+            # Fallback: planner returned plain text; wrap into a minimal PlanningOutput
+            try:
+                planning_output = PlanningOutput.model_validate_json(result.text)
+            except Exception:
+                planning_output = PlanningOutput(
+                    problem_spec=ProblemSpec(
+                        topic="",
+                        subtopics=[],
+                        objectives=[],
+                        difficulty_target=None,
+                        required_theorems=[],
+                        pitfalls=[],
+                        constraints=[],
+                    ),
+                    search_plan=WebSearchPlan(searches=[]),
+                )
         logger.info(
             "Completed search planning: %d searches identified with blueprint %s",
             len(planning_output.search_plan.searches),
@@ -430,7 +302,7 @@ class ResearcherAgent:
         {user_input}
 
         Here are the reflection points you should check about the new idea:
-        {REFLECTION_CONTENT}
+        {REFLECTION_CONTENT_RESEARCH}
 
         If you think the new idea is good enough, do not ask any follow-up questions. Otherwise, write one or more follow-up queries that include relevant context for further investigation.
         """
@@ -438,11 +310,30 @@ class ResearcherAgent:
         reflection_input = last_input + [{"role": "user", "content": new_content}]
         
         try:
-            reflection_plan = await Runner.run(
-            self.reflection_agent,
+            reflection_plan = await LCRunner.run(
+                self.reflection_agent,
                 reflection_input,
             )
-            return reflection_plan.final_output_as(ReflectionPlan)
+            plan_obj = reflection_plan.final_output_as(ReflectionPlan)
+            if not isinstance(plan_obj, ReflectionPlan):
+                try:
+                    plan_obj = ReflectionPlan.model_validate_json(reflection_plan.text)
+                except Exception:
+                    # Even if the model did not return a structured JSON payload,
+                    # continue with a safe fallback so downstream code never
+                    # receives a raw string.
+                    plan_obj = ReflectionPlan(
+                        is_sufficient=True,
+                        knowledge_gaps=[],
+                        follow_up_queries=[],
+                    )
+            if not isinstance(plan_obj, ReflectionPlan):
+                plan_obj = ReflectionPlan(
+                    is_sufficient=True,
+                    knowledge_gaps=[],
+                    follow_up_queries=[],
+                )
+            return plan_obj
 
         except Exception as e:
             console.print(f"[bold red]Error in reflection: {e}[/bold red]")
@@ -473,12 +364,18 @@ class ResearcherAgent:
     async def _search(self, item: WebSearchItem, source_id: int) -> str | None:
         input = f"Search term: {item.query}\nReason for searching: {item.reason}"
         try:
-            result = await Runner.run(
+            result = await LCRunner.run(
                 self.search_agent,
                 input,
             )
-            return str(result.final_output)
-        except Exception:
+            return str(result.final_output_as(str))
+        except Exception as e:
+            logger.exception(
+                "Web search failed (source_id=%s, query=%s): %s",
+                source_id,
+                item.query,
+                e,
+            )
             return None
 
     async def _write_report(
@@ -501,7 +398,7 @@ class ResearcherAgent:
         if last_input is not None:
             new_content = f"""
             Please review and reflect on the report and the new idea based on below reflection points:
-            {REFLECTION_CONTENT}
+            {REFLECTION_CONTENT_RESEARCH}
 
             and more search results on these reflection points:
             {summaries_block}
@@ -518,10 +415,173 @@ class ResearcherAgent:
                 user_input += f"\n\n## Planner Blueprint\n{spec_json}"
             user_input += f"\n\n## Search results\n{summaries_block}"
 
-        result = await Runner.run(
+        result = await LCRunner.run(
             self.writer_agent,
             user_input,
         )
-        
+
+        report_obj = result.final_output_as(ReportData)
+        # If the model wrapped JSON inside a string (e.g., markdown_report contains another JSON),
+        # try to unwrap and re-parse before falling back to reformat retries.
+        if not isinstance(report_obj, ReportData):
+            raw_text = result.text or ""
+            candidate = None
+            try:
+                obj = json.loads(raw_text)
+                if isinstance(obj, dict):
+                    candidate = obj
+                elif isinstance(obj, str) and obj.strip().startswith("{"):
+                    candidate = json.loads(obj)
+            except Exception:
+                candidate = None
+            if candidate is None:
+                # Maybe markdown_report itself is a JSON string
+                try:
+                    wrapped = json.loads(raw_text)
+                    if isinstance(wrapped, dict) and isinstance(wrapped.get("markdown_report"), str):
+                        inner = wrapped["markdown_report"]
+                        if inner.strip().startswith("{"):
+                            candidate = json.loads(inner)
+                except Exception:
+                    candidate = None
+            if isinstance(candidate, dict):
+                try:
+                    report_obj = ReportData.model_validate(candidate)
+                except Exception:
+                    # At least keep the markdown_report content
+                    report_obj = ReportData(markdown_report=str(candidate), idea=None)
+
+        # If writer failed to produce structured JSON (or missing idea), attempt one reformat retry.
+        needs_retry = not isinstance(report_obj, ReportData) or report_obj.idea is None
+        if needs_retry:
+            logger.warning("Writer returned unstructured report or missing idea; retrying JSON reformat.")
+            reformat_prompt = """
+The previous response was not valid JSON with all required fields.
+Rewrite strictly as JSON (no code fences) with keys:
+{
+  "markdown_report": "...",
+  "idea": {
+    "description": "...",
+    "motivation": "...",
+    "implementation_notes": "...",
+    "pseudocode": "...",
+    "originality": {"score": int, "positive": "...", "negative": "..."},
+    "future_potential": {"score": int, "positive": "...", "negative": "..."},
+    "code_difficulty": {"score": int, "positive": "...", "negative": "..."},
+    "target_difficulty": "..." 
+  },
+  "related_work": [...],
+  "problem_spec": { "topic": "...", "subtopics": [...], "objectives": [...], "difficulty_target": "...", "required_theorems": [...], "pitfalls": [...], "constraints": [...] },
+  "theorem_refs": [...],
+  "problem_pair": {...},
+  "verification_notes": "...",
+  "feedback": {...}
+}
+Use the content below; do not invent new content, and do not leave any field null or missing.
+If a field is absent in the text, extract/summarize from the report content to fill it.
+Respond with JSON only.
+"""
+            retry_input = [
+                {"role": "user", "content": reformat_prompt + "\n\n" + result.text}
+            ]
+            retry_result = await LCRunner.run(self.writer_agent, retry_input)
+            retry_obj = retry_result.final_output_as(ReportData)
+            if not isinstance(retry_obj, ReportData) or retry_obj.idea is None:
+                # Final attempt: extract required fields from the markdown text itself.
+                logger.warning("Reformat retry still missing idea; extracting structured fields from markdown.")
+                extract_prompt = """
+Parse the report text below and return JSON only (no code fences) with all required fields.
+Fill every required field by extracting/summarizing from the text (do not invent unrelated content).
+Schema:
+{
+  "markdown_report": "...",
+  "idea": {
+    "description": "...",
+    "motivation": "...",
+    "implementation_notes": "...",
+    "pseudocode": "...",
+    "originality": {"score": int, "positive": "...", "negative": "..."},
+    "future_potential": {"score": int, "positive": "...", "negative": "..."},
+    "code_difficulty": {"score": int, "positive": "...", "negative": "..."},
+    "target_difficulty": "..."
+  },
+  "related_work": [...],
+  "problem_spec": {...},
+  "theorem_refs": [...],
+  "problem_pair": {...},
+  "verification_notes": "...",
+  "feedback": {...}
+}
+Respond with JSON only.
+"""
+                extract_input = [
+                    {"role": "user", "content": extract_prompt + "\n\n" + result.text}
+                ]
+                extract_result = await LCRunner.run(self.writer_agent, extract_input)
+                extract_obj = extract_result.final_output_as(ReportData)
+                if not isinstance(extract_obj, ReportData) or extract_obj.idea is None:
+                    # Last-resort: extract IdeaData from the markdown and rebuild ReportData
+                    logger.warning("Extraction pass failed; deriving idea from markdown via extractor agent.")
+                    extractor_agent = LCAgent(
+                        name="Idea Extractor",
+                        instructions="""
+From the report text, extract the idea fields and return JSON only with:
+{
+  "description": "...",
+  "motivation": "...",
+  "implementation_notes": "...",
+  "pseudocode": "...",
+  "originality": {"score": int, "positive": "...", "negative": "..."},
+  "future_potential": {"score": int, "positive": "...", "negative": "..."},
+  "code_difficulty": {"score": int, "positive": "...", "negative": "..."},
+  "target_difficulty": "..."
+}
+Use only information present in the report text.
+""",
+                        model=self.search_agent.model,
+                        output_type=IdeaData,
+                    )
+                    extractor_input = [
+                        {"role": "user", "content": extract_prompt + "\n\n" + result.text}
+                    ]
+                    idea_result = await LCRunner.run(extractor_agent, extractor_input)
+                    idea_obj = idea_result.final_output_as(IdeaData)
+                    if not isinstance(idea_obj, IdeaData):
+                        # Heuristic fallback: construct IdeaData from the existing markdown
+                        logger.warning("Extractor agent failed; constructing IdeaData heuristically from report text.")
+                        def _eval():
+                            return EvaluationData(score=5, positive="Derived from report", negative="Not explicitly scored")
+                        text = extract_result.text or result.text
+                        paragraphs = [p.strip() for p in (text or "").split("\n") if p.strip()]
+                        desc = paragraphs[0][:300] if paragraphs else "Idea derived from report text."
+                        motivation = paragraphs[1][:300] if len(paragraphs) > 1 else desc
+                        impl = paragraphs[2][:400] if len(paragraphs) > 2 else motivation
+                        pseudo = ""
+                        if "```" in text:
+                            parts = text.split("```")
+                            if len(parts) >= 3:
+                                pseudo = parts[1][:800]
+                        if not pseudo:
+                            pseudo = impl
+                        idea_obj = IdeaData(
+                            description=desc,
+                            motivation=motivation,
+                            implementation_notes=impl,
+                            pseudocode=pseudo,
+                            originality=_eval(),
+                            future_potential=_eval(),
+                            code_difficulty=_eval(),
+                            target_difficulty=None,
+                        )
+                    extract_obj = ReportData(
+                        markdown_report=extract_result.text,
+                        idea=idea_obj,
+                    )
+                result = extract_result
+                report_obj = extract_obj
+            else:
+                result = retry_result
+                report_obj = retry_obj
+
         logger.info("Completed report writing")
-        return result.final_output_as(ReportData), result.to_input_list()
+        return report_obj, result.to_input_list()

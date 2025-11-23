@@ -1,0 +1,347 @@
+{
+  "id": "research_eef287903f56",
+  "problem_text": "Problem: Exact-order units modulo a highly composite N via CRT and r-adic inclusion–exclusion\n\nObjects and assumptions:\n- Let N = 2^9 · 97^2 · 73^2 · 41^2. By the Chinese remainder theorem (CRT), (Z/NZ)^× ≅ (Z/2^9Z)^× × (Z/97^2Z)^× × (Z/73^2Z)^× × (Z/41^2Z)^×.\n- Group structures:\n  • (Z/2^9Z)^× ≅ C2 × C_{2^7} (non-cyclic, e ≥ 3 anomaly).\n  • For odd primes p and a ≥ 1, (Z/p^aZ)^× is cyclic of order φ(p^a) = p^{a-1}(p−1).\n- Useful factorizations of p−1:\n  • 97−1 = 96 = 2^5 · 3,\n  • 73−1 = 72 = 2^3 · 3^2,\n  • 41−1 = 40 = 2^3 · 5.\n- Define the target order M = 2^6 · 3^2 · 5 · 97 · 73.\n\nQuestion:\nHow many residue classes x modulo N have multiplicative order ord_N(x) exactly M? Provide the answer as a single explicit integer, with a rigorous derivation based on:\n  (i) CRT decomposition of (Z/NZ)^× into prime-power unit groups,\n  (ii) r-primary decomposition and counts of elements with r-adic order dividing r^t in each factor (using min-sum exponents for products of cyclic r-groups, and C2 × C_{2^{e−2}} for the 2-adic part),\n  (iii) inclusion–exclusion (Möbius on the chain) per prime r to pass from 'order divides r^t' to 'exact r^t', and\n  (iv) independence across distinct primes, so the total count for exact M is the product of r-wise exact counts.\n\nConstraints and notes:\n- Verify feasibility: for each r | M, the requested exponent does not exceed the r-exponent of the r-primary exponent of (Z/NZ)^×.\n- Avoid brute force modulo N: |(Z/NZ)^×| = φ(2^9) φ(97^2) φ(73^2) φ(41^2) is enormous; targeted symbolic counts suffice.\n- Your final answer must be a closed-form explicit integer.\n",
+  "solution_text": "Solution:\n\nWe work prime-by-prime using the CRT and r-primary decomposition. Let G = (Z/NZ)^× with N = 2^9 · 97^2 · 73^2 · 41^2 and M = 2^6 · 3^2 · 5 · 97 · 73.\n\n1) Local structures and exponents.\n- 2-adic: (Z/2^9Z)^× ≅ C2 × C_{2^7}; exponent 2^7.\n- For odd primes:\n  • |(Z/97^2Z)^×| = 97·96, cyclic. Its 2-adic exponent contributes up to 2^5 (since 96 has 2^5), its 3-adic up to 3^1, and its 97-adic up to 97^1.\n  • |(Z/73^2Z)^×| = 73·72, cyclic. Its 2-adic up to 2^3, 3-adic up to 3^2, 73-adic up to 73^1.\n  • |(Z/41^2Z)^×| = 41·40, cyclic. Its 2-adic up to 2^3, 5-adic up to 5^1.\n\nFeasibility of M:\n- 2-part 2^6 is ≤ 2^7; 3^2 is supported by the 73^2 factor; 5^1 by the 41^2 factor; 97^1 by 97^2; 73^1 by 73^2. Thus M | λ(N) and all requested r-exponents are realizable.\n\n2) Counting elements with exact r-adic maximum for each r | M.\n- General principle: For a fixed prime r, write n_r(t) for the number of elements of G whose r-adic order divides r^t. If the r-primary part of G is a product of cyclic groups of sizes r^{a_1},..., r^{a_s}, then n_r(t) = r^{∑_i min(a_i, t)}. For (Z/2^9Z)^×, use C2 × C_{2^7}, so the 2-primary part contributes 2^{min(1,t)+min(7,t)}.\n- Exact counts are then N_r = n_r(t) − n_r(t−1) for the target exponent r^t in M.\n\nCompute for each r:\n• r = 2, target 2^6: The 2-adic cyclic exponents across components are (1,7) from 2^9, plus 5 (from 97^2), and 3,3 (from 73^2 and 41^2). Hence\n  n_2(6) = 2^{min(1,6)+min(7,6)+min(5,6)+min(3,6)+min(3,6)} = 2^{1+6+5+3+3} = 2^{18},\n  n_2(5) = 2^{1+5+5+3+3} = 2^{17}, so N_2 = 2^{18} − 2^{17} = 2^{17} = 131072.\n• r = 3, target 3^2: Only 97^2 and 73^2 contribute, with r-exponents 1 and 2 respectively. Thus n_3(2) = 3^{min(1,2)+min(2,2)} = 3^{1+2} = 27, and n_3(1) = 3^{1+1} = 9, so N_3 = 27 − 9 = 18.\n• r = 5, target 5^1: Only 41^2 contributes with exponent 1, so n_5(1)=5, n_5(0)=1, hence N_5=4.\n• r = 97, target 97^1: Only 97^2 contributes with exponent 1, so n_{97}(1)=97, n_{97}(0)=1, hence N_{97}=96.\n• r = 73, target 73^1: Only 73^2 contributes with exponent 1, so n_{73}(1)=73, n_{73}(0)=1, hence N_{73}=72.\n\n3) Combine across primes.\nIndependence across different primes implies the total number of elements of exact order M is the product:\n  N(M) = N_2 · N_3 · N_5 · N_{97} · N_{73} = (2^{17}) · 18 · 4 · 96 · 72.\nCompute: 18·4·96·72 = 497664, and 2^{17} = 131072, so\n  N(M) = 497664 · 131072 = 65229815808.\n\nFinal Answer:\n65229815808\n\nVerification plan (machine-checkable):\n1) Factor checks: verify 97−1=96=2^5·3, 73−1=72=2^3·3^2, 41−1=40=2^3·5; verify φ(2^9)=2^8=256, φ(97^2)=97·96, φ(73^2)=73·72, φ(41^2)=41·40, and cross-check φ(N)=256·(97·96)·(73·72)·(41·40)=20548595220480.\n2) Feasibility bounds: confirm requested exponents do not exceed maxima: 2:6≤7; 3:2≤2; 5:1≤1; 97:1≤1; 73:1≤1.\n3) 2-adic counts: verify n_2(6)=2^{1+6+5+3+3}=2^{18}, n_2(5)=2^{1+5+5+3+3}=2^{17}, hence N_2=2^{18}−2^{17}=131072.\n4) 3-adic counts: n_3(2)=3^{1+2}=27, n_3(1)=3^{1+1}=9, so N_3=18.\n5) 5-adic, 97-adic, 73-adic counts: N_5=5−1=4, N_{97}=97−1=96, N_{73}=73−1=72.\n6) Final product: verify 131072 · 18 · 4 · 96 · 72 = 65229815808.\n7) Optional small-precision spot-checks: independently verify that each n_r(t) equals r^{sum of mins} using the listed exponents, and that differences match the N_r values above.\n",
+  "tags": [
+    "number theory",
+    "CRT",
+    "finite abelian groups",
+    "orders of units",
+    "exact order enumeration"
+  ],
+  "prerequisites": [
+    "Multiplicative orders and CRT",
+    "Structure of (Z/p^aZ)^×",
+    "Elementary divisor theory for finite abelian groups",
+    "Möbius inversion on divisibility posets"
+  ],
+  "theorem_refs": [
+    {
+      "name": "CRT for rings and unit groups",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Structure of (Z/p^eZ)^×",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Counting in cyclic r-groups: |{x: ord(x)|r^t}| = r^{min(a,t)}",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "2-adic anomaly: (Z/2^eZ)^× ≅ C2 × C_{2^{e-2}} for e≥3",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Möbius inversion for exact orders",
+      "statement": "",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": false,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] 97-1 = 96: passed via direct simplification.\n[Symbolic 2] 96 = 2^5·3: passed via direct simplification.\n[Symbolic 3] 73-1 = 72: passed via direct simplification.\n[Symbolic 4] 72 = 2^3·3^2: passed via direct simplification.\n[Symbolic 5] 41-1 = 40: passed via direct simplification.\n[Symbolic 6] 40 = 2^3·5: passed via direct simplification.\n[Symbolic 7] φ(2^9)=2^8=256: passed via direct simplification.\n[Symbolic 8] φ(97^2)=97·96: passed via direct simplification.\n[Symbolic 9] φ(73^2)=73·72: passed via direct simplification.\n[Symbolic 10] φ(41^2)=41·40: passed via direct simplification.\n[Symbolic 11] phi(N) product check: passed via direct simplification.\n[Symbolic 12] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 13] 3-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 14] 5-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 15] 97-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 16] 73-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 17] 2-adic λ local exponents lcm equals 2^7: passed via direct simplification.\n[Symbolic 18] 3-adic λ local exponents lcm equals 3^2: passed via direct simplification.\n[Symbolic 19] 5-adic λ local exponents lcm equals 5: parsing failed (Could not parse expression 'lcm(5**1) - 5': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 20] 97-adic λ local exponents lcm equals 97: parsing failed (Could not parse expression 'lcm(97**1) - 97': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 21] 73-adic λ local exponents lcm equals 73: parsing failed (Could not parse expression 'lcm(73**1) - 73': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 22] 2-primary: n6 sum-of-mins equals 2^18: passed via direct simplification.\n[Symbolic 23] 2-primary: n5 sum-of-mins equals 2^17: passed via direct simplification.\n[Symbolic 24] 2-primary: exact-order count N2=131072: passed via direct simplification.\n[Symbolic 25] 3-primary: n2 equals 27: passed via direct simplification.\n[Symbolic 26] 3-primary: n1 equals 9: passed via direct simplification.\n[Symbolic 27] 3-primary: exact-order count N3=18: passed via direct simplification.\n[Symbolic 28] 5-primary: n1 equals 5: passed via direct simplification.\n[Symbolic 29] 5-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 30] 5-primary: exact-order count N5=4: passed via direct simplification.\n[Symbolic 31] 97-primary: n1 equals 97: passed via direct simplification.\n[Symbolic 32] 97-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 33] 97-primary: exact-order count N97=96: passed via direct simplification.\n[Symbolic 34] 73-primary: n1 equals 73: passed via direct simplification.\n[Symbolic 35] 73-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 36] 73-primary: exact-order count N73=72: passed via direct simplification.\n[Symbolic 37] 2^17 equals 131072: passed via direct simplification.\n[Symbolic 38] Odd-prime part product equals 497664: passed via direct simplification.\n[Symbolic 39] Final count as product of parts equals 65,229,815,808: passed via direct simplification.\n[Symbolic 40] Final exact-order count in G equals 65,229,815,808: passed via direct simplification.\n[Symbolic 41] Target order M numeric check: passed via direct simplification.\nSummary: 0 substitution checks, 41 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "97-1-96",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-1 = 96"
+        },
+        {
+          "lhs": "96 - 2**5 * 3",
+          "rhs": "0",
+          "variables": [],
+          "description": "96 = 2^5·3"
+        },
+        {
+          "lhs": "73-1-72",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-1 = 72"
+        },
+        {
+          "lhs": "72 - 2**3 * 3**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "72 = 2^3·3^2"
+        },
+        {
+          "lhs": "41-1-40",
+          "rhs": "0",
+          "variables": [],
+          "description": "41-1 = 40"
+        },
+        {
+          "lhs": "40 - 2**3 * 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "40 = 2^3·5"
+        },
+        {
+          "lhs": "2**8",
+          "rhs": "256",
+          "variables": [],
+          "description": "φ(2^9)=2^8=256"
+        },
+        {
+          "lhs": "97*96",
+          "rhs": "9312",
+          "variables": [],
+          "description": "φ(97^2)=97·96"
+        },
+        {
+          "lhs": "73*72",
+          "rhs": "5256",
+          "variables": [],
+          "description": "φ(73^2)=73·72"
+        },
+        {
+          "lhs": "41*40",
+          "rhs": "1640",
+          "variables": [],
+          "description": "φ(41^2)=41·40"
+        },
+        {
+          "lhs": "256 * 9312 * 5256 * 1640 - 20548595220480",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(N) product check"
+        },
+        {
+          "lhs": "Max(0, 6-7)",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic feasibility: 6 ≤ 7"
+        },
+        {
+          "lhs": "Max(0, 2-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic feasibility: 2 ≤ 2"
+        },
+        {
+          "lhs": "Max(0, 1-1)",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic feasibility: 1 ≤ 1"
+        },
+        {
+          "lhs": "Max(0, 1-1)",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-adic feasibility: 1 ≤ 1"
+        },
+        {
+          "lhs": "Max(0, 1-1)",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-adic feasibility: 1 ≤ 1"
+        },
+        {
+          "lhs": "lcm(2**7, 2**5, 2**3, 2**3) - 2**7",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic λ local exponents lcm equals 2^7"
+        },
+        {
+          "lhs": "lcm(3**1, 3**2) - 3**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic λ local exponents lcm equals 3^2"
+        },
+        {
+          "lhs": "lcm(5**1) - 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic λ local exponents lcm equals 5"
+        },
+        {
+          "lhs": "lcm(97**1) - 97",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-adic λ local exponents lcm equals 97"
+        },
+        {
+          "lhs": "lcm(73**1) - 73",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-adic λ local exponents lcm equals 73"
+        },
+        {
+          "lhs": "2**(Min(1,6)+Min(7,6)+Min(5,6)+Min(3,6)+Min(3,6)) - 2**18",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: n6 sum-of-mins equals 2^18"
+        },
+        {
+          "lhs": "2**(Min(1,5)+Min(7,5)+Min(5,5)+Min(3,5)+Min(3,5)) - 2**17",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: n5 sum-of-mins equals 2^17"
+        },
+        {
+          "lhs": "2**18 - 2**17 - 131072",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: exact-order count N2=131072"
+        },
+        {
+          "lhs": "3**(Min(1,2)+Min(2,2)) - 27",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: n2 equals 27"
+        },
+        {
+          "lhs": "3**(Min(1,1)+Min(2,1)) - 9",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: n1 equals 9"
+        },
+        {
+          "lhs": "27 - 9 - 18",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: exact-order count N3=18"
+        },
+        {
+          "lhs": "5**(Min(1,1)) - 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: n1 equals 5"
+        },
+        {
+          "lhs": "5**(Min(1,0)) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: n0 equals 1"
+        },
+        {
+          "lhs": "5 - 1 - 4",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: exact-order count N5=4"
+        },
+        {
+          "lhs": "97**(Min(1,1)) - 97",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-primary: n1 equals 97"
+        },
+        {
+          "lhs": "97**(Min(1,0)) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-primary: n0 equals 1"
+        },
+        {
+          "lhs": "97 - 1 - 96",
+          "rhs": "0",
+          "variables": [],
+          "description": "97-primary: exact-order count N97=96"
+        },
+        {
+          "lhs": "73**(Min(1,1)) - 73",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-primary: n1 equals 73"
+        },
+        {
+          "lhs": "73**(Min(1,0)) - 1",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-primary: n0 equals 1"
+        },
+        {
+          "lhs": "73 - 1 - 72",
+          "rhs": "0",
+          "variables": [],
+          "description": "73-primary: exact-order count N73=72"
+        },
+        {
+          "lhs": "2**17 - 131072",
+          "rhs": "0",
+          "variables": [],
+          "description": "2^17 equals 131072"
+        },
+        {
+          "lhs": "18 * 4 * 96 * 72 - 497664",
+          "rhs": "0",
+          "variables": [],
+          "description": "Odd-prime part product equals 497664"
+        },
+        {
+          "lhs": "497664 * 131072 - 65229815808",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final count as product of parts equals 65,229,815,808"
+        },
+        {
+          "lhs": "131072 * 18 * 4 * 96 * 72 - 65229815808",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count in G equals 65,229,815,808"
+        },
+        {
+          "lhs": "2**6 * 3**2 * 5 * 97 * 73 - 20393280",
+          "rhs": "0",
+          "variables": [],
+          "description": "Target order M numeric check"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] 97-1 = 96: passed via direct simplification.\n[Symbolic 2] 96 = 2^5·3: passed via direct simplification.\n[Symbolic 3] 73-1 = 72: passed via direct simplification.\n[Symbolic 4] 72 = 2^3·3^2: passed via direct simplification.\n[Symbolic 5] 41-1 = 40: passed via direct simplification.\n[Symbolic 6] 40 = 2^3·5: passed via direct simplification.\n[Symbolic 7] φ(2^9)=2^8=256: passed via direct simplification.\n[Symbolic 8] φ(97^2)=97·96: passed via direct simplification.\n[Symbolic 9] φ(73^2)=73·72: passed via direct simplification.\n[Symbolic 10] φ(41^2)=41·40: passed via direct simplification.\n[Symbolic 11] phi(N) product check: passed via direct simplification.\n[Symbolic 12] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 13] 3-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 14] 5-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 15] 97-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 16] 73-adic feasibility: 1 ≤ 1: passed via direct simplification.\n[Symbolic 17] 2-adic λ local exponents lcm equals 2^7: passed via direct simplification.\n[Symbolic 18] 3-adic λ local exponents lcm equals 3^2: passed via direct simplification.\n[Symbolic 19] 5-adic λ local exponents lcm equals 5: parsing failed (Could not parse expression 'lcm(5**1) - 5': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 20] 97-adic λ local exponents lcm equals 97: parsing failed (Could not parse expression 'lcm(97**1) - 97': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 21] 73-adic λ local exponents lcm equals 73: parsing failed (Could not parse expression 'lcm(73**1) - 73': ilcm() takes at least 2 arguments (1 given))\n[Symbolic 22] 2-primary: n6 sum-of-mins equals 2^18: passed via direct simplification.\n[Symbolic 23] 2-primary: n5 sum-of-mins equals 2^17: passed via direct simplification.\n[Symbolic 24] 2-primary: exact-order count N2=131072: passed via direct simplification.\n[Symbolic 25] 3-primary: n2 equals 27: passed via direct simplification.\n[Symbolic 26] 3-primary: n1 equals 9: passed via direct simplification.\n[Symbolic 27] 3-primary: exact-order count N3=18: passed via direct simplification.\n[Symbolic 28] 5-primary: n1 equals 5: passed via direct simplification.\n[Symbolic 29] 5-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 30] 5-primary: exact-order count N5=4: passed via direct simplification.\n[Symbolic 31] 97-primary: n1 equals 97: passed via direct simplification.\n[Symbolic 32] 97-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 33] 97-primary: exact-order count N97=96: passed via direct simplification.\n[Symbolic 34] 73-primary: n1 equals 73: passed via direct simplification.\n[Symbolic 35] 73-primary: n0 equals 1: passed via direct simplification.\n[Symbolic 36] 73-primary: exact-order count N73=72: passed via direct simplification.\n[Symbolic 37] 2^17 equals 131072: passed via direct simplification.\n[Symbolic 38] Odd-prime part product equals 497664: passed via direct simplification.\n[Symbolic 39] Final count as product of parts equals 65,229,815,808: passed via direct simplification.\n[Symbolic 40] Final exact-order count in G equals 65,229,815,808: passed via direct simplification.\n[Symbolic 41] Target order M numeric check: passed via direct simplification.\nSummary: 0 substitution checks, 41 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.13s, total tokens 2136.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 11.13s, total tokens 2136.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 22.257187025010353,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 11.429903851007111,
+        "status": "ok",
+        "tokens_used": 1068,
+        "score": 0.14239163848754996,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.824186935991747,
+        "status": "ok",
+        "tokens_used": 1068,
+        "score": 0.14312941899784812,
+        "solved": false
+      }
+    ]
+  }
+}

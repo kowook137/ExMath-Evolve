@@ -1,0 +1,271 @@
+{
+  "id": "research_9df0618b26d6",
+  "problem_text": "Title: Exact-order K elements in (Z/NZ)^× via CRT, Sylow enumeration, and lifting\n\nObjects and assumptions:\n- Let N = 2^9 · 3^5 · 5^4 · 7^3 · 11^2 · 13^2.\n- Let K = 2^6 · 3^3 · 5^3 · 7^2.\n- Work in the unit group G = (Z/NZ)^×, and write ord_N(a) for the multiplicative order of a modulo N.\n- Use the CRT decomposition G ≅ ∏_p (Z/p^{e_p}Z)^×, the structure of (Z/p^e Z)^×, and Sylow-by-prime decomposition.\n\nTask:\nDetermine exactly how many a ∈ (Z/NZ)^× satisfy ord_N(a) = K. Give your answer as a single explicit integer.\n\nConstraints and hints:\n- For odd p, (Z/p^e Z)^× is cyclic of order p^{e-1}(p−1); for p=2 and e≥3, (Z/2^e Z)^× ≅ C2 × C_{2^{e−2}}.\n- The order in the CRT product equals the lcm of component orders; use the Sylow-q primary decomposition of G to count elements whose q-primary order is exactly q^{t_q} for each prime q|K.\n- Count elements of exact order p^t in a finite abelian p-group via Möbius inversion: #exact(p^t) = p^{Σ_i min(a_i,t)} − p^{Σ_i min(a_i,t−1)} for G_p ≅ ∏_i C_{p^{a_i}}.\n- Carefully handle the 2-adic component, and require identity in all Sylow-r for primes r∤K.\n\nFinal deliverable: the exact integer count of a ∈ (Z/NZ)^× with ord_N(a)=K.",
+  "solution_text": "Solution.\n1) CRT and local structures.\nWrite N = 2^9 · 3^5 · 5^4 · 7^3 · 11^2 · 13^2. Then\n(Z/NZ)^× ≅ (Z/2^9Z)^× × (Z/3^5Z)^× × (Z/5^4Z)^× × (Z/7^3Z)^× × (Z/11^2Z)^× × (Z/13^2Z)^×.\nOrders of the local unit groups: 2^9 → 2^8 = 256; 3^5 → 3^4·2 = 162; 5^4 → 5^3·4 = 500; 7^3 → 7^2·6 = 294; 11^2 → 110; 13^2 → 156.\nFor odd p, the unit group is cyclic; for 2^9, we have (Z/2^9Z)^× ≅ C2 × C_{2^7}.\n\n2) Sylow-2 structure and exact 2^6 count.\nThe 2-primary factor of G is the product of the 2-primary parts of all local unit groups:\n- from 2^9: C2 × C_{2^7} (exponents 1 and 7),\n- from 3^5: v2(3−1)=1 → a cyclic factor C2,\n- from 5^4: v2(5−1)=2 → C4,\n- from 7^3: v2(7−1)=1 → C2,\n- from 11^2: v2(11−1)=1 → C2,\n- from 13^2: v2(13−1)=2 → C4.\nHence G_2 ≅ C_{2^1} × C_{2^7} × C_{2^1} × C_{2^2} × C_{2^1} × C_{2^1} × C_{2^2}.\nFor t=6, using the p-group exact-order formula:\nn_6 = 2^{Σ min(d_i,6)} = 2^{1+6+1+2+1+1+2} = 2^{14} and n_5 = 2^{Σ min(d_i,5)} = 2^{1+5+1+2+1+1+2} = 2^{13}.\nTherefore # of elements in G_2 with exact order 2^6 is N2 = n_6 − n_5 = 2^{14} − 2^{13} = 8192.\n\n3) Sylow-3 structure and exact 3^3 count.\nContributors: (Z/3^5Z)^× has a 3^4-factor; (Z/7^3Z)^× and (Z/13^2Z)^× contribute an extra C3 each (since 6 and 12 are divisible by 3). Thus G_3 ≅ C_{3^4} × C_{3^1} × C_{3^1}.\nFor t=3: n_3 = 3^{min(4,3)+min(1,3)+min(1,3)} = 3^{3+1+1} = 3^5 = 243; n_2 = 3^{2+1+1} = 3^4 = 81.\nHence N3 = 243 − 81 = 162.\n\n4) Sylow-5 structure and exact 5^3 count.\nContributors: (Z/5^4Z)^× has a 5^3-factor, and (Z/11^2Z)^× contributes a 5^1-factor. Thus G_5 ≅ C_{5^3} × C_{5^1}.\nFor t=3: n_3 = 5^{3+1} = 5^4 = 625; n_2 = 5^{2+1} = 5^3 = 125. So N5 = 625 − 125 = 500.\n\n5) Sylow-7 structure and exact 7^2 count.\nOnly (Z/7^3Z)^× contributes, with a 7^2-factor, so G_7 ≅ C_{7^2}. Then N7 = φ(7^2) = 7^2 − 7 = 42.\n\n6) Remaining Sylow groups and exact order K.\nFor primes r ∉ {2,3,5,7} (namely r=11,13), the r-primary component must be the identity to ensure ord_N(a) has no r-part. This contributes a factor 1.\n\n7) Multiply counts across independent Sylow-q components to get the number of elements with ord_N(a) = K:\nTotal = N2 · N3 · N5 · N7 = 8192 · 162 · 500 · 42.\nCompute: 8192·162 = 1,327,104; then ·500 = 663,552,000; then ·42 = 27,869,184,000.\n\nFinal answer: 27,869,184,000.\n\nVerification plan (machine-checkable):\n1) Confirm local unit group sizes: 2^9→256; 3^5→162; 5^4→500; 7^3→294; 11^2→110; 13^2→156, and φ(N)=256·162·500·294·110·156.\n2) Verify 2-primary exponents d = [1,7,1,2,1,1,2] and compute n_6 = 2^{Σ min(d_i,6)} = 2^{14}, n_5 = 2^{Σ min(d_i,5)} = 2^{13}, N2 = 8192.\n3) Verify 3-primary exponents [4,1,1] give n_3 = 3^5, n_2 = 3^4, N3 = 162.\n4) Verify 5-primary exponents [3,1] give n_3 = 5^4, n_2 = 5^3, N5 = 500.\n5) Verify 7-primary exponent [2] gives N7 = 7^2 − 7 = 42.\n6) Multiply N2·N3·N5·N7 and confirm 27,869,184,000.\n7) Feasibility: check K's q-adic exponents (6,3,3,2) do not exceed the corresponding maximal exponents (7,4,3,2).\nAll steps are encoded in symbolic equalities below.\n\nAnswer: 27869184000",
+  "tags": [
+    "number theory",
+    "algebra"
+  ],
+  "prerequisites": [
+    "CRT",
+    "finite abelian groups",
+    "LTE"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem for unit groups",
+      "statement": "",
+      "source": "Dummit & Foote",
+      "notes": null
+    },
+    {
+      "name": "Structure of (Z/p^eZ)^×",
+      "statement": "",
+      "source": "Ireland & Rosen",
+      "notes": null
+    },
+    {
+      "name": "Finite abelian p-group element counts",
+      "statement": "",
+      "source": "Ghorbani–Ringel (2011)",
+      "notes": null
+    },
+    {
+      "name": "Hensel lifting (simple-root)",
+      "statement": "",
+      "source": "Cohen, Number Theory I",
+      "notes": null
+    },
+    {
+      "name": "LTE (order lifting)",
+      "statement": "",
+      "source": "Kurlberg–Pomerance (2010)",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] Size (Z/3^5Z)^× = 3^4*(3-1) = 162: passed via direct simplification.\n[Symbolic 2] Size (Z/5^4Z)^× = 5^3*(5-1) = 500: passed via direct simplification.\n[Symbolic 3] Size (Z/7^3Z)^× = 7^2*(7-1) = 294: passed via direct simplification.\n[Symbolic 4] Size (Z/11^2Z)^× = 11*(11-1) = 110: passed via direct simplification.\n[Symbolic 5] Size (Z/13^2Z)^× = 13*(13-1) = 156: passed via direct simplification.\n[Symbolic 6] 3-1 = 2: passed via direct simplification.\n[Symbolic 7] 5-1 = 4: passed via direct simplification.\n[Symbolic 8] 7-1 = 6: passed via direct simplification.\n[Symbolic 9] 11-1 = 10: passed via direct simplification.\n[Symbolic 10] 13-1 = 12: passed via direct simplification.\n[Symbolic 11] Compute K numerically: passed via direct simplification.\n[Symbolic 12] 2-primary: n6 sum-of-mins equals 2^14: passed via direct simplification.\n[Symbolic 13] 2-primary: n5 sum-of-mins equals 2^13: passed via direct simplification.\n[Symbolic 14] 2-primary: exact-order count N2=8192: passed via direct simplification.\n[Symbolic 15] 3-primary: n3 equals 3^5: passed via direct simplification.\n[Symbolic 16] 3-primary: n2 equals 3^4: passed via direct simplification.\n[Symbolic 17] 3-primary: exact-order count N3=162: passed via direct simplification.\n[Symbolic 18] 5-primary: n3 equals 5^4: passed via direct simplification.\n[Symbolic 19] 5-primary: n2 equals 5^3: passed via direct simplification.\n[Symbolic 20] 5-primary: exact-order count N5=500: passed via direct simplification.\n[Symbolic 21] 7-primary: n2 equals 7^2: passed via direct simplification.\n[Symbolic 22] 7-primary: n1 equals 7: passed via direct simplification.\n[Symbolic 23] 7-primary: exact-order count N7=42: passed via direct simplification.\n[Symbolic 24] Final exact-order count in G: passed via direct simplification.\n[Symbolic 25] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 26] 3-adic feasibility: 3 ≤ 4: passed via direct simplification.\n[Symbolic 27] 5-adic feasibility: 3 ≤ 3: passed via direct simplification.\n[Symbolic 28] 7-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 29] phi(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 29 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "3**4 * 2 - 162",
+          "rhs": "0",
+          "variables": [],
+          "description": "Size (Z/3^5Z)^× = 3^4*(3-1) = 162"
+        },
+        {
+          "lhs": "5**3 * 4 - 500",
+          "rhs": "0",
+          "variables": [],
+          "description": "Size (Z/5^4Z)^× = 5^3*(5-1) = 500"
+        },
+        {
+          "lhs": "7**2 * 6 - 294",
+          "rhs": "0",
+          "variables": [],
+          "description": "Size (Z/7^3Z)^× = 7^2*(7-1) = 294"
+        },
+        {
+          "lhs": "11 * 10 - 110",
+          "rhs": "0",
+          "variables": [],
+          "description": "Size (Z/11^2Z)^× = 11*(11-1) = 110"
+        },
+        {
+          "lhs": "13 * 12 - 156",
+          "rhs": "0",
+          "variables": [],
+          "description": "Size (Z/13^2Z)^× = 13*(13-1) = 156"
+        },
+        {
+          "lhs": "3-1-2",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-1 = 2"
+        },
+        {
+          "lhs": "5-1-4",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-1 = 4"
+        },
+        {
+          "lhs": "7-1-6",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-1 = 6"
+        },
+        {
+          "lhs": "11-1-10",
+          "rhs": "0",
+          "variables": [],
+          "description": "11-1 = 10"
+        },
+        {
+          "lhs": "13-1-12",
+          "rhs": "0",
+          "variables": [],
+          "description": "13-1 = 12"
+        },
+        {
+          "lhs": "2**6 * 3**3 * 5**3 * 7**2 - 10584000",
+          "rhs": "0",
+          "variables": [],
+          "description": "Compute K numerically"
+        },
+        {
+          "lhs": "2**(Min(1,6)+Min(7,6)+Min(1,6)+Min(2,6)+Min(1,6)+Min(1,6)+Min(2,6)) - 2**14",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: n6 sum-of-mins equals 2^14"
+        },
+        {
+          "lhs": "2**(Min(1,5)+Min(7,5)+Min(1,5)+Min(2,5)+Min(1,5)+Min(1,5)+Min(2,5)) - 2**13",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: n5 sum-of-mins equals 2^13"
+        },
+        {
+          "lhs": "2**14 - 2**13 - 8192",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-primary: exact-order count N2=8192"
+        },
+        {
+          "lhs": "3**(Min(4,3)+Min(1,3)+Min(1,3)) - 3**5",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: n3 equals 3^5"
+        },
+        {
+          "lhs": "3**(Min(4,2)+Min(1,2)+Min(1,2)) - 3**4",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: n2 equals 3^4"
+        },
+        {
+          "lhs": "3**5 - 3**4 - 162",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-primary: exact-order count N3=162"
+        },
+        {
+          "lhs": "5**(Min(3,3)+Min(1,3)) - 5**4",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: n3 equals 5^4"
+        },
+        {
+          "lhs": "5**(Min(3,2)+Min(1,2)) - 5**3",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: n2 equals 5^3"
+        },
+        {
+          "lhs": "5**4 - 5**3 - 500",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-primary: exact-order count N5=500"
+        },
+        {
+          "lhs": "7**(Min(2,2)) - 7**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: n2 equals 7^2"
+        },
+        {
+          "lhs": "7**(Min(2,1)) - 7",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: n1 equals 7"
+        },
+        {
+          "lhs": "7**2 - 7 - 42",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-primary: exact-order count N7=42"
+        },
+        {
+          "lhs": "8192 * 162 * 500 * 42 - 27869184000",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count in G"
+        },
+        {
+          "lhs": "Max(0, 6-7)",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic feasibility: 6 ≤ 7"
+        },
+        {
+          "lhs": "Max(0, 3-4)",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic feasibility: 3 ≤ 4"
+        },
+        {
+          "lhs": "Max(0, 3-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic feasibility: 3 ≤ 3"
+        },
+        {
+          "lhs": "Max(0, 2-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-adic feasibility: 2 ≤ 2"
+        },
+        {
+          "lhs": "256*162*500*294*110*156 - 104613949440000",
+          "rhs": "0",
+          "variables": [],
+          "description": "phi(N) product check"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] Size (Z/3^5Z)^× = 3^4*(3-1) = 162: passed via direct simplification.\n[Symbolic 2] Size (Z/5^4Z)^× = 5^3*(5-1) = 500: passed via direct simplification.\n[Symbolic 3] Size (Z/7^3Z)^× = 7^2*(7-1) = 294: passed via direct simplification.\n[Symbolic 4] Size (Z/11^2Z)^× = 11*(11-1) = 110: passed via direct simplification.\n[Symbolic 5] Size (Z/13^2Z)^× = 13*(13-1) = 156: passed via direct simplification.\n[Symbolic 6] 3-1 = 2: passed via direct simplification.\n[Symbolic 7] 5-1 = 4: passed via direct simplification.\n[Symbolic 8] 7-1 = 6: passed via direct simplification.\n[Symbolic 9] 11-1 = 10: passed via direct simplification.\n[Symbolic 10] 13-1 = 12: passed via direct simplification.\n[Symbolic 11] Compute K numerically: passed via direct simplification.\n[Symbolic 12] 2-primary: n6 sum-of-mins equals 2^14: passed via direct simplification.\n[Symbolic 13] 2-primary: n5 sum-of-mins equals 2^13: passed via direct simplification.\n[Symbolic 14] 2-primary: exact-order count N2=8192: passed via direct simplification.\n[Symbolic 15] 3-primary: n3 equals 3^5: passed via direct simplification.\n[Symbolic 16] 3-primary: n2 equals 3^4: passed via direct simplification.\n[Symbolic 17] 3-primary: exact-order count N3=162: passed via direct simplification.\n[Symbolic 18] 5-primary: n3 equals 5^4: passed via direct simplification.\n[Symbolic 19] 5-primary: n2 equals 5^3: passed via direct simplification.\n[Symbolic 20] 5-primary: exact-order count N5=500: passed via direct simplification.\n[Symbolic 21] 7-primary: n2 equals 7^2: passed via direct simplification.\n[Symbolic 22] 7-primary: n1 equals 7: passed via direct simplification.\n[Symbolic 23] 7-primary: exact-order count N7=42: passed via direct simplification.\n[Symbolic 24] Final exact-order count in G: passed via direct simplification.\n[Symbolic 25] 2-adic feasibility: 6 ≤ 7: passed via direct simplification.\n[Symbolic 26] 3-adic feasibility: 3 ≤ 4: passed via direct simplification.\n[Symbolic 27] 5-adic feasibility: 3 ≤ 3: passed via direct simplification.\n[Symbolic 28] 7-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 29] phi(N) product check: passed via direct simplification.\nSummary: 0 substitution checks, 29 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.27s, total tokens 1870.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.27s, total tokens 1870.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 24.536676849995274,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 11.14360287899035,
+        "status": "ok",
+        "tokens_used": 935,
+        "score": 0.13147039254823686,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 13.391217998985667,
+        "status": "ok",
+        "tokens_used": 935,
+        "score": 0.12934131736526952,
+        "solved": false
+      }
+    ]
+  }
+}

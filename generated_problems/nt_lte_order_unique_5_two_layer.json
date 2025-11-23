@@ -1,0 +1,82 @@
+{
+  "id": "nt_lte_order_unique_5_two_layer",
+  "problem_text": "Find all integers n > 1 such that both divisibilities hold:\n(i) n^3 divides 2^{20 n} − 1,\n(ii) n^2 divides 3^{4 n} − 1.\nGive the exact value of n.",
+  "solution_text": "Let n > 1 and let p be any prime divisor of n. Write e = v_p(n) ≥ 1.\n1) p = 2 is impossible because 2^{20 n} − 1 is odd, so v_2(2^{20 n} − 1) = 0 contradicts 3e ≤ v_2(2^{20 n} − 1).\n2) Suppose p is an odd prime with p ≠ 5 and p | n. From (i), p | 2^{20 n} − 1, hence t := ord_p(2) | 20 n. Since p ∤ 2 and p odd, t | (p − 1) so p ∤ t, and v_p(2^t − 1) = 1 by the simple-root lemma. Write 20 n = t m; then LTE gives v_p(2^{20 n} − 1) = v_p(2^t − 1) + v_p(m) = 1 + v_p(m). Because p ≠ 2, 5 and p ∤ t, v_p(m) = v_p(20 n) − v_p(t) = v_p(n) = e. Thus v_p(2^{20 n} − 1) = 1 + e, contradicting the requirement 3e ≤ 1 + e. Therefore no odd p ≠ 5 divides n.\nConsequently n = 5^e for some e ≥ 1.\n3) Compute 5-adic valuations. Since ord_5(2) = 4 and 5 ∤ 4, we have 20 n = 4 · (5 n), so by LTE\nv_5(2^{20 n} − 1) = v_5(2^4 − 1) + v_5(5 n) = v_5(15) + (1 + e) = 2 + e.\nCondition (i) implies 3e ≤ 2 + e, hence e ≤ 1. Similarly, ord_5(3) = 4 and 4 n = 4 · n gives\nv_5(3^{4 n} − 1) = v_5(3^4 − 1) + v_5(n) = v_5(80) + e = 1 + e,\nso (ii) implies 2e ≤ 1 + e, hence e ≤ 1 as well. With e ≥ 1 (since n > 1), we obtain e = 1 and thus n = 5.\nVerification: For n = 5, v_5(2^{100} − 1) = 3 so 125 | 2^{100} − 1, and v_5(3^{20} − 1) = 2 so 25 | 3^{20} − 1. Hence n = 5 is the unique solution.",
+  "tags": [
+    "number theory",
+    "LTE",
+    "p-adic valuations",
+    "multiplicative order",
+    "divisibility"
+  ],
+  "prerequisites": [
+    "LTE for a^{tm} − 1 at odd primes",
+    "Multiplicative order modulo primes",
+    "Simple-root lemma",
+    "Basic p-adic valuation properties"
+  ],
+  "theorem_refs": [
+    {
+      "name": "LTE (a^{tm} − 1 case)",
+      "statement": "If p is odd, p ∤ a, and t = ord_p(a) with p ∤ t, then v_p(a^{t m} − 1) = v_p(a^t − 1) + v_p(m).",
+      "source": "Standard olympiad NT references",
+      "notes": "Applied with (a, p) = (2, p) and (3, p)."
+    },
+    {
+      "name": "Simple-root lemma",
+      "statement": "For odd p ∤ a, v_p(a^{ord_p(a)} − 1) = 1.",
+      "source": "Hensel-type lifting",
+      "notes": "Ensures base valuation equals 1."
+    },
+    {
+      "name": "Order divisibility",
+      "statement": "If p | a^N − 1 then ord_p(a) | N; also ord_p(a) | p − 1.",
+      "source": "Group theory of units modulo p",
+      "notes": "Ensures 20 n = t m or 4 n = t m decompositions."
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.\nSummary: substitution_checks=0, symbolic_checks=0; substitution_pass=True, symbolic_pass=True, counterexamples=0.",
+    "extra_data": [
+      {
+        "key": "verification_summary",
+        "value": "Summary: substitution_checks=0, symbolic_checks=0; substitution_pass=True, symbolic_pass=True, counterexamples=0."
+      }
+    ]
+  },
+  "difficulty_estimate_author": 5,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.\nSummary: substitution_checks=0, symbolic_checks=0; substitution_pass=True, symbolic_pass=True, counterexamples=0.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.11s, total tokens 444.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 8.11s, total tokens 444.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 8.106587219997891,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 8.106414704998315,
+        "status": "ok",
+        "tokens_used": 444,
+        "score": 0.27035573122529644,
+        "solved": false
+      }
+    ]
+  }
+}

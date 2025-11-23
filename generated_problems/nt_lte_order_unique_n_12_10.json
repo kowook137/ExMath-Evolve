@@ -1,0 +1,77 @@
+{
+  "id": "nt_lte_order_unique_n_12_10",
+  "problem_text": "Let n be an odd integer greater than 1 such that both conditions hold:\n(i) n^3 divides 2^{12n} − 1;\n(ii) n divides 5^{10n} − 1.\nDetermine n.",
+  "solution_text": "Set A = 2^{12}. Let p be an odd prime dividing n and write e = v_p(n). Since p | A^n − 1, the multiplicative order o = ord_p(A) divides n. For odd p, LTE applied to n = o · (n/o) yields v_p(A^n − 1) = v_p(A^o − 1) + v_p(n/o) = v_p(A^o − 1) + e, because p ∤ o. The hypothesis n^3 | A^n − 1 then forces 3e ≤ v_p(A^n − 1), hence 2e ≤ v_p(A^o − 1).\n\nNow factor A − 1 = 2^{12} − 1 = 4095 = 3^2 · 5 · 7 · 13. If p ∈ {5,7,13}, then o = 1 and v_p(A^n − 1) = v_p(A − 1) + e = 1 + e, so 3e ≤ 1 + e implies e = 0, a contradiction. Thus p ∉ {5,7,13}.\n\nAssume there exists a prime p ≥ 5 dividing n; choose p minimal with p ≠ 3. Then o | n is odd and all odd prime divisors of o must divide n. By minimality and the exclusion above, the only odd prime that could divide o is 3, so o = 3^t with t ≥ 1. Put X = A^{3^{t−1}}. Then p ∤ X − 1 while p | X^3 − 1, hence p | X^2 + X + 1. Compute the identity 4(X^2 + X + 1) − (2X + 1)^2 = 3. Therefore any odd p dividing both X^2 + X + 1 and 2X + 1 must be p = 3. As p ≠ 3, we have p ∤ 2X + 1, so p is a simple root of X^2 + X + 1 modulo p and consequently v_p(X^2 + X + 1) = 1. It follows that v_p(A^o − 1) = v_p(X^3 − 1) = 1, contradicting 2e ≤ v_p(A^o − 1) with e ≥ 1. Hence no prime p ≥ 5 divides n.\n\nTherefore the only possible prime divisor of n is p = 3, so n = 3^e for some e ≥ 1. For p = 3, since 3 | (A − 1) and v_3(A − 1) = 2, LTE gives v_3(A^n − 1) = v_3(A − 1) + v_3(n) = 2 + e. The condition n^3 | A^n − 1 now gives 3e ≤ 2 + e, i.e., e ≤ 1. Because n > 1 and odd, e = 1, so n = 3.\n\nFinally, condition (ii) holds for n = 3 because ord_3(5) = 2 divides 10n, hence 3 | (5^{10n} − 1).\n\nThus the unique solution is n = 3.",
+  "tags": [
+    "number theory",
+    "p-adic valuation",
+    "LTE",
+    "multiplicative order",
+    "cyclotomic factors"
+  ],
+  "prerequisites": [
+    "Basic modular arithmetic",
+    "Multiplicative orders modulo primes",
+    "LTE lemma for odd primes",
+    "Elementary p-adic valuation properties"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Lifting The Exponent (LTE) for a^{mn} − 1, odd p",
+      "statement": "If p is odd, p | (a^m − 1), p ∤ a, then v_p(a^{mn} − 1) = v_p(a^m − 1) + v_p(n).",
+      "source": "ProofWiki",
+      "notes": null
+    },
+    {
+      "name": "Multiplicative order basics",
+      "statement": "For p prime, ord_p(a) | k iff p | a^k − 1; and ord_p(a) | (p − 1) if p ∤ a.",
+      "source": "Wikipedia",
+      "notes": null
+    },
+    {
+      "name": "Simple-root valuation criterion",
+      "statement": "If p | f(x) and p ∤ f'(x), then v_p(f(x)) = 1.",
+      "source": "Standard",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": null,
+    "verification_tasks": null,
+    "verification_notes": "No substitution checks specified.\nNo symbolic equality checks specified.\nverification_tasks metadata not provided; defaulted to pass with warnings.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 10.47s, total tokens 568.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 1, avg runtime 10.47s, total tokens 568.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 10.47513115000038,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.474918331998197,
+        "status": "ok",
+        "tokens_used": 568,
+        "score": 0.2608958837772397,
+        "solved": false
+      }
+    ]
+  }
+}

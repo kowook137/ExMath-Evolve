@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional
 import hydra
 from omegaconf import DictConfig
-from agents.tracing import gen_trace_id
+from tracing_compat import gen_trace_id
 
 from coder import CoderAgent
 from researcher import ResearcherAgent
@@ -24,6 +24,51 @@ logger = logging.getLogger(__name__)
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.WARNING)
 
+
+def configure_api_settings(config: DictConfig) -> None:
+    """
+    Configure OpenAI-compatible API environment variables from the Hydra config.
+
+    Allows routing via LiteLLM/OpenRouter/etc. without editing the codebase.
+    """
+    if config is None:
+        return
+
+    api_cfg = config.get("api")
+    if not api_cfg:
+        return
+
+    key_env = api_cfg.get("key_env")
+    literal_key = api_cfg.get("key")
+    base_url = api_cfg.get("base_url")
+
+    # If user already set a key/base in the shell, respect it and skip overrides
+    existing_key = os.environ.get("OPENAI_API_KEY")
+    existing_base = os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENAI_API_BASE")
+
+    if literal_key:
+        os.environ["OPENAI_API_KEY"] = literal_key
+        logger.info("Configured OPENAI_API_KEY from config.api.key")
+    elif key_env and not existing_key:
+        inherited_key = os.environ.get(key_env)
+        if inherited_key:
+            os.environ["OPENAI_API_KEY"] = inherited_key
+            logger.info(
+                "Configured OPENAI_API_KEY from environment variable %s", key_env
+            )
+        else:
+            logger.warning(
+                "api.key_env=%s specified but environment variable is unset", key_env
+            )
+
+    if base_url and not existing_base:
+        normalized = base_url.rstrip("/")
+        os.environ["OPENAI_BASE_URL"] = normalized
+        os.environ["OPENAI_API_BASE"] = normalized
+        os.environ.setdefault("OPENAI_API_TYPE", "proxy")
+        logger.info("Configured OpenAI base URL to %s", normalized)
+
+
 class DeepEvolve:
     """
     DeepEvolve: Evolutionary Optimization of Scientific Algorithms with Deep Research
@@ -31,6 +76,7 @@ class DeepEvolve:
     def __init__(self, config: DictConfig, query: str):
         self.config = config
         self.query = query
+        configure_api_settings(config)
         self.language = "python"
         self.code_extension = ".py"
         self.problem_name = self.config.problem
@@ -147,20 +193,20 @@ class DeepEvolve:
                 return
 
             gen = getattr(mod, "MathProblemGenerator")()
-            if not hasattr(gen, "_frontier_math_entries"):
-                logger.warning("Seed entries provider not found in MathProblemGenerator")
+            if not hasattr(gen, "_seeds"):
+                logger.warning("Seed entries store not found in MathProblemGenerator")
                 return
-            entries = gen._frontier_math_entries()
+            entries = getattr(gen, "_seeds", [])
             if not entries:
-                logger.info("No frontier seed entries to preload")
+                logger.info("No seed entries to preload")
                 return
 
             # Build a light-weight IdeaData for each seed and add as Program with initial code
             from utils.datatypes import EvaluationData
             for idx, entry in enumerate(entries):
                 try:
-                    seed_title = entry.get("prefix", f"frontier_seed_{idx}")
-                    seed_desc = f"Frontier seed inspiration: {seed_title}"
+                    seed_title = entry.get("prefix", f"seed_{idx}")
+                    seed_desc = f"Seed inspiration: {seed_title}"
                     idea = IdeaData(
                         description=seed_desc,
                         motivation="Use as inspiration for harder fused problems.",
@@ -225,6 +271,7 @@ class DeepEvolve:
 
         # Define start_iteration before creating the initial program
         max_iterations = iterations or self.config.max_iterations
+        children_per_generation = max(1, int(getattr(self.config, "children_per_generation", 1)))
         start_iteration = self.database.last_iteration
 
         should_add_initial = (
@@ -316,7 +363,10 @@ class DeepEvolve:
 
             # step 1: sampling parent and inspirations
             self.console.print(f"[yellow]Step 1: Sampling parent and inspirations...[/yellow]")
-            parent, inspirations = self.database.sample()
+            parent, co_parent, inspirations = self.database.sample()
+            if co_parent is not None:
+                # Ensure co-parent is included as first inspiration for crossover context
+                inspirations = [co_parent] + [p for p in inspirations if p.id != co_parent.id]
 
             # step 2: deep research
             self.console.print(f"[yellow]Step 2: Running deep research...[/yellow]")
@@ -610,6 +660,267 @@ class DeepEvolve:
             # Return None if no programs found instead of undefined initial_program
             return None
 
+    async def run_multi(
+        self,
+        iterations: Optional[int] = None,
+        target_score: Optional[float] = None,
+    ) -> Program:
+        """
+        Run evolution with multiple children per generation (config: children_per_generation).
+        """
+
+        self.researcher.update_topic(
+            self.query,
+            self.problem_name,
+            self.problem.description,
+            self.config.search_time_bias,
+        )
+        self.coder.update_topic(
+            self.query,
+            self.problem_name,
+            self.problem.description,
+        )
+
+        max_iterations = iterations or self.config.max_iterations
+        children_per_generation = max(1, int(getattr(self.config, "children_per_generation", 1)))
+        start_iteration = self.database.last_iteration
+
+        should_add_initial = (
+            start_iteration == 0
+            and len(self.database.programs) == 0
+            and not any(
+                p.code == self.initial_code for p in self.database.programs.values()
+            )
+        )
+
+        if should_add_initial:
+            if os.path.exists(os.path.join(self.workspace, "initial_idea.json")):
+                with open(os.path.join(self.workspace, "initial_idea.json"), "r", encoding="utf-8") as f:
+                    initial_idea = json.load(f)
+                initial_idea = IdeaData(**initial_idea)
+            else:
+                initial_idea = await self.researcher.read_paper(
+                    self.initial_idea_info["title"], self.initial_idea_info["content"], self.initial_idea_info["supplement"]
+                )
+                with open(os.path.join(self.workspace, "initial_idea.json"), "w", encoding="utf-8") as f:
+                    json.dump(initial_idea.model_dump(), f, indent=2)
+
+            initial_metrics, initial_code = await self.problem.evaluate(
+                self.initial_code,
+                'root',
+                is_initial=True,
+            )
+            initial_program = Program(
+                id='root',
+                code=self.initial_code,
+                idea=initial_idea,
+                parent_id="root",
+                language=self.language,
+                metrics=initial_metrics,
+                iteration_found=start_iteration,
+                evolution_history=[],
+                report=self.initial_idea_info["content"],
+            )
+            self.database.add(initial_program)
+            try:
+                self._preload_seed_problems()
+            except Exception as preload_err:
+                logger.warning(f"Failed to preload seed problems as inspirations: {preload_err}")
+
+        programs_per_island = max(
+            1, self.config.database.population_size // self.config.database.num_islands
+        )
+        current_island_counter = 0
+        stop_early = False
+
+        for i in range(start_iteration, max_iterations):
+            self.console.rule(f"[bold green]Iteration {i+1}")
+
+            for child_slot in range(children_per_generation):
+                iteration_start = time.time()
+
+                if i > start_iteration and current_island_counter >= programs_per_island:
+                    self.database.next_island()
+                    current_island_counter = 0
+                current_island_counter += 1
+
+                parent, co_parent, inspirations = self.database.sample()
+                if co_parent is not None:
+                    inspirations = [co_parent] + [p for p in inspirations if p.id != co_parent.id]
+
+                planning_outputs, search_results, research_reports = (
+                    await self.researcher.run(
+                        parent,
+                        inspirations,
+                        trace_id=self.trace_id,
+                        max_reflection_times=self.config.max_research_reflect,
+                    )
+                )
+                research_report = research_reports[-1]
+                new_idea = research_report.idea
+
+                try:
+                    research_dir = os.path.join(self.workspace, "research")
+                    os.makedirs(research_dir, exist_ok=True)
+                    with open(os.path.join(research_dir, "latest_report.json"), "w", encoding="utf-8") as f:
+                        json.dump(research_report.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                    if research_report.problem_spec is not None:
+                        with open(os.path.join(research_dir, "latest_spec.json"), "w", encoding="utf-8") as f:
+                            json.dump(research_report.problem_spec.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                    if research_report.problem_pair is not None:
+                        with open(os.path.join(research_dir, "latest_problem.json"), "w", encoding="utf-8") as f:
+                            json.dump(research_report.problem_pair.model_dump(mode="json", exclude_none=True), f, ensure_ascii=False, indent=2)
+                    if research_report.theorem_refs:
+                        with open(os.path.join(research_dir, "latest_theorems.json"), "w", encoding="utf-8") as f:
+                            json.dump([t.model_dump(mode="json", exclude_none=True) for t in research_report.theorem_refs], f, ensure_ascii=False, indent=2)
+                except Exception as persist_err:
+                    logger.warning(f"Failed to persist latest research artefacts: {persist_err}")
+
+                try:
+                    self.coder.update_problem_context(
+                        planning_outputs=planning_outputs,
+                        report=research_report,
+                        search_results=search_results[-1] if search_results else None,
+                    )
+                except Exception as context_error:
+                    logger.warning(f"Failed to update coder context: {context_error}")
+
+                _, all_program_code = await self.coder.run(
+                    new_idea,
+                    parent,
+                    inspirations,
+                    trace_id=self.trace_id,
+                    max_reflection_times=self.config.max_coding_reflect,
+                )
+
+                child_code = all_program_code[-1]
+                child_id = str(uuid.uuid4())
+                developer_validation = self.coder.validation_report
+                developer_valid = None
+                developer_confidence = None
+                if developer_validation is not None:
+                    developer_valid = 1.0 if developer_validation.get("is_valid") else 0.0
+                    try:
+                        developer_confidence = float(developer_validation.get("confidence", 0.0) or 0.0)
+                    except Exception:
+                        developer_confidence = None
+
+                should_run_evaluation = not (developer_validation is not None and not developer_validation.get("is_valid"))
+
+                if should_run_evaluation:
+                    child_metrics, child_code = await self.problem.evaluate(
+                        child_code, child_id, is_initial=False
+                    )
+                else:
+                    child_metrics = {
+                        "developer_valid": developer_valid if developer_valid is not None else 0.0,
+                        "developer_confidence": developer_confidence or 0.0,
+                        "combined_score": 0.0,
+                        "valid": 0.0,
+                        "evaluation_skipped": 1.0,
+                    }
+                    if developer_validation:
+                        if developer_validation.get("suggestions"):
+                            child_metrics["difficulty_suggestions"] = "\n".join(developer_validation.get("suggestions"))
+                        if developer_validation.get("issues"):
+                            child_metrics["verification_notes"] = "\n".join(developer_validation.get("issues"))
+
+                if developer_valid is not None and "developer_valid" not in child_metrics:
+                    child_metrics["developer_valid"] = developer_valid
+                if developer_confidence is not None and "developer_confidence" not in child_metrics:
+                    child_metrics["developer_confidence"] = developer_confidence
+
+                program_metadata = {"parent_metrics": parent.metrics}
+                if planning_outputs:
+                    try:
+                        program_metadata["problem_spec"] = planning_outputs[-1].problem_spec.model_dump(
+                            mode="json", exclude_none=True
+                        )
+                    except Exception:
+                        pass
+                if research_report.problem_pair:
+                    try:
+                        program_metadata["problem_pair"] = research_report.problem_pair.model_dump(
+                            mode="json", exclude_none=True
+                        )
+                    except Exception:
+                        pass
+                if research_report.theorem_refs:
+                    program_metadata["theorem_refs"] = [
+                        ref.model_dump(mode="json", exclude_none=True)
+                        for ref in research_report.theorem_refs
+                    ]
+                if research_report.feedback:
+                    program_metadata["feedback"] = research_report.feedback.model_dump(
+                        mode="json", exclude_none=True
+                    )
+                if developer_validation:
+                    program_metadata["developer_validation"] = developer_validation
+
+                child_program = Program(
+                    id=child_id,
+                    code=child_code,
+                    idea=new_idea,
+                    parent_id=parent.id,
+                    language=self.language,
+                    metrics=child_metrics,
+                    iteration_found=i + 1,
+                    evolution_history=parent.evolution_history + [new_idea],
+                    report=research_report.markdown_report,
+                    metadata=program_metadata,
+                )
+
+                self.coder.validation_report = None
+
+                self.database.add(child_program, iteration=i + 1)
+                self.database.increment_island_generation()
+                if self.database.should_migrate():
+                    self.database.migrate_programs()
+                    self.database.log_island_status()
+
+                iteration_time = time.time() - iteration_start
+                self._log_iteration(i, parent, child_program, iteration_time)
+
+                if self.database.best_program_id == child_program.id:
+                    logger.info(
+                        f"🌟 New best program found at iteration {i+1}: {child_program.id}"
+                    )
+                    logger.info(f"Metrics: {format_metrics_safe(child_program.metrics)}")
+
+                if (
+                    child_slot == children_per_generation - 1
+                    and (i == max_iterations - 1 or (i + 1) % self.config.checkpoint_interval == 0)
+                ):
+                    self._save_checkpoint(i + 1)
+                    self.database.log_island_status()
+
+                if target_score is not None:
+                    avg_score = sum(child_metrics.values()) / max(1, len(child_metrics))
+                    if avg_score >= target_score:
+                        stop_early = True
+                        break
+
+            if stop_early:
+                break
+
+        best_program = None
+        if self.database.best_program_id:
+            best_program = self.database.get(self.database.best_program_id)
+
+        best_by_combined = self.database.get_best_program(metric="combined_score")
+        if (
+            best_by_combined
+            and best_program is not None
+            and best_by_combined.id != best_program.id
+            and "combined_score" in best_by_combined.metrics
+        ):
+            best_program = best_by_combined
+
+        if best_program:
+            self._save_best_program()
+            return best_program
+        return None
+
     def _log_iteration(
         self,
         iteration: int,
@@ -734,6 +1045,7 @@ class DeepEvolve:
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(config: DictConfig) -> None:
+    configure_api_settings(config)
     if "OPENAI_API_KEY" not in os.environ:
         openai_api_key = input("Please enter your OpenAI API key: ")
         os.environ["OPENAI_API_KEY"] = openai_api_key
@@ -752,7 +1064,7 @@ def main(config: DictConfig) -> None:
         query = f"Improve machine learning methods for {config.problem}"
         
     deep_evolve = DeepEvolve(config=config, query=query)
-    asyncio.run(deep_evolve.run())
+    asyncio.run(deep_evolve.run_multi())
 
 if __name__ == "__main__":
     main()

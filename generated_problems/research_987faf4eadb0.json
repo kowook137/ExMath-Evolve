@@ -1,0 +1,311 @@
+{
+  "id": "research_987faf4eadb0",
+  "problem_text": "Problem: Exact-order enumeration in the k-th power image of (Z/NZ)^× via Sylow-by-prime analysis\n\nObjects and assumptions:\n- Let N = 2^9 · 3^5 · 5^4 · 7^3 = 2^9 · 3^5 · 5^4 · 7^3.\n- Consider the multiplicative group G = (Z/NZ)^×. By the Chinese Remainder Theorem (CRT), G ≅ ∏_p (Z/p^{e_p}Z)^×, with componentwise exponentiation.\n- Fix k = 10 = 2·5. Consider the subgroup H = G^k = { x^k : x ∈ G } (the image of the k-th power endomorphism).\n- Let R = 2^5 · 3^3 · 5^2 · 7^1.\n\nQuestion:\nHow many elements of H have exact order R? Give the final answer as a single explicit integer.\n\nRequired tools (all standard):\n- For odd p and e ≥ 1, (Z/p^eZ)^× is cyclic of order φ(p^e) = p^{e-1}(p−1); for 2^e with e ≥ 3, (Z/2^eZ)^× ≅ C2 × C_{2^{e−2}}.\n- k-th power map on finite abelian groups: If a Sylow q-subgroup is ⊕_i C_{q^{a_i}}, then the image under x ↦ x^k is ⊕_i C_{q^{b_i}} with b_i = max(a_i − v_q(k), 0).\n- In G_q ≅ ⊕_i C_{q^{b_i}}, the number of elements of order dividing q^t equals q^{∑_i min(b_i, t)}; the number of elements of exact order q^s equals N_q(s) − N_q(s−1).\n- Independence across distinct primes via CRT: counts of elements of exact order ∏ q^{s_q} multiply across q.\n\nConstraints and intent:\n- Parameters are chosen so the 2- and 3-primary images are non-cyclic (precluding φ shortcuts) and require handling the 2-adic anomaly.\n- Brute force over all residues mod N is disallowed; solve symbolically via CRT decomposition and the formulas above.\n",
+  "solution_text": "Solution:\n\nStep 1: Structure of G by prime powers and their q-primary parts.\n- For 2^9: (Z/2^9Z)^× ≅ C_2 × C_{2^7} (orders 2 and 2^7).\n- For 3^5: (Z/3^5Z)^× is cyclic of order φ(3^5) = 3^4·2. Thus its 3-primary factor is C_{3^4} and its 2-primary factor is C_{2^1}.\n- For 5^4: cyclic of order φ(5^4) = 5^3·4 = 5^3·2^2, contributing 5-primary C_{5^3} and 2-primary C_{2^2}.\n- For 7^3: cyclic of order φ(7^3) = 7^2·6 = 7^2·2·3, contributing 7-primary C_{7^2}, 2-primary C_{2^1}, and 3-primary C_{3^1}.\nCollecting exponents a_i of cyclic q-groups in G:\n  • q=2: exponents A2 = [7, 1, 1, 2, 1] (from 2^9: 7,1; from 3^5: 1; from 5^4: 2; from 7^3: 1).\n  • q=3: A3 = [4, 1] (from 3^5 and 7^3).\n  • q=5: A5 = [3] (from 5^4).\n  • q=7: A7 = [2] (from 7^3).\n\nStep 2: Apply the k-th power map with k=10 (v_2(k)=1, v_3(k)=0, v_5(k)=1, v_7(k)=0).\nFor each q, pass from A_q = [a_i] to B_q = [b_i] with b_i = max(a_i − v_q(k), 0):\n  • q=2: B2 = [6, 0, 0, 1, 0] ∼ [6,1] (nontrivial factors), so H_2 ≅ C_{2^6} × C_{2^1}.\n  • q=3: B3 = [4, 1], so H_3 ≅ C_{3^4} × C_{3^1}.\n  • q=5: B5 = [2], so H_5 ≅ C_{5^2}.\n  • q=7: B7 = [2], so H_7 ≅ C_{7^2}.\nThus exp(H_q) equals 2^6, 3^4, 5^2, 7^2 respectively, so R = 2^5·3^3·5^2·7 is feasible (each exponent ≤ the corresponding max).\n\nStep 3: Count elements in H_q of exact order q^{s_q} using N_q(t) = q^{∑_i min(b_i, t)}.\n  • q=2: B2=[6,1]. Then N_2(t) = 2^{min(6,t)+min(1,t)}. Hence N_2(5)=2^{5+1}=64 and N_2(4)=2^{4+1}=32, so e_2(5)=64−32=32.\n  • q=3: B3=[4,1]. Then N_3(t)=3^{min(4,t)+min(1,t)}. Thus N_3(3)=3^{3+1}=81 and N_3(2)=3^{2+1}=27, so e_3(3)=81−27=54.\n  • q=5: B5=[2]. Then N_5(t)=5^{min(2,t)}. So N_5(2)=25 and N_5(1)=5, giving e_5(2)=25−5=20.\n  • q=7: B7=[2]. Then N_7(t)=7^{min(2,t)}. So N_7(1)=7 and N_7(0)=1, giving e_7(1)=7−1=6.\n\nStep 4: CRT independence across primes. The number of elements in H with exact order R = 2^5·3^3·5^2·7 equals\n  e_2(5) · e_3(3) · e_5(2) · e_7(1) = 32 · 54 · 20 · 6 = 207360.\n\nFinal Answer:\n207360\n\nVerification plan (machine-checkable):\n1) Cyclicity and 2-adic structure: confirm (Z/p^eZ)^× orders φ(p^e) and that for 2^9 the structure is C2×C_{2^7} (used to list A2).\n2) Component φ-values: check λ(2^9)=2^7=128, λ(3^5)=2·3^4=162, λ(5^4)=4·5^3=500, λ(7^3)=6·7^2=294 (exponent bounds for sanity).\n3) k factorization and valuations: 10=2·5 with v_2(k)=1, v_5(k)=1, v_3(k)=v_7(k)=0.\n4) Image exponents B_q: enforce b_i = max(a_i−v_q(k),0) to obtain B2=[6,1], B3=[4,1], B5=[2], B7=[2]; check feasibility Max(0, s_q−max(B_q))=0 for s=(5,3,2,1).\n5) Dividing-order counts: verify N_2(5)=64, N_2(4)=32; N_3(3)=81, N_3(2)=27; N_5(2)=25, N_5(1)=5; N_7(1)=7, N_7(0)=1.\n6) Exact-order counts per prime: e_2(5)=32, e_3(3)=54, e_5(2)=20, e_7(1)=6.\n7) Final multiplication: 32·54·20·6 = 207360.\n",
+  "tags": [
+    "number theory",
+    "finite abelian groups",
+    "CRT",
+    "Carmichael function",
+    "k-th power maps",
+    "exact order counting"
+  ],
+  "prerequisites": [
+    "Structure of (Z/p^eZ)^×",
+    "CRT for unit groups",
+    "Finite abelian p-groups",
+    "Möbius inversion for exact orders"
+  ],
+  "theorem_refs": [
+    {
+      "name": "CRT for unit groups",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Cyclicity of (Z/p^eZ)^× for odd p",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "(Z/2^eZ)^× ≅ C2 × C_{2^{e−2}} for e≥3",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Power-map kernel/image on abelian groups",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Counting elements with bounded order in finite abelian p-groups",
+      "statement": "",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": false,
+    "counterexample_found": false,
+    "notes": "[Substitution 1] Non-cyclicity in H_2: two positive exponents b in B2=[6,1]: passed (1/1).\n[Substitution 2] Non-cyclicity in H_3: two positive exponents b in B3=[4,1]: passed (1/1).\n[Symbolic 1] k factorization: 10 = 2·5: passed via direct simplification.\n[Symbolic 2] λ(2^9)=2^{9-2}=128: passed via direct simplification.\n[Symbolic 3] λ(3^5)=2·3^4=162: passed via direct simplification.\n[Symbolic 4] λ(5^4)=4·5^3=500: passed via direct simplification.\n[Symbolic 5] λ(7^3)=6·7^2=294: passed via direct simplification.\n[Symbolic 6] N2(5)=2^{min(6,5)+min(1,5)}=64: passed via direct simplification.\n[Symbolic 7] N2(4)=2^{min(6,4)+min(1,4)}=32: passed via direct simplification.\n[Symbolic 8] e2(5)=N2(5)-N2(4)=32: passed via direct simplification.\n[Symbolic 9] N3(3)=3^{3+1}=81: passed via direct simplification.\n[Symbolic 10] N3(2)=3^{2+1}=27: passed via direct simplification.\n[Symbolic 11] e3(3)=N3(3)-N3(2)=54: passed via direct simplification.\n[Symbolic 12] N5(2)=25: passed via direct simplification.\n[Symbolic 13] N5(1)=5: passed via direct simplification.\n[Symbolic 14] e5(2)=20: passed via direct simplification.\n[Symbolic 15] N7(1)=7: passed via direct simplification.\n[Symbolic 16] N7(0)=1: passed via direct simplification.\n[Symbolic 17] e7(1)=6: passed via direct simplification.\n[Symbolic 18] 2-adic feasibility: 5 ≤ 6: passed via direct simplification.\n[Symbolic 19] 3-adic feasibility: 3 ≤ 4: passed via direct simplification.\n[Symbolic 20] 5-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 21] 7-adic feasibility: 1 ≤ 2: passed via direct simplification.\n[Symbolic 22] Final exact-order count in H: passed via direct simplification.\n[Symbolic 23] 2-adic decomposition: 7+1 equals v2(φ(2^9))=8: passed via direct simplification.\n[Symbolic 24] 3-adic decomposition: 4+1 equals total 3-adic exponent from 3^5 and 7^3: passed via direct simplification.\n[Symbolic 25] 5-adic decomposition: only from 5^4 (e-1=3): passed via direct simplification.\n[Symbolic 26] 7-adic decomposition: only from 7^3 (e-1=2): passed via direct simplification.\n[Symbolic 27] Index [G:H] via ∏ gcd(n_i,k) over cyclic factors: 2 (C2) · 2 (C2^7) · 2 (3^5) · 10 (5^4) · 2 (7^3) = 160: passed via direct simplification.\n[Symbolic 28] Compute |G| = φ(2^9)φ(3^5)φ(5^4)φ(7^3) = 6,096,384,000: passed via direct simplification.\n[Symbolic 29] |H| = |G| / index = 38,102,400: passed via direct simplification.\n[Symbolic 30] |H| via product of q-primary image sizes matches 38,102,400: passed via direct simplification.\n[Symbolic 31] Final exact-order count divides |H|: failed. Counterexamples: [{'reason': 'value 155520 != 0', 'assignment': '{}'}, {'reason': 'value 155520 != 0', 'assignment': '{}'}]\nSummary: 2 substitution checks, 31 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [
+        {
+          "expression": "0",
+          "expected": "0",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(6 > 0, 1 > 0)",
+          "variables": [],
+          "num_samples": 1,
+          "description": "Non-cyclicity in H_2: two positive exponents b in B2=[6,1]"
+        },
+        {
+          "expression": "0",
+          "expected": "0",
+          "modulus": null,
+          "remainder": null,
+          "target_values": [],
+          "predicate": "And(4 > 0, 1 > 0)",
+          "variables": [],
+          "num_samples": 1,
+          "description": "Non-cyclicity in H_3: two positive exponents b in B3=[4,1]"
+        }
+      ],
+      "symbolic_equalities": [
+        {
+          "lhs": "10 - 2*5",
+          "rhs": "0",
+          "variables": [],
+          "description": "k factorization: 10 = 2·5"
+        },
+        {
+          "lhs": "2**7",
+          "rhs": "128",
+          "variables": [],
+          "description": "λ(2^9)=2^{9-2}=128"
+        },
+        {
+          "lhs": "2*3**4",
+          "rhs": "162",
+          "variables": [],
+          "description": "λ(3^5)=2·3^4=162"
+        },
+        {
+          "lhs": "4*5**3",
+          "rhs": "500",
+          "variables": [],
+          "description": "λ(5^4)=4·5^3=500"
+        },
+        {
+          "lhs": "6*7**2",
+          "rhs": "294",
+          "variables": [],
+          "description": "λ(7^3)=6·7^2=294"
+        },
+        {
+          "lhs": "2**(Min(6,5) + Min(1,5))",
+          "rhs": "64",
+          "variables": [],
+          "description": "N2(5)=2^{min(6,5)+min(1,5)}=64"
+        },
+        {
+          "lhs": "2**(Min(6,4) + Min(1,4))",
+          "rhs": "32",
+          "variables": [],
+          "description": "N2(4)=2^{min(6,4)+min(1,4)}=32"
+        },
+        {
+          "lhs": "64 - 32",
+          "rhs": "32",
+          "variables": [],
+          "description": "e2(5)=N2(5)-N2(4)=32"
+        },
+        {
+          "lhs": "3**(Min(4,3) + Min(1,3))",
+          "rhs": "81",
+          "variables": [],
+          "description": "N3(3)=3^{3+1}=81"
+        },
+        {
+          "lhs": "3**(Min(4,2) + Min(1,2))",
+          "rhs": "27",
+          "variables": [],
+          "description": "N3(2)=3^{2+1}=27"
+        },
+        {
+          "lhs": "81 - 27",
+          "rhs": "54",
+          "variables": [],
+          "description": "e3(3)=N3(3)-N3(2)=54"
+        },
+        {
+          "lhs": "5**(Min(2,2))",
+          "rhs": "25",
+          "variables": [],
+          "description": "N5(2)=25"
+        },
+        {
+          "lhs": "5**(Min(2,1))",
+          "rhs": "5",
+          "variables": [],
+          "description": "N5(1)=5"
+        },
+        {
+          "lhs": "25 - 5",
+          "rhs": "20",
+          "variables": [],
+          "description": "e5(2)=20"
+        },
+        {
+          "lhs": "7**(Min(2,1))",
+          "rhs": "7",
+          "variables": [],
+          "description": "N7(1)=7"
+        },
+        {
+          "lhs": "7**(Min(2,0))",
+          "rhs": "1",
+          "variables": [],
+          "description": "N7(0)=1"
+        },
+        {
+          "lhs": "7 - 1",
+          "rhs": "6",
+          "variables": [],
+          "description": "e7(1)=6"
+        },
+        {
+          "lhs": "Max(0, 5 - 6)",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic feasibility: 5 ≤ 6"
+        },
+        {
+          "lhs": "Max(0, 3 - 4)",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic feasibility: 3 ≤ 4"
+        },
+        {
+          "lhs": "Max(0, 2 - 2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic feasibility: 2 ≤ 2"
+        },
+        {
+          "lhs": "Max(0, 1 - 2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-adic feasibility: 1 ≤ 2"
+        },
+        {
+          "lhs": "32 * 54 * 20 * 6",
+          "rhs": "207360",
+          "variables": [],
+          "description": "Final exact-order count in H"
+        },
+        {
+          "lhs": "(7 + 1) - 8",
+          "rhs": "0",
+          "variables": [],
+          "description": "2-adic decomposition: 7+1 equals v2(φ(2^9))=8"
+        },
+        {
+          "lhs": "(4 + 1) - 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "3-adic decomposition: 4+1 equals total 3-adic exponent from 3^5 and 7^3"
+        },
+        {
+          "lhs": "3 - 3",
+          "rhs": "0",
+          "variables": [],
+          "description": "5-adic decomposition: only from 5^4 (e-1=3)"
+        },
+        {
+          "lhs": "2 - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7-adic decomposition: only from 7^3 (e-1=2)"
+        },
+        {
+          "lhs": "2*2*2*10*2 - 160",
+          "rhs": "0",
+          "variables": [],
+          "description": "Index [G:H] via ∏ gcd(n_i,k) over cyclic factors: 2 (C2) · 2 (C2^7) · 2 (3^5) · 10 (5^4) · 2 (7^3) = 160"
+        },
+        {
+          "lhs": "256*162*500*294 - 6096384000",
+          "rhs": "0",
+          "variables": [],
+          "description": "Compute |G| = φ(2^9)φ(3^5)φ(5^4)φ(7^3) = 6,096,384,000"
+        },
+        {
+          "lhs": "6096384000 - 160*38102400",
+          "rhs": "0",
+          "variables": [],
+          "description": "|H| = |G| / index = 38,102,400"
+        },
+        {
+          "lhs": "2**(6+1) * 3**(4+1) * 5**2 * 7**2 - 38102400",
+          "rhs": "0",
+          "variables": [],
+          "description": "|H| via product of q-primary image sizes matches 38,102,400"
+        },
+        {
+          "lhs": "Mod(38102400, 207360)",
+          "rhs": "0",
+          "variables": [],
+          "description": "Final exact-order count divides |H|"
+        }
+      ]
+    },
+    "verification_notes": "[Substitution 1] Non-cyclicity in H_2: two positive exponents b in B2=[6,1]: passed (1/1).\n[Substitution 2] Non-cyclicity in H_3: two positive exponents b in B3=[4,1]: passed (1/1).\n[Symbolic 1] k factorization: 10 = 2·5: passed via direct simplification.\n[Symbolic 2] λ(2^9)=2^{9-2}=128: passed via direct simplification.\n[Symbolic 3] λ(3^5)=2·3^4=162: passed via direct simplification.\n[Symbolic 4] λ(5^4)=4·5^3=500: passed via direct simplification.\n[Symbolic 5] λ(7^3)=6·7^2=294: passed via direct simplification.\n[Symbolic 6] N2(5)=2^{min(6,5)+min(1,5)}=64: passed via direct simplification.\n[Symbolic 7] N2(4)=2^{min(6,4)+min(1,4)}=32: passed via direct simplification.\n[Symbolic 8] e2(5)=N2(5)-N2(4)=32: passed via direct simplification.\n[Symbolic 9] N3(3)=3^{3+1}=81: passed via direct simplification.\n[Symbolic 10] N3(2)=3^{2+1}=27: passed via direct simplification.\n[Symbolic 11] e3(3)=N3(3)-N3(2)=54: passed via direct simplification.\n[Symbolic 12] N5(2)=25: passed via direct simplification.\n[Symbolic 13] N5(1)=5: passed via direct simplification.\n[Symbolic 14] e5(2)=20: passed via direct simplification.\n[Symbolic 15] N7(1)=7: passed via direct simplification.\n[Symbolic 16] N7(0)=1: passed via direct simplification.\n[Symbolic 17] e7(1)=6: passed via direct simplification.\n[Symbolic 18] 2-adic feasibility: 5 ≤ 6: passed via direct simplification.\n[Symbolic 19] 3-adic feasibility: 3 ≤ 4: passed via direct simplification.\n[Symbolic 20] 5-adic feasibility: 2 ≤ 2: passed via direct simplification.\n[Symbolic 21] 7-adic feasibility: 1 ≤ 2: passed via direct simplification.\n[Symbolic 22] Final exact-order count in H: passed via direct simplification.\n[Symbolic 23] 2-adic decomposition: 7+1 equals v2(φ(2^9))=8: passed via direct simplification.\n[Symbolic 24] 3-adic decomposition: 4+1 equals total 3-adic exponent from 3^5 and 7^3: passed via direct simplification.\n[Symbolic 25] 5-adic decomposition: only from 5^4 (e-1=3): passed via direct simplification.\n[Symbolic 26] 7-adic decomposition: only from 7^3 (e-1=2): passed via direct simplification.\n[Symbolic 27] Index [G:H] via ∏ gcd(n_i,k) over cyclic factors: 2 (C2) · 2 (C2^7) · 2 (3^5) · 10 (5^4) · 2 (7^3) = 160: passed via direct simplification.\n[Symbolic 28] Compute |G| = φ(2^9)φ(3^5)φ(5^4)φ(7^3) = 6,096,384,000: passed via direct simplification.\n[Symbolic 29] |H| = |G| / index = 38,102,400: passed via direct simplification.\n[Symbolic 30] |H| via product of q-primary image sizes matches 38,102,400: passed via direct simplification.\n[Symbolic 31] Final exact-order count divides |H|: failed. Counterexamples: [{'reason': 'value 155520 != 0', 'assignment': '{}'}, {'reason': 'value 155520 != 0', 'assignment': '{}'}]\nSummary: 2 substitution checks, 31 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.70s, total tokens 2060.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 9.70s, total tokens 2060.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 19.391641638998408,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.144320677005453,
+        "status": "ok",
+        "tokens_used": 1030,
+        "score": 0.1473529411764706,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 9.245720692008035,
+        "status": "ok",
+        "tokens_used": 1030,
+        "score": 0.14529411764705885,
+        "solved": false
+      }
+    ]
+  }
+}

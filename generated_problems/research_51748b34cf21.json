@@ -1,0 +1,279 @@
+{
+  "id": "research_51748b34cf21",
+  "problem_text": "Problem: Exact-order elements in the power-image of units modulo N\n\nObjects and assumptions:\n- Let N = 2^9 · 3^5 · 5^4 · 7^3.\n- Consider the multiplicative group G = (Z/NZ)^× and the power map Φ_k: G → G given by Φ_k(x) = x^k with k = 2^3 · 3 · 5.\n- Let H_k = im(Φ_k) denote the image subgroup.\n- Let the target order be t = 2^4 · 3^2 · 5 · 7.\n\nQuestion:\nHow many elements y ∈ H_k have exact multiplicative order ord_N(y) = t modulo N? Give the final answer as a single explicit integer.\n\nConstraints and required tools:\n- Use the Chinese Remainder Theorem for unit groups and Sylow-by-prime decomposition of finite abelian groups.\n- Use that (Z/p^eZ)^× is cyclic for odd p, while (Z/2^eZ)^× ≅ C2 × C_{2^{e−2}} for e ≥ 3.\n- For a prime q, in a q-group ∏ C_{q^{m_j}}, the power map x ↦ x^{q^{b_q}} truncates exponents m_j to m'_j = max(0, m_j − b_q).\n- The count of elements of exact q-power order q^a in ∏ C_{q^{m'_j}} equals q^{∑ min(a, m'_j)} − q^{∑ min(a−1, m'_j)}.\n- Multiply across the relevant primes to obtain the global exact order count.\n\nDemand single numeric answer; avoid brute-force enumeration.\n",
+  "solution_text": "Solution:\n\n1) Global-to-local decomposition and power-image structure.\nBy CRT, G ≅ ∏ (Z/p^eZ)^× over p^e ∥ N. For odd p, (Z/p^eZ)^× is cyclic of order p^{e−1}(p−1). For 2^9, (Z/2^9Z)^× ≅ C2 × C_{2^7}.\nHence, the Sylow q-subgroups of G are products of cyclic q-groups with exponents given by valuations v_q(p−1) and, for q = p odd, exponent e−1. Let k = 2^3 · 3 · 5; write b_q = v_q(k): b_2 = 3, b_3 = 1, b_5 = 1, b_7 = 0.\nOn a q-group ∏ C_{q^{m_j}}, the power map x ↦ x^k acts as x ↦ x^{q^{b_q}} composed with an automorphism, so its image truncates exponents m_j to m'_j = max(0, m_j − b_q).\n\n2) q-primary exponent lists before truncation.\n- q = 2: From 2^9: C2 × C_{2^7} → exponents {1, 7}. From 3^5: v2(3−1) = 1. From 5^4: v2(5−1) = v2(4) = 2. From 7^3: v2(7−1) = v2(6) = 1. Thus α2-list = [1, 7, 1, 2, 1].\n- q = 3: From 3^5: e−1 = 4. From 7^3: v3(7−1) = v3(6) = 1. Thus α3-list = [4, 1].\n- q = 5: From 5^4: e−1 = 3. Thus α5-list = [3].\n- q = 7: From 7^3: e−1 = 2. Thus α7-list = [2].\n\n3) Truncation by k via b_q = v_q(k).\n- q = 2: b_2 = 3 ⇒ α'2 = [max(0,1−3), max(0,7−3), max(0,1−3), max(0,2−3), max(0,1−3)] = [0, 4, 0, 0, 0].\n- q = 3: b_3 = 1 ⇒ α'3 = [max(0,4−1), max(0,1−1)] = [3, 0].\n- q = 5: b_5 = 1 ⇒ α'5 = [max(0,3−1)] = [2].\n- q = 7: b_7 = 0 ⇒ α'7 = [max(0,2−0)] = [2].\n\n4) Target t = 2^4 · 3^2 · 5 · 7 and exact-order counts in H_k.\nFor each q, let a_q = v_q(t): a_2 = 4, a_3 = 2, a_5 = 1, a_7 = 1. Define S'_q(a) = ∑ min(a, α'_qj).\n- q = 2: α'2 = [0,4,0,0,0]. S'_2(4) = 4; S'_2(3) = 3 ⇒ n_2 = 2^{S'_2(4)} − 2^{S'_2(3)} = 2^4 − 2^3 = 8.\n- q = 3: α'3 = [3,0]. S'_3(2) = min(3,2)+0 = 2; S'_3(1) = 1 ⇒ n_3 = 3^2 − 3^1 = 6.\n- q = 5: α'5 = [2]. S'_5(1) = 1; S'_5(0) = 0 ⇒ n_5 = 5^1 − 1 = 4.\n- q = 7: α'7 = [2]. S'_7(1) = 1; S'_7(0) = 0 ⇒ n_7 = 7^1 − 1 = 6.\n\nBy independence of Sylow components, the number of elements in H_k of exact global order t is\nn_2 · n_3 · n_5 · n_7 = (2^4 − 2^3)(3^2 − 3)(5 − 1)(7 − 1) = 8 · 6 · 4 · 6 = 1152.\n\nFinal Answer:\n1152\n\nVerification plan (machine-checkable steps):\n1) Verify truncations: Max(0,1−3)=0, Max(0,7−3)=4, Max(0,2−3)=0; Max(0,4−1)=3; Max(0,1−1)=0; Max(0,3−1)=2; Max(0,2−0)=2.\n2) Compute S'_2(4) = min(0,4)+min(4,4)+min(0,4)+min(0,4)+min(0,4) = 4 and S'_2(3) analogously = 3.\n3) Compute S'_3(2) = min(3,2)+0 = 2 and S'_3(1) = 1.\n4) Compute S'_5(1) = 1, S'_5(0) = 0; S'_7(1) = 1, S'_7(0) = 0.\n5) Exact counts: n_2 = 2^4 − 2^3 = 8; n_3 = 3^2 − 3 = 6; n_5 = 5 − 1 = 4; n_7 = 7 − 1 = 6.\n6) Multiply: 8·6·4·6 = 1152.\n7) Consistency check: k = 2^3 · 3 · 5 = 120 (to reinforce b_q values for truncation).\n",
+  "tags": [
+    "number theory",
+    "finite abelian groups",
+    "CRT",
+    "power map",
+    "exact order"
+  ],
+  "prerequisites": [
+    "Group theory",
+    "Elementary number theory"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem for Units",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Structure of (Z/p^eZ)^×",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Orders under powering: ord(g^k)=ord(g)/gcd(ord(g),k)",
+      "statement": "",
+      "source": "",
+      "notes": null
+    },
+    {
+      "name": "Counting in finite abelian p-groups via min-sum",
+      "statement": "",
+      "source": "",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] q=2 truncation from 2^9 small factor: passed via direct simplification.\n[Symbolic 2] q=2 truncation from 2^9 large factor: passed via direct simplification.\n[Symbolic 3] q=2 truncation from 3^5 2-adic: passed via direct simplification.\n[Symbolic 4] q=2 truncation from 5^4 2-adic: passed via direct simplification.\n[Symbolic 5] q=3 truncation from 3^5: passed via direct simplification.\n[Symbolic 6] q=3 truncation from 7^3 3-adic: passed via direct simplification.\n[Symbolic 7] q=5 truncation from 5^4: passed via direct simplification.\n[Symbolic 8] q=7 truncation from 7^3: passed via direct simplification.\n[Symbolic 9] S'_2(4) sum equals 4: passed via direct simplification.\n[Symbolic 10] S'_2(3) sum equals 3: passed via direct simplification.\n[Symbolic 11] S'_3(2) sum equals 2: passed via direct simplification.\n[Symbolic 12] S'_3(1) sum equals 1: passed via direct simplification.\n[Symbolic 13] S'_5(1) sum equals 1: passed via direct simplification.\n[Symbolic 14] S'_5(0) sum equals 0: passed via direct simplification.\n[Symbolic 15] S'_7(1) sum equals 1: passed via direct simplification.\n[Symbolic 16] S'_7(0) sum equals 0: passed via direct simplification.\n[Symbolic 17] n2 exact count: passed via direct simplification.\n[Symbolic 18] n3 exact count: passed via direct simplification.\n[Symbolic 19] n5 exact count: passed via direct simplification.\n[Symbolic 20] n7 exact count: passed via direct simplification.\n[Symbolic 21] Final exact-order count in H_k: passed via direct simplification.\n[Symbolic 22] Check k factorization: passed via direct simplification.\n[Symbolic 23] Feasibility for a2 <= max α'2: passed via direct simplification.\n[Symbolic 24] Feasibility for a3 <= max α'3: passed via direct simplification.\n[Symbolic 25] Feasibility for a5 <= max α'5: passed via direct simplification.\n[Symbolic 26] Feasibility for a7 <= max α'7: passed via direct simplification.\n[Symbolic 27] Check 6=2·3 for valuations v2(6)=1, v3(6)=1: passed via direct simplification.\n[Symbolic 28] Check 4=2^2 for v2(4)=2: passed via direct simplification.\n[Symbolic 29] 3^5 contributes exponent e-1=4 for q=3: passed via direct simplification.\n[Symbolic 30] 5^4 contributes exponent e-1=3 for q=5: passed via direct simplification.\n[Symbolic 31] 7^3 contributes exponent e-1=2 for q=7: passed via direct simplification.\nSummary: 0 substitution checks, 31 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "Max(0, 1-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "q=2 truncation from 2^9 small factor"
+        },
+        {
+          "lhs": "Max(0, 7-3)",
+          "rhs": "4",
+          "variables": [],
+          "description": "q=2 truncation from 2^9 large factor"
+        },
+        {
+          "lhs": "Max(0, 1-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "q=2 truncation from 3^5 2-adic"
+        },
+        {
+          "lhs": "Max(0, 2-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "q=2 truncation from 5^4 2-adic"
+        },
+        {
+          "lhs": "Max(0, 4-1)",
+          "rhs": "3",
+          "variables": [],
+          "description": "q=3 truncation from 3^5"
+        },
+        {
+          "lhs": "Max(0, 1-1)",
+          "rhs": "0",
+          "variables": [],
+          "description": "q=3 truncation from 7^3 3-adic"
+        },
+        {
+          "lhs": "Max(0, 3-1)",
+          "rhs": "2",
+          "variables": [],
+          "description": "q=5 truncation from 5^4"
+        },
+        {
+          "lhs": "Max(0, 2-0)",
+          "rhs": "2",
+          "variables": [],
+          "description": "q=7 truncation from 7^3"
+        },
+        {
+          "lhs": "Min(0,4)+Min(4,4)+Min(0,4)+Min(0,4)+Min(0,4)",
+          "rhs": "4",
+          "variables": [],
+          "description": "S'_2(4) sum equals 4"
+        },
+        {
+          "lhs": "Min(0,3)+Min(4,3)+Min(0,3)+Min(0,3)+Min(0,3)",
+          "rhs": "3",
+          "variables": [],
+          "description": "S'_2(3) sum equals 3"
+        },
+        {
+          "lhs": "Min(3,2)+Min(0,2)",
+          "rhs": "2",
+          "variables": [],
+          "description": "S'_3(2) sum equals 2"
+        },
+        {
+          "lhs": "Min(3,1)+Min(0,1)",
+          "rhs": "1",
+          "variables": [],
+          "description": "S'_3(1) sum equals 1"
+        },
+        {
+          "lhs": "Min(2,1)",
+          "rhs": "1",
+          "variables": [],
+          "description": "S'_5(1) sum equals 1"
+        },
+        {
+          "lhs": "Min(2,0)",
+          "rhs": "0",
+          "variables": [],
+          "description": "S'_5(0) sum equals 0"
+        },
+        {
+          "lhs": "Min(2,1)",
+          "rhs": "1",
+          "variables": [],
+          "description": "S'_7(1) sum equals 1"
+        },
+        {
+          "lhs": "Min(2,0)",
+          "rhs": "0",
+          "variables": [],
+          "description": "S'_7(0) sum equals 0"
+        },
+        {
+          "lhs": "2**4 - 2**3",
+          "rhs": "8",
+          "variables": [],
+          "description": "n2 exact count"
+        },
+        {
+          "lhs": "3**2 - 3**1",
+          "rhs": "6",
+          "variables": [],
+          "description": "n3 exact count"
+        },
+        {
+          "lhs": "5**1 - 1",
+          "rhs": "4",
+          "variables": [],
+          "description": "n5 exact count"
+        },
+        {
+          "lhs": "7**1 - 1",
+          "rhs": "6",
+          "variables": [],
+          "description": "n7 exact count"
+        },
+        {
+          "lhs": "(2**4 - 2**3) * (3**2 - 3) * (5 - 1) * (7 - 1)",
+          "rhs": "1152",
+          "variables": [],
+          "description": "Final exact-order count in H_k"
+        },
+        {
+          "lhs": "120 - 2**3 * 3 * 5",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check k factorization"
+        },
+        {
+          "lhs": "Max(0, 4-4)",
+          "rhs": "0",
+          "variables": [],
+          "description": "Feasibility for a2 <= max α'2"
+        },
+        {
+          "lhs": "Max(0, 2-3)",
+          "rhs": "0",
+          "variables": [],
+          "description": "Feasibility for a3 <= max α'3"
+        },
+        {
+          "lhs": "Max(0, 1-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "Feasibility for a5 <= max α'5"
+        },
+        {
+          "lhs": "Max(0, 1-2)",
+          "rhs": "0",
+          "variables": [],
+          "description": "Feasibility for a7 <= max α'7"
+        },
+        {
+          "lhs": "6 - 2*3",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check 6=2·3 for valuations v2(6)=1, v3(6)=1"
+        },
+        {
+          "lhs": "4 - 2**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check 4=2^2 for v2(4)=2"
+        },
+        {
+          "lhs": "(5 - 1) - 4",
+          "rhs": "0",
+          "variables": [],
+          "description": "3^5 contributes exponent e-1=4 for q=3"
+        },
+        {
+          "lhs": "(4 - 1) - 3",
+          "rhs": "0",
+          "variables": [],
+          "description": "5^4 contributes exponent e-1=3 for q=5"
+        },
+        {
+          "lhs": "(3 - 1) - 2",
+          "rhs": "0",
+          "variables": [],
+          "description": "7^3 contributes exponent e-1=2 for q=7"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] q=2 truncation from 2^9 small factor: passed via direct simplification.\n[Symbolic 2] q=2 truncation from 2^9 large factor: passed via direct simplification.\n[Symbolic 3] q=2 truncation from 3^5 2-adic: passed via direct simplification.\n[Symbolic 4] q=2 truncation from 5^4 2-adic: passed via direct simplification.\n[Symbolic 5] q=3 truncation from 3^5: passed via direct simplification.\n[Symbolic 6] q=3 truncation from 7^3 3-adic: passed via direct simplification.\n[Symbolic 7] q=5 truncation from 5^4: passed via direct simplification.\n[Symbolic 8] q=7 truncation from 7^3: passed via direct simplification.\n[Symbolic 9] S'_2(4) sum equals 4: passed via direct simplification.\n[Symbolic 10] S'_2(3) sum equals 3: passed via direct simplification.\n[Symbolic 11] S'_3(2) sum equals 2: passed via direct simplification.\n[Symbolic 12] S'_3(1) sum equals 1: passed via direct simplification.\n[Symbolic 13] S'_5(1) sum equals 1: passed via direct simplification.\n[Symbolic 14] S'_5(0) sum equals 0: passed via direct simplification.\n[Symbolic 15] S'_7(1) sum equals 1: passed via direct simplification.\n[Symbolic 16] S'_7(0) sum equals 0: passed via direct simplification.\n[Symbolic 17] n2 exact count: passed via direct simplification.\n[Symbolic 18] n3 exact count: passed via direct simplification.\n[Symbolic 19] n5 exact count: passed via direct simplification.\n[Symbolic 20] n7 exact count: passed via direct simplification.\n[Symbolic 21] Final exact-order count in H_k: passed via direct simplification.\n[Symbolic 22] Check k factorization: passed via direct simplification.\n[Symbolic 23] Feasibility for a2 <= max α'2: passed via direct simplification.\n[Symbolic 24] Feasibility for a3 <= max α'3: passed via direct simplification.\n[Symbolic 25] Feasibility for a5 <= max α'5: passed via direct simplification.\n[Symbolic 26] Feasibility for a7 <= max α'7: passed via direct simplification.\n[Symbolic 27] Check 6=2·3 for valuations v2(6)=1, v3(6)=1: passed via direct simplification.\n[Symbolic 28] Check 4=2^2 for v2(4)=2: passed via direct simplification.\n[Symbolic 29] 3^5 contributes exponent e-1=4 for q=3: passed via direct simplification.\n[Symbolic 30] 5^4 contributes exponent e-1=3 for q=5: passed via direct simplification.\n[Symbolic 31] 7^3 contributes exponent e-1=2 for q=7: passed via direct simplification.\nSummary: 0 substitution checks, 31 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.45s, total tokens 1772.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 12.45s, total tokens 1772.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 24.91043934598565,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 11.86275306501193,
+        "status": "ok",
+        "tokens_used": 886,
+        "score": 0.13973249409913455,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 13.046114142984152,
+        "status": "ok",
+        "tokens_used": 886,
+        "score": 0.13658536585365857,
+        "solved": false
+      }
+    ]
+  }
+}

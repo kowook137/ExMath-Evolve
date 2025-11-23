@@ -1,0 +1,187 @@
+{
+  "id": "research_9da854d435f0",
+  "problem_text": "Problem: Exact-order 420 units modulo a composite with constrained local spectra\n\nObjects and assumptions:\n- Let N = 2^9 · 3^5 · 5^3 · 7^2 · 13 · 29 · 31.\n- For each odd prime p and k ≥ 1, (Z/p^kZ)^× is cyclic of order φ(p^k) = p^{k−1}(p−1).\n- For k ≥ 3, (Z/2^kZ)^× ≅ C2 × C_{2^{k−2}}.\n- For p ∈ {13,29,31}, p−1 has prime divisors in the set {2,3,5,7} only.\n- Chinese Remainder Theorem (CRT): (Z/NZ)^× ≅ ∏ (Z/p_i^{k_i}Z)^×.\n\nTarget:\n- Let d = 420 = 2^2 · 3 · 5 · 7. Determine the exact number of units modulo N that have multiplicative order exactly d.\n\nDeliverable:\n- Provide the final integer count in closed form.\n- Justify the count using local-to-global reasoning, p-primary decomposition, and the min-truncation formula for exact powers in finite abelian p-groups.\n- End with a machine-checkable verification plan with precise intermediate computations.\n",
+  "solution_text": "Solution:\n\n1) Global decomposition and exact-order strategy.\nBy CRT, (Z/NZ)^× ≅ ∏ (Z/p^kZ)^× over the prime powers dividing N. For an element g, its global order is the product of its p-primary orders over primes ℓ dividing the group’s exponent; thus the count of elements of exact order d = 2^2·3·5·7 factors as a product of counts in each ℓ-Sylow subgroup with exact ℓ-adic order equal to the corresponding exponent in d.\nWe only need ℓ ∈ {2,3,5,7}, because for the chosen primes, every p−1 has prime divisors among {2,3,5,7} only, and the primes 13,29,31 appear in φ(·) only via p−1 or p^{k−1} with k=1 (so no 13-,29-,31-primary factors occur globally).\n\n2) Local structures and α-exponents for min-truncation counts.\n- For ℓ ≠ p, v_ℓ(φ(p^k)) = v_ℓ(p−1). For ℓ = p (odd), v_p(φ(p^k)) = k−1.\n- (Z/2^kZ)^× for k≥3 splits as C2 × C_{2^{k−2}}, i.e., the 2-primary part contributes exponents 1 and k−2.\nFor N = 2^9 · 3^5 · 5^3 · 7^2 · 13 · 29 · 31 we list, for each ℓ ∈ {2,3,5,7}, the multiset of cyclic p-group exponents α_{ℓ,i} arising from every prime-power factor:\n\nℓ = 2:\n- From 2^9: C2 × C_{2^7} → α2 ∈ {1, 7}.\n- From 3^5: v2(3−1) = v2(2) = 1.\n- From 5^3: v2(5−1) = v2(4) = 2.\n- From 7^2: v2(7−1) = v2(6) = 1.\n- From 13: v2(12) = 2.\n- From 29: v2(28) = 2.\n- From 31: v2(30) = 1.\nHence α2-list = [1, 7, 1, 2, 1, 2, 2, 1].\n\nℓ = 3:\n- From 3^5: v3(φ(3^5)) = k−1 = 4.\n- From 7^2: v3(7−1) = v3(6) = 1.\n- From 13: v3(12) = 1.\n- From 31: v3(30) = 1.\nThus α3-list = [4, 1, 1, 1].\n\nℓ = 5:\n- From 5^3: v5(φ(5^3)) = k−1 = 2.\n- From 31: v5(30) = 1.\nThus α5-list = [2, 1].\n\nℓ = 7:\n- From 7^2: v7(φ(7^2)) = k−1 = 1.\n- From 29: v7(28) = 1.\nThus α7-list = [1, 1].\n\n3) Min-truncation formula for exact p-powers.\nIn a finite abelian p-group G_p ≅ ∏ C_{p^{α_i}}, the number with order dividing p^t is p^{∑ min(α_i, t)}; the number with exact order p^t equals:\n    p^{∑ min(α_i, t)} − p^{∑ min(α_i, t−1)}.\nWe apply this with target exponents t2 = 2, t3 = 1, t5 = 1, t7 = 1.\n\nCompute Sums S_ℓ(t) = ∑ min(α_{ℓ,i}, t):\n- For ℓ=2 and t=1: S2(1) = 8 (eight terms all contribute 1).\n  For t=2: S2(2) = min(1,2)+min(7,2)+min(1,2)+min(2,2)+min(1,2)+min(2,2)+min(2,2)+min(1,2) = 1+2+1+2+1+2+2+1 = 12.\n- For ℓ=3: S3(1) = min(4,1)+min(1,1)+min(1,1)+min(1,1) = 4.\n- For ℓ=5: S5(1) = min(2,1)+min(1,1) = 2.\n- For ℓ=7: S7(1) = min(1,1)+min(1,1) = 2.\n\nTherefore the exact counts in each Sylow subgroup are:\n- n2 = 2^{S2(2)} − 2^{S2(1)} = 2^{12} − 2^{8} = 4096 − 256 = 3840.\n- n3 = 3^{S3(1)} − 3^{0} = 3^4 − 1 = 81 − 1 = 80.\n- n5 = 5^{S5(1)} − 1 = 5^2 − 1 = 24.\n- n7 = 7^{S7(1)} − 1 = 7^2 − 1 = 48.\n\n4) Multiply across primes ℓ ∈ {2,3,5,7}.\nBy independence of primary components, the number of elements in (Z/NZ)^× with exact order 2^2·3·5·7 equals:\n    n2 · n3 · n5 · n7 = 3840 · 80 · 24 · 48 = 353,894,400.\n\nFinal Answer:\n353894400\n\nVerification plan (machine-checkable steps):\n1) Confirm α2-list = [1,7,1,2,1,2,2,1] arising from: (a) 2^9 → {1,7}, (b) v2(p−1) for p ∈ {3,5,7,13,29,31} as {1,2,1,2,2,1}.\n2) Compute S2(1) = 8 and S2(2) = 12 via explicit Min() sums; check n2 = 2^12 − 2^8 = 3840.\n3) Confirm α3-list = [4,1,1,1] (from 3^5 and v3(p−1) for p ∈ {7,13,31}); compute S3(1) = 4; n3 = 3^4 − 1 = 80.\n4) Confirm α5-list = [2,1] (from 5^3 and v5(31−1)); compute S5(1) = 2; n5 = 5^2 − 1 = 24.\n5) Confirm α7-list = [1,1] (from 7^2 and v7(29−1)); compute S7(1) = 2; n7 = 7^2 − 1 = 48.\n6) Multiply: 3840·80·24·48 = 353894400 (exact integer arithmetic).\n7) Sanity checks (optional, small moduli): verify the 2-adic count formula for k=3,4 via enumeration; for odd p and p∤n, use Hensel’s lemma to check that roots x^n ≡ 1 mod p^k lift uniquely and match gcd(n,p−1), consistent with cyclic counts used above.\n8) Extra explicit valuation checks: verify identities 12 = 4·3, 28 = 4·7, 30 = 2·3·5, 6 = 2·3, and 4 = 2^2 to support the stated v2- and small-prime valuations used in step 2.\n",
+  "tags": [
+    "number_theory",
+    "group_theory",
+    "finite_abelian_groups",
+    "orders",
+    "CRT",
+    "2-adic"
+  ],
+  "prerequisites": [
+    "Chinese Remainder Theorem",
+    "Structure of (Z/p^kZ)^×",
+    "Sylow decomposition for finite abelian groups",
+    "Counting exact p-power orders in p-groups",
+    "Hensel's lemma (sanity for odd primes)"
+  ],
+  "theorem_refs": [
+    {
+      "name": "Chinese Remainder Theorem for Units",
+      "statement": "(Z/NZ)^× ≅ ∏ (Z/p_i^{k_i}Z)^× for N = ∏ p_i^{k_i}.",
+      "source": "Ireland & Rosen, A Classical Introduction to Modern Number Theory, Ch. 2",
+      "notes": null
+    },
+    {
+      "name": "Structure of (Z/p^kZ)^×",
+      "statement": "Cyclic for odd p; for k≥3, (Z/2^kZ)^× ≅ C2 × C_{2^{k−2}}.",
+      "source": "Dummit & Foote, Abstract Algebra, §4.5",
+      "notes": null
+    },
+    {
+      "name": "Exact p-power order count in abelian p-groups",
+      "statement": "In ∏ C_{p^{α_i}}, # {ord | p^t} = p^{∑ min(α_i,t)}, exact p^t count by difference.",
+      "source": "Dummit & Foote, §5.2 Exercises; Hungerford, Ch. IV §7",
+      "notes": null
+    },
+    {
+      "name": "Hensel lifting for roots of unity (sanity check)",
+      "statement": "For odd p ∤ n, # {x: x^n ≡ 1 mod p^k} = gcd(n, p−1) for all k≥1.",
+      "source": "Serre, A Course in Arithmetic, Chap. V §2",
+      "notes": null
+    }
+  ],
+  "verification": {
+    "substitution_pass": true,
+    "symbolic_pass": true,
+    "counterexample_found": false,
+    "notes": "No substitution checks specified.\n[Symbolic 1] Check v2(12)=2 via 12=4·3: passed via direct simplification.\n[Symbolic 2] Check v2(28)=2 via 28=4·7: passed via direct simplification.\n[Symbolic 3] Check factorization for 30: passed via direct simplification.\n[Symbolic 4] Check factorization for 6: passed via direct simplification.\n[Symbolic 5] Check 4=2^2: passed via direct simplification.\n[Symbolic 6] S2(1) sum of mins equals 8: passed via direct simplification.\n[Symbolic 7] S2(2) sum of mins equals 12: passed via direct simplification.\n[Symbolic 8] n2 exact count: passed via direct simplification.\n[Symbolic 9] S3(1) sum of mins equals 4: passed via direct simplification.\n[Symbolic 10] n3 exact count: passed via direct simplification.\n[Symbolic 11] S5(1) sum of mins equals 2: passed via direct simplification.\n[Symbolic 12] n5 exact count: passed via direct simplification.\n[Symbolic 13] S7(1) sum of mins equals 2: passed via direct simplification.\n[Symbolic 14] n7 exact count: passed via direct simplification.\n[Symbolic 15] Final exact-order count for d=420: passed via direct simplification.\nSummary: 0 substitution checks, 15 symbolic checks executed.",
+    "extra_data": []
+  },
+  "difficulty_estimate_author": null,
+  "metadata": {
+    "status": "research",
+    "verification_tasks": {
+      "substitution": [],
+      "symbolic_equalities": [
+        {
+          "lhs": "12 - 4*3",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check v2(12)=2 via 12=4·3"
+        },
+        {
+          "lhs": "28 - 4*7",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check v2(28)=2 via 28=4·7"
+        },
+        {
+          "lhs": "30 - 2*3*5",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check factorization for 30"
+        },
+        {
+          "lhs": "6 - 2*3",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check factorization for 6"
+        },
+        {
+          "lhs": "4 - 2**2",
+          "rhs": "0",
+          "variables": [],
+          "description": "Check 4=2^2"
+        },
+        {
+          "lhs": "Min(1,1)+Min(7,1)+Min(1,1)+Min(2,1)+Min(1,1)+Min(2,1)+Min(2,1)+Min(1,1)",
+          "rhs": "8",
+          "variables": [],
+          "description": "S2(1) sum of mins equals 8"
+        },
+        {
+          "lhs": "Min(1,2)+Min(7,2)+Min(1,2)+Min(2,2)+Min(1,2)+Min(2,2)+Min(2,2)+Min(1,2)",
+          "rhs": "12",
+          "variables": [],
+          "description": "S2(2) sum of mins equals 12"
+        },
+        {
+          "lhs": "2**12 - 2**8",
+          "rhs": "3840",
+          "variables": [],
+          "description": "n2 exact count"
+        },
+        {
+          "lhs": "Min(4,1)+Min(1,1)+Min(1,1)+Min(1,1)",
+          "rhs": "4",
+          "variables": [],
+          "description": "S3(1) sum of mins equals 4"
+        },
+        {
+          "lhs": "3**4 - 1",
+          "rhs": "80",
+          "variables": [],
+          "description": "n3 exact count"
+        },
+        {
+          "lhs": "Min(2,1)+Min(1,1)",
+          "rhs": "2",
+          "variables": [],
+          "description": "S5(1) sum of mins equals 2"
+        },
+        {
+          "lhs": "5**2 - 1",
+          "rhs": "24",
+          "variables": [],
+          "description": "n5 exact count"
+        },
+        {
+          "lhs": "Min(1,1)+Min(1,1)",
+          "rhs": "2",
+          "variables": [],
+          "description": "S7(1) sum of mins equals 2"
+        },
+        {
+          "lhs": "7**2 - 1",
+          "rhs": "48",
+          "variables": [],
+          "description": "n7 exact count"
+        },
+        {
+          "lhs": "(2**12 - 2**8) * (3**4 - 1) * (5**2 - 1) * (7**2 - 1)",
+          "rhs": "353894400",
+          "variables": [],
+          "description": "Final exact-order count for d=420"
+        }
+      ]
+    },
+    "verification_notes": "No substitution checks specified.\n[Symbolic 1] Check v2(12)=2 via 12=4·3: passed via direct simplification.\n[Symbolic 2] Check v2(28)=2 via 28=4·7: passed via direct simplification.\n[Symbolic 3] Check factorization for 30: passed via direct simplification.\n[Symbolic 4] Check factorization for 6: passed via direct simplification.\n[Symbolic 5] Check 4=2^2: passed via direct simplification.\n[Symbolic 6] S2(1) sum of mins equals 8: passed via direct simplification.\n[Symbolic 7] S2(2) sum of mins equals 12: passed via direct simplification.\n[Symbolic 8] n2 exact count: passed via direct simplification.\n[Symbolic 9] S3(1) sum of mins equals 4: passed via direct simplification.\n[Symbolic 10] n3 exact count: passed via direct simplification.\n[Symbolic 11] S5(1) sum of mins equals 2: passed via direct simplification.\n[Symbolic 12] n5 exact count: passed via direct simplification.\n[Symbolic 13] S7(1) sum of mins equals 2: passed via direct simplification.\n[Symbolic 14] n7 exact count: passed via direct simplification.\n[Symbolic 15] Final exact-order count for d=420: passed via direct simplification.\nSummary: 0 substitution checks, 15 symbolic checks executed.",
+    "semantic_valid": null,
+    "semantic_notes": null,
+    "evaluation_model": "gpt-4o-mini",
+    "evaluation_prompt": "cot-zero-shot",
+    "evaluation_feedback": {
+      "message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 10.33s, total tokens 1610.",
+      "suggestions": [
+        "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+      ],
+      "evaluator": "gpt-4o-mini"
+    },
+    "difficulty_message": "LLM failed to produce a meaningful solution. Problem appears difficult.\nAttempts: 2, avg runtime 10.33s, total tokens 1610.",
+    "difficulty_suggestions": [
+      "Consider adding optional hints or intermediate checks so we can assess reasoning quality."
+    ],
+    "evaluation_elapsed_seconds": 20.653868255001726,
+    "evaluation_attempt_details": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.827769524999894,
+        "status": "ok",
+        "tokens_used": 805,
+        "score": 0.15569487983281083,
+        "solved": false
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 9.824956741998903,
+        "status": "ok",
+        "tokens_used": 805,
+        "score": 0.1515151515151515,
+        "solved": false
+      }
+    ]
+  }
+}

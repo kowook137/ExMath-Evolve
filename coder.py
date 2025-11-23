@@ -5,12 +5,18 @@ from typing import List, Optional
 
 from rich.console import Console
 
-from agents import Agent, Runner
-from agents.tracing import gen_trace_id, trace
-from agents.model_settings import ModelSettings
 from black import format_str, Mode
 
 from database import Program
+from prompts import (
+    CODER_INSTRUCTIONS,
+    DEBUGGER_INSTRUCTIONS,
+    DIFF_CODE_TEMPLATE,
+    INSPIRATION_TEMPLATE,
+    REFLECTION_CONTENT,
+)
+from langchain_llm import LCAgent, LCRunner
+from tracing_compat import gen_trace_id, trace
 from utils.code import apply_diff, parse_evolve_blocks, extract_diffs
 from utils.datatypes import (
     IdeaData,
@@ -19,6 +25,7 @@ from utils.datatypes import (
     PlanningOutput,
     ReportData,
     FeedbackBundle,
+    EvaluationData,
     reasoning_models,
 )
 from utils.format import format_metrics_safe
@@ -27,142 +34,6 @@ logger = logging.getLogger(__name__)
 
 console = Console()
 
-CODER_INSTRUCTIONS = """You are the code evolution developer. Your job is to IMPLEMENT the latest research idea into the codebase so that each iteration produces harder, properly verified problems.
-
-Inputs you receive:
-- Problem statement and solution draft (if provided), problem specification, inspirations and prior evaluation feedback, and the full concatenated code.
-
-Your responsibilities:
-1) Translate the research idea/specification into concrete code changes that affect generation and/or verification (e.g., `examples/math_problem_generation/initial_code/generator.py`, `verification.py`, `deepevolve_interface.py`, or evaluation prompts in `llm_evaluator.py`).
-2) Ensure changes INCREASE difficulty over the previous iteration (e.g., stricter constraints, multi-part proofs, parameter ranges that avoid trivialities, cross-topic fusion) while maintaining a precise final answer and deterministic verification.
-3) Keep the evaluation interface intact: do not rename `deepevolve_interface()` or remove metrics.
-4) Prefer minimal, surgical edits that directly implement the idea. Avoid placeholder content.
-
-Output policy (MANDATORY):
-- Return one or more SEARCH/REPLACE diff blocks to patch the provided concatenated code. Use exactly this format:
-```
-<<<<<<< SEARCH
-<original code snippet to match>
-=======
-### >>> DEEPEVOLVE-BLOCK-START: <short title>
-<updated code>
-### <<< DEEPEVOLVE-BLOCK-END
->>>>>>> REPLACE
-```
-- Include at least ONE diff that changes generation/verification so the next evaluation reflects higher difficulty. If you need to add small helper functions, patch the appropriate file with a focused replacement.
-
-Notes:
-- If you think the solution draft has issues, briefly describe them, then STILL provide diffs that implement your fixes.
-- Do NOT output standalone JSON validations as your final answer; your output must be diffs.
-"""
-
-DEBUGGER_INSTRUCTIONS = """You are the Evaluation Agent. Your job is to challenge the generated math problem with large language models and feed difficulty feedback back into the system.
-
-Responsibilities:
-- Invoke configured LLM APIs with the provided problem statement (no access to the reference solution).
-- Analyse the model's answer, compare it against the reference solution, and determine whether the model solved the problem.
-- Record quantitative metrics (solve flag, similarity score, rationale quality, token usage) AND a qualitative feedback message that will be sent to the planner.
-- If the model solves the problem easily, suggest concrete strategies to increase difficulty (parameter adjustments, extra constraints, additional proof requirements).
-- If the model fails, summarise where it struggled and confirm the problem is sufficiently challenging.
-
-When code modifications are needed (e.g., updating `llm_evaluator.py` prompts or scoring logic), respond with SEARCH/REPLACE diffs using this template:
-```
-<<<<<<< SEARCH
-# Original evaluator code (must match exactly)
-=======
-### >>> DEEPEVOLVE-BLOCK-START: <evaluation refinement>
-# Improved evaluator code or feedback handling
-### <<< DEEPEVOLVE-BLOCK-END
->>>>>>> REPLACE
-```
-
-Guidelines:
-1. Never reveal the reference solution to the evaluated model.
-2. Use deterministic settings where possible (temperature, seeds) so results are reproducible.
-3. Aggregate feedback in a structured form the planner can consume (message + actionable suggestions).
-4. Keep API keys and secrets out of code responses.
-5. Only modify files directly related to evaluation (`llm_evaluator.py`, evaluation helpers). Leave unrelated code untouched.
-"""
-
-INSPIRATION_TEMPLATE = """### Inspiration {inspiration_number}
-- Research Idea : {idea}
-- Performance: {performance}
-- Code changes: {code_changes}
-"""
-
-# User message template for diff-based evolution
-DIFF_CODE_TEMPLATE = """
-User query: {query}
-Research problem: {problem}
-
-Inspirations:
-{inspirations}
-
-Current idea:
-{current_idea}
-
-Evolution history:
-{idea_evolution}
-
-Problem specification (JSON):
-{problem_spec}
-
-Problem statement:
-{problem_statement}
-
-Solution outline:
-{solution_outline}
-
-Verification notes:
-{verification_notes}
-
-Searcher context:
-{search_context}
-
-Evaluator feedback:
-{evaluator_feedback}
-
-Task:
-Act as the code evolution developer. Provide SEARCH/REPLACE diffs that update the code to implement the current idea, making the generated problems harder while remaining verifiable and with precise final answers. Target files likely to change:
-- examples/math_problem_generation/initial_code/generator.py (synthesize harder multi-step problems, fuse topics, widen parameter ranges avoiding trivialities; update ProblemMetadata/VerificationTasks accordingly)
-- examples/math_problem_generation/initial_code/verification.py (add stronger symbolic/substitution checks; edge cases)
-- examples/math_problem_generation/initial_code/llm_evaluator.py (if needed, adjust prompts/settings but keep API calls safe)
-- examples/math_problem_generation/initial_code/deepevolve_interface.py (keep interface; may adjust output directory via env var)
-
-Constraints:
-- Keep `deepevolve_interface()` signature and metrics.
-- Ensure deterministic checks and bounded runtime.
-- Return ONLY the required diff blocks—no extra commentary.
-
-Current program (concatenated; use EXACT substrings for SEARCH blocks):
-```{language}
-{current_program}
-```
-
-Reminder: In each diff, the SEARCH section must match a contiguous region in the current program EXACTLY (including whitespace and indentation). Do not wrap the diff itself in backticks; output only raw diff blocks.
-"""
-
-REFLECTION_CONTENT = """
-1. Code Correctness
-   - Are there any syntax errors or runtime errors?
-   - Are there inconsistencies in variable names or logic flow?
-   - Are there any new functions used but not been defined or implemented?
-   - Avoid hiding missing modules or errors with a bare try/except that simply passes. Handle exceptions with clear warnings or errors.
-
-2. Alignment with Research Idea
-   - Does the code accurately implement the stated research idea?
-      - Please make sure the changes in the function have actually been implemented in the workflow.
-      - Avoid the code parts that suppress errors silently
-
-3. Machine Learning Performance
-   - Can compute efficiency be improved with minimal code changes?
-   - Are there hyperparameters that could be tuned to boost performance?
-
-4. Other Issues
-   - At the end of each code review, provide a short summary of checks performed.
-   - Avoid the code parts that suppress errors silently.
-   - Are there any other issues you think are important?
-"""
 
 
 DEBUGGER_TEMPLATE = """
@@ -197,19 +68,17 @@ Your responsibilities:
 
 class CoderAgent:
     def __init__(self, developer: str, debugger: str, reasoning_effort: str = 'medium'):
-        self.developer = Agent(
+        self.developer = LCAgent(
             name="Code development agent",
             instructions=CODER_INSTRUCTIONS,
             model=developer,
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if developer in reasoning_models else ModelSettings(),
             output_type=str,
         )
         
-        self.debugger = Agent(
+        self.debugger = LCAgent(
             name="Code debugging agent",
             instructions=DEBUGGER_INSTRUCTIONS,
             model=debugger,
-            model_settings=ModelSettings(reasoning={'effort': reasoning_effort}) if debugger in reasoning_models else ModelSettings(),
             output_type=str,
         )
 
@@ -320,7 +189,6 @@ class CoderAgent:
 
         with trace(f"DeepEvolve_{self.problem_name}", trace_id=trace_id, disabled=False):
             debugger_input = DEBUGGER_TEMPLATE.format(
-                # query=self.query,
                 error_message=error_message,
                 modified_code=input_code,
                 idea=self.idea.model_dump(),
@@ -330,7 +198,7 @@ class CoderAgent:
                 solution_outline=self._get_solution_outline(),
                 evaluator_feedback=self._format_feedback(),
             )
-            result = await Runner.run(self.debugger, debugger_input)
+            result = await LCRunner.run(self.debugger, debugger_input)
 
             logger.info(f"Debugger error message:\n {error_message}")
             logger.info(f"Debugger changes:\n {result.final_output_as(str)}")
@@ -342,7 +210,6 @@ class CoderAgent:
                 output_code = format_str(output_code, mode=Mode())
             except Exception as e:
                 logger.warning(f"Error when formatting code: {e}")
-                pass
             return output_code
 
     async def run(
@@ -354,6 +221,19 @@ class CoderAgent:
         max_reflection_times: int = 1,
     ) -> str:
         """Run the full code improvement pipeline with research context."""
+        if new_idea is None:
+            logger.warning("No idea provided; using placeholder idea to continue pipeline.")
+            default_eval = EvaluationData(score=5, positive="placeholder", negative="placeholder")
+            new_idea = IdeaData(
+                description="Placeholder idea (upstream report missing idea field)",
+                motivation="Autofilled because writer agent returned no idea.",
+                implementation_notes="",
+                pseudocode="",
+                originality=default_eval,
+                future_potential=default_eval,
+                code_difficulty=default_eval,
+                target_difficulty=None,
+            )
         if trace_id is None:
             trace_id = gen_trace_id()
         self.trace_id = trace_id
@@ -379,13 +259,16 @@ class CoderAgent:
         inspiration_str = ""
         for idx in range(len(inspirations)):
             performance_str = format_metrics_safe(inspirations[idx].metrics)
+            meta = inspirations[idx].metadata or {}
+            seed_flag = meta.get("is_seed_inspiration")
+            meta_line = f"is_seed_inspiration={seed_flag}" if seed_flag is not None else "is_seed_inspiration=False"
             code_changes = parse_evolve_blocks(inspirations[idx].code)
             code_changes_str = ""
             for start_line, end_line, block_content in code_changes:
                 code_changes_str += f"Line {start_line} to {end_line}: ```{self.language}\n{block_content}```\n"
             inspiration_str += INSPIRATION_TEMPLATE.format(
                 inspiration_number=idx,
-                idea=inspirations[idx].idea,
+                idea=f"{inspirations[idx].idea} ({meta_line})",
                 performance=performance_str,
                 code_changes=code_changes_str,
             )
@@ -431,7 +314,7 @@ class CoderAgent:
                     current_program=program_code,
                 )
 
-                if ref_idx > 0:
+                if ref_idx > 0 and all_diff_text:
                     code_prompt += f"\n\nGiven the previous diff: ```{self.language}\n{all_diff_text[-1]}```"
                     code_prompt += f"\n\nPlease review the code and reflect on the content below: {REFLECTION_CONTENT}"
                     code_prompt += (
@@ -442,7 +325,7 @@ class CoderAgent:
                     {"content": code_prompt, "role": "user"}
                 ]
 
-                result = await Runner.run(self.developer, input=code_input)
+                result = await LCRunner.run(self.developer, input=code_input)
                 last_input_list = result.to_input_list()
                 developer_output = result.final_output_as(str)
 
@@ -463,19 +346,8 @@ class CoderAgent:
 
                 diff_blocks = extract_diffs(developer_output)
                 if not diff_blocks:
-                    logger.warning(
-                        "Developer output lacked valid SEARCH/REPLACE diff blocks. Requesting correction."
-                    )
-                    last_input_list.append(
-                        {
-                            "role": "user",
-                            "content": (
-                                "Your previous response did not include a valid SEARCH/REPLACE diff. "
-                                "Please respond with one or more diff blocks using the exact format with '<<<<<<< SEARCH', '=======', '>>>>>>> REPLACE', and copy the current code verbatim into the SEARCH section."
-                            ),
-                        }
-                    )
-                    continue
+                    logger.error("Developer output lacked valid SEARCH/REPLACE diff blocks. Stopping.")
+                    raise ValueError("Developer did not return required SEARCH/REPLACE diff blocks.")
 
                 prev_program_code = program_code
                 program_code_candidate = apply_diff(prev_program_code, developer_output)
